@@ -1,10 +1,10 @@
-# Snap Studio (V1 — prototype)
+# Snap Studio
 
 A quick-capture screenshot + annotate tool for the support team. This started as one piece
 of a larger idea (a Monosnap-style capture tool sharing a design system and engine with a
-"Guide Studio" documentation tool) prototyped inside the **Ownego Marketing Material
-Toolkit** (`github.com/pdtoan2811-bit/ownegoMarketingMaterialToolkit`) — this repo is that
-one piece, `tools/snap-studio/`, lifted out to stand on its own. V1's core slice — capture,
+"Guide Studio" documentation tool) — **team OE's idea from Hackathon 06** — prototyped
+inside a shared toolkit as `tools/snap-studio/`; this repo is that one piece, lifted out to
+stand on its own. V1's core slice — capture,
 annotate, copy/export — is done, and so is a local-profile slice of two things the original
 proposal sketched for later: a **Library** tab (save/reopen/auto-expire, one browser
 profile, no server) and **Component Forge** (preview the kit, author new components, no
@@ -14,7 +14,7 @@ governance gate — see "What this is NOT (yet)" below. The **KB** tab — a spe
 app in, an annotated knowledge-base article out — is newer work altogether, outside that
 original proposal.
 
-Forked from that toolkit's `tools/doc-guide/packages/userguidesnap`, but the editor is a
+Forked from that same toolkit's `tools/doc-guide/packages/userguidesnap`, but the editor is a
 **new, smaller** implementation: one image at a time, not a multi-slide guide/job. That's a
 deliberate cut, not an oversight — see "What this is NOT" below.
 
