@@ -33,8 +33,8 @@ các luật rút ra từ lỗi đã ship thật.
   `snap_navigate`/`snap_frame_*`/`snap_capture_tab`/`snap_look`/`snap_add`'s `at.tabId` — không
   có khái niệm "tab hiện tại", luôn truyền `tabId`.
 - Nếu là topology B (spawn từ UI KB Studio): job **không dùng `mcp__chrome__*` nữa** — Chrome
-  Bridge không còn được gắn vào stage capture (CHROME-BRIDGE-EXIT-PLAN.md GĐ 2). Các tab người
-  dùng đã đưa vào session dùng được **ngay từ lệnh đầu tiên**, bằng đúng `tabId` thật của chúng
+  Bridge không còn được gắn vào stage capture. Các tab người dùng đã đưa vào session dùng được
+  **ngay từ lệnh đầu tiên**, bằng đúng `tabId` thật của chúng
   (liệt kê sẵn trong prompt) — không có tab tạm, không có bước "mở đường"/adopt nào cả. Truyền
   thẳng tabId đó cho mọi `snap_navigate`/`snap_frame_*`/`snap_capture_tab`/`snap_look`/
   `snap_add`'s `at.tabId`. Cái được: trang vẫn đang ở đúng chỗ người dùng đã cuộn / mở panel /

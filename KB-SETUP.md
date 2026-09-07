@@ -25,9 +25,11 @@ Nên có nút **▶ Start bridge** trong tab KB, đi vòng qua **Chrome native m
 duy nhất Chrome cho phép một extension chạm tới OS. Bước 3 bên dưới là cài cái cầu đó.
 Thiết kế đầy đủ nằm ở [KB-BRIDGE.md](KB-BRIDGE.md), không cần đọc để setup.
 
-Hệ quả cần biết trước: **ID của extension unpacked sinh theo đường dẫn thư mục nạp nó**.
-Chuyển repo sang chỗ khác là ID đổi, và phải chạy lại bước 3. Bộ cài tự dò ID, không phải
-nhập tay.
+`manifest.json` khai `"key"` cố định (2026-09-07) — ID của extension unpacked giờ **không đổi
+theo đường dẫn thư mục nạp nó** nữa, khác hành vi mặc định của Chrome. Chuyển repo sang chỗ
+khác không làm ID đổi, không cần chạy lại bước 3 vì lý do đó. Bộ cài ở bước 3 vẫn tự dò ID từ
+hồ sơ Chrome (không nhập tay) — chỉ là giờ nó luôn dò ra cùng một giá trị trên mọi máy đã
+`git clone` repo này, vì khoá công khai nằm sẵn trong `manifest.json` đã commit.
 
 ---
 
@@ -149,7 +151,7 @@ khác sang.
 | Rail Articles trống, không có panel vàng | Bridge chạy nhưng `kb/` rỗng thật | Bình thường trên máy mới — tạo bài đầu tiên |
 | Panel vàng, bấm nút báo *"launcher isn't registered"* | Chưa làm bước 3 | Chạy bộ cài, rồi reload extension |
 | Bấm nút báo *"background worker didn't answer"* | Chưa reload sau khi cài | Bước 5 |
-| `verify` báo `id ... không khớp allowed_origins` | Repo đã đổi thư mục → ID đổi | Chạy lại bộ cài, reload extension |
+| `verify` báo `id ... không khớp allowed_origins` | ID pin từ `manifest.json` nên hiếm gặp giờ — nếu vẫn thấy: bộ cài chạy từ **trước** khi `manifest.json` có `"key"` (2026-09-07), ghi lại ID cũ | Chạy lại bộ cài, reload extension |
 | `verify` báo lỗi ở dòng `bắt tay` | Đường dẫn node trong shim đã sai (gỡ/nâng cấp node, đổi nvm) | Chạy lại bộ cài |
 | Job chạy nhưng không xuất được ảnh | Thiếu Chromium của Playwright | `npx playwright install chromium` |
 

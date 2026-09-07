@@ -169,8 +169,10 @@ chrome.runtime.onMessage.addListener((msg) => {
  * ------------------------------------------------------------------- */
 let kbSessionTabIds = new Set();
 // The Chrome tab GROUP the session's tabs sit in — purely visual bookkeeping
-// now, not a permission boundary (CHROME-BRIDGE-EXIT-PLAN.md removed the
-// permission one; nothing in kb-job.js's canUseTool reads this). It exists so
+// now, not a permission boundary: kb-job.js's canUseTool doesn't read this.
+// (It used to gate access, back when the capture stage still went through
+// Chrome Bridge and had to mimic its group-membership rule — see
+// KB-BRIDGE.md's "Khép lại câu chuyện tab group" section.) It exists so
 // the tab strip itself answers "which tabs is the KB job using" at a glance,
 // distinct from whatever else the user has open and is navigating by hand.
 // null means "no group yet" — a fresh session, or the group Chrome already
@@ -374,13 +376,14 @@ async function cmdGetAccent() {
   }
 }
 
-/** snap_navigate — CHROME-BRIDGE-EXIT-PLAN.md mục 5.1. No "current tab" concept:
- *  tabId is required, on purpose — that is the whole point over
- *  mcp__chrome__navigate, which falls back to "whichever tab is active in the
- *  session's own group" the moment it is called without one. Waits on the
- *  same waitTabComplete() every other tab-ready check in this file uses;
- *  SPA content finishing render after that is a known gap (mục 8.1), not
- *  something this function can see from here. */
+/** snap_navigate — no "current tab" concept: tabId is required, on purpose —
+ *  that is the whole point over mcp__chrome__navigate, which falls back to
+ *  "whichever tab is active in the session's own group" the moment it is
+ *  called without one. Waits on the same waitTabComplete() every other
+ *  tab-ready check in this file uses; an embedded SPA finishing its OWN
+ *  render after that is a known gap this function can't see from here —
+ *  the caller is expected to confirm with snap_frame_find before capturing
+ *  (see SKILL.md), and add a wait if that isn't enough. */
 async function cmdNavigate({ tabId, url }) {
   if (tabId == null) throw new Error('tabId is required — snap_navigate has no "current tab" to fall back to.');
   if (!url) throw new Error('url is required');
@@ -392,12 +395,11 @@ async function cmdNavigate({ tabId, url }) {
 }
 
 /** snap_new_tab — the other half of closing topology A's gap left by dropping
- *  mcp__chrome__* (CHROME-BRIDGE-EXIT-PLAN.md mục 12.3): topology B always
- *  gets its tabs handed to it in the prompt, but a human typing /kb has to
- *  find or open one itself, and mcp__snap__* had no equivalent to
- *  mcp__chrome__new_tab/list_tabs until now. Plain chrome.tabs.create — no
- *  group to join, no throwaway-tab bookkeeping, since nothing here scopes
- *  tabs by group any more. */
+ *  mcp__chrome__*: topology B always gets its tabs handed to it in the
+ *  prompt, but a human typing /kb has to find or open one itself, and
+ *  mcp__snap__* had no equivalent to mcp__chrome__new_tab/list_tabs until
+ *  now. Plain chrome.tabs.create — no group to join, no throwaway-tab
+ *  bookkeeping, since nothing here scopes tabs by group any more. */
 async function cmdNewTab({ url }) {
   const tab = await chrome.tabs.create(url ? { url } : {});
   if (url) await waitTabComplete(tab.id);
@@ -877,8 +879,8 @@ function pageClick({ selector }) {
   }
 }
 
-/** pageFill — CHROME-BRIDGE-EXIT-PLAN.md mục 5.2. Sets .value through the
- *  ELEMENT PROTOTYPE's own setter, same trick pageClick's checkbox fallback
+/** pageFill — sets .value through the ELEMENT PROTOTYPE's own setter, same
+ *  trick pageClick's checkbox fallback
  *  above uses: a framework that has patched an instance-level setter (React,
  *  most component kits) would otherwise see its own setter called back with
  *  the same value it already thinks .value holds, and skip re-rendering.
@@ -902,8 +904,8 @@ function pageFill({ selector, value }) {
   }
 }
 
-/** pagePress — CHROME-BRIDGE-EXIT-PLAN.md mục 5.3. Enough for Enter/Escape/
- *  Tab, which is nearly the whole real need (typing a value belongs to
+/** pagePress — enough for Enter/Escape/Tab, which is nearly the whole real
+ *  need (typing a value belongs to
  *  pageFill, not this). Targets `selector` if given, else whatever the frame
  *  itself currently has focused — no synthetic focus() call, since forcing
  *  focus onto an element the user/agent did not actually focus can itself

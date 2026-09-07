@@ -52,6 +52,15 @@ function loadOrCreateToken() {
 }
 const TOKEN = loadOrCreateToken();
 
+// Fixed extension id, derived from manifest.json's "key" (added so the id no
+// longer shifts with the load path — see KB-SETUP.md's old warning about
+// that). This is the SAME value Chrome computes internally from that key:
+// SHA-256 of the DER-encoded public key, first 16 bytes, each nibble mapped
+// to 'a'-'p'. Regenerate together with manifest.json's "key" if the signing
+// key ever changes (openssl genrsa → derive both from the new key — see
+// the comment on the Origin check below for the exact commands).
+const EXTENSION_ID = "pmmkmopcapoijfaoljmihljdcpjahefe";
+
 /** Every write goes through here — the one boundary between an MCP tool call
  *  and the disk. Absolute paths or ".." that would land outside kb/ are
  *  refused outright rather than sanitized, since a silently-rewritten path
@@ -1017,7 +1026,7 @@ function buildMcpServer() {
   });
 
   mcp.registerTool("snap_navigate", {
-    description: "Navigate an already-open Chrome tab to a URL — reaches the same tab mcp__chrome__navigate would, without depending on Chrome Bridge. No implicit \"current tab\": every call names the tabId it navigates, so there is nothing to fall back onto and get wrong. See CHROME-BRIDGE-EXIT-PLAN.md mục 5.1 for why, including the one real gap (an embedded SPA can finish loading its OWN content after this returns — confirm with snap_frame_find before capturing, and add a wait if that is not enough).",
+    description: "Navigate an already-open Chrome tab to a URL — reaches the same tab mcp__chrome__navigate would, without depending on Chrome Bridge. No implicit \"current tab\": every call names the tabId it navigates, so there is nothing to fall back onto and get wrong. One real gap: an embedded SPA can finish loading its OWN content after this returns — confirm with snap_frame_find before capturing, and add a wait if that is not enough.",
     inputSchema: {
       tabId: z.number().int().describe("Chrome tab id to navigate, e.g. from snap_list_tabs or snap_new_tab."),
       url: z.string().describe("URL to load in that tab."),
@@ -1601,8 +1610,10 @@ function buildMcpServer() {
 // ---------------------------------------------------------------------------
 // HTTP: /mcp (Bearer-authed, stateless Streamable HTTP) + /ext (WS upgrade,
 // same-origin-checked instead of token-checked — the extension has no way
-// to read a token file, so binding to 127.0.0.1 plus an
-// Origin: chrome-extension:// check is the boundary on that side).
+// to read a token file, so binding to 127.0.0.1 plus an exact
+// Origin: chrome-extension://<EXTENSION_ID> check is the boundary on that
+// side — see EXTENSION_ID and the Origin check above the upgrade handler
+// below).
 // ---------------------------------------------------------------------------
 function checkAuth(req) {
   const [scheme, value] = String(req.headers["authorization"] || "").split(" ");
@@ -1643,10 +1654,22 @@ const httpServer = http.createServer(async (req, res) => {
   }
 });
 
+// Pinned to Snap Studio's own extension id (manifest.json's "key" fixes it —
+// see EXTENSION_ID above), not just the chrome-extension:// scheme. A bare
+// prefix check (the old behavior) let ANY installed extension that learned
+// this port through to /ext; this closes that gap without needing a token
+// on this side (the extension has no way to read a token file — see the
+// comment on checkAuth above for why /mcp and /ext authenticate differently).
+// Regenerating the key: `openssl genrsa -out manifest-key.pem 2048`, then
+// `openssl rsa -in manifest-key.pem -pubout -outform DER | openssl base64 -A`
+// for manifest.json's "key", and feed that same DER through SHA-256 → first
+// 16 bytes → each nibble mapped to 'a'-'p' for the new EXTENSION_ID. Reload
+// the extension afterward — Chrome only picks up a new "key" on reload.
+const EXTENSION_ORIGIN = `chrome-extension://${EXTENSION_ID}`;
 httpServer.on("upgrade", (req, socket, head) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const origin = req.headers.origin || "";
-  if (url.pathname !== "/ext" || !/^chrome-extension:\/\//.test(origin)) { socket.destroy(); return; }
+  if (url.pathname !== "/ext" || origin !== EXTENSION_ORIGIN) { socket.destroy(); return; }
   wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
 });
 

@@ -10,10 +10,13 @@ portal của app, Snap Studio chú thích ảnh, và kết quả là một bài 
   review.** Mã ở `snap-bridge/` + `src/bridge-worker.js` + `src/bridge-editor.js`. Topology B
   (UI Snap Studio tự spawn Agent SDK) đã có kế hoạch chi tiết ở mục 7 dưới, **chưa dựng**. Kế
   hoạch triển khai đầy đủ (cả hai topology, từng bước): `C:\Users\huyng\.claude\plans\witty-sniffing-garden.md`.
-- **Bước tiếp theo — nâng lên KB Studio: `KB-STUDIO-PLAN.md`** (lập 2026-08-28). Kế hoạch 5
-  phase lấy từ Guide Studio của `ownegoMarketingMaterialToolkit` — nhánh anh em của repo này,
-  đã giải xong tầng orchestration mà đây còn thiếu: render headless (xoá bẫy cắt ảnh ở mục 2
-  dưới), `job.json` để re-render rẻ, neo annotation vào selector thật, và UI studio để review.
+- **Nâng lên KB Studio — kế hoạch 5 phase (lập 2026-08-28), đã xong hết, tài liệu đã xoá
+  (2026-09-07).** Lấy ý tưởng từ Guide Studio của `ownegoMarketingMaterialToolkit` — nhánh anh
+  em của repo này — để giải tầng orchestration mà đây còn thiếu lúc đó: render headless (xoá bẫy
+  cắt ảnh ở mục 2 dưới), `job.json` để re-render rẻ, neo annotation vào selector thật, và UI
+  studio để review. Cả 4 phase (+ Phase 4 tuỳ chọn) đều đã dựng xong hoặc có quyết định rõ ràng;
+  file kế hoạch (`KB-STUDIO-PLAN.md`) không còn hạng mục nào mở nên đã xoá — lịch sử đầy đủ của
+  quá trình dựng nằm rải trong các mục ngày tháng của chính file này (`KB-BRIDGE.md`) bên dưới.
 
 ## Kết quả trial (2026-08-27)
 
@@ -371,7 +374,8 @@ Mọi kết luận trong hai mục đó **đúng ở thời điểm viết** —
 lại: cả cơ chế đó chỉ tồn tại để lách đúng MỘT giới hạn, và giới hạn đó vừa bị gỡ bỏ theo cách
 khác hẳn.
 
-**Cái đã đổi**: `CHROME-BRIDGE-EXIT-PLAN.md` (lập 2026-09-02, chạy 2026-09-03) nhận ra bốn tool
+**Cái đã đổi**: kế hoạch bỏ Chrome Bridge (lập 2026-09-02, chạy 2026-09-03, xong hẳn cùng ngày —
+tài liệu kế hoạch đó đã xoá sau khi mọi giai đoạn hoàn tất, xem lịch sử ở đây) nhận ra bốn tool
 `snap_frame_*` sẵn có (từ mục "Điều khiển nội dung trong iframe cross-origin" phía trên) đã đi
 qua `chrome.scripting.executeScript` của chính Snap Studio — **không hề bị Chrome Bridge hay tab
 group nào scope cả**, vì nó không phải Chrome Bridge. Thêm bốn tool cùng họ
@@ -537,9 +541,9 @@ thấy gì nháy**, đúng như thiết kế.
 
 ### Tab trong session tự động group, phân biệt với tab người dùng tự mở (2026-09-03)
 
-Từ `CHROME-BRIDGE-EXIT-PLAN.md` GĐ 2, tab group **không còn là ranh giới quyền** nữa —
-`mcp__snap__*` làm việc thẳng trên bất kỳ `tabId` nào trong `sessionTabs` job được giao, không
-cần group nào của Chrome Bridge nữa (xem mục "Nghiệm thu thật" trong file đó — một job KB thật
+Từ khi bỏ Chrome Bridge khỏi stage capture (mục ngay trên), tab group **không còn là ranh giới
+quyền** nữa — `mcp__snap__*` làm việc thẳng trên bất kỳ `tabId` nào trong `sessionTabs` job được
+giao, không cần group nào của Chrome Bridge nữa (nghiệm thu thật đã xác nhận: một job KB thật
 chạy xong, không mở tab mới, không dời tab nào). Nhưng group vẫn có giá trị **thuần hình ảnh**:
 nhìn vào thanh tab là biết ngay tab nào đang "thuộc về" một job KB, phân biệt với tab người dùng
 tự mở/điều hướng trong lúc job chạy.
@@ -956,6 +960,27 @@ job không bị giật màn hình. Đây là thay đổi duy nhất chạm vào 
 
 **Không làm trong lần dựng này**: siết `/ext` Origin-check xuống đúng ID extension (cần pin
 `key` trong `manifest.json`); hàng đợi nhiều job cùng lúc; preset blur PII bắt buộc (mục 5.4).
+
+**Cập nhật (2026-09-07)**:
+
+- **Siết Origin-check — đã làm.** `manifest.json` giờ khai `"key"` (public key cố định, sinh từ
+  một cặp khoá RSA-2048 riêng — `.pem` **không** commit, xem `.gitignore`), nên ID extension
+  không còn đổi theo đường dẫn nạp nữa (đã cập nhật cả ghi chú liên quan trong `KB-SETUP.md`).
+  `snap-bridge/server.js`'s handler `upgrade` cho `/ext` giờ so khớp **đúng**
+  `chrome-extension://pmmkmopcapoijfaoljmihljdcpjahefe` (hằng số `EXTENSION_ID`), không còn chỉ
+  khớp tiền tố `chrome-extension://` — một extension khác cài trên máy không còn qua được cổng
+  này nữa dù biết đúng port.
+- **Hàng đợi/chạy song song nhiều job — quyết định giữ nguyên "một job một lần", không build.**
+  Không khả thi nếu không sửa kiến trúc thật: `currentJob` (`kb-job.js`) là một biến
+  module-level chứ không phải `Map`; canvas agent vẽ lên chỉ mount **một lần**
+  (`mountAgent()`/`kb-surface.js`, gọi từ `bridge-kb.js:106`) nên hai job sẽ đè annotation lên
+  nhau; `kbSessionTabIds`/`kbSessionGroupId` (whitelist tab phiên KB, `bridge-worker.js`) là
+  biến toàn cục của service worker, không tách theo job. Ba chỗ này đều phải sửa mới song song
+  được — người dùng đã cân nhắc và chọn không làm.
+- **Preset blur PII bắt buộc — quyết định bỏ, không làm.** Người dùng cân nhắc và chọn không cần
+  một gate cứng ở code; giữ nguyên cơ chế hiện có (`job.globalEls` + luật "hard rule" trong
+  `PLACEMENT_PLAYBOOK.md` mục 6) dù đã có 3 lần rò rỉ PII thật được ghi lại ở đó. Không phải bỏ
+  vì đã hết rủi ro — là một đánh đổi có chủ đích, ghi lại để không ai tưởng đây là việc quên làm.
 
 ## 8. Ảnh trong bài KB là surface sống, không phải PNG
 

@@ -15,3 +15,8 @@ snap-bridge/native-host/com.snapstudio.bridge.json
 snap-bridge/native-host/snap-bridge-host.cmd
 snap-bridge/native-host/snap-bridge-host.sh
 snap-bridge/logs/
+
+# private half of manifest.json's "key" (pins the extension id — see
+# EXTENSION_ID in snap-bridge/server.js). Only the public derivative goes
+# into manifest.json; the .pem itself must never leave this machine.
+manifest-key.pem

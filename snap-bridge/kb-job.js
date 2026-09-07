@@ -15,8 +15,8 @@
    whole dance existed to work around Chrome Bridge's own scoping — the
    mcp__snap__* tools it works around are NOT scoped by any tab group (they
    call chrome.tabs.* directly), so once Chrome Bridge was dropped from this
-   stage the dance had nothing left to do. See CHROME-BRIDGE-EXIT-PLAN.md
-   for the full history and the reasoning (mục 2.2 especially).
+   stage the dance had nothing left to do. See KB-BRIDGE.md's "Khép lại câu
+   chuyện tab group" section for the full history and the reasoning.
 
    The real tradeoff from dropping it: this job has NO way to open a new
    browser tab any more. If a session tab is closed or otherwise unusable,
@@ -585,8 +585,7 @@ async function runCaptureStage(job, ctx, push, findings, round) {
   const { sessionTabs, allowedOrigins, snapSelf } = ctx;
   // The whitelist itself — no group, no adoption, no "job's own tab": a
   // session tab's real tabId is usable from the very first call. See the
-  // file header and CHROME-BRIDGE-EXIT-PLAN.md mục 2.2/7 for why this
-  // replaced the old adopt dance.
+  // file header for why this replaced the old adopt dance.
   const sessionTabIds = new Set(sessionTabs.map((t) => t.id));
 
   function originAllowed(url) {

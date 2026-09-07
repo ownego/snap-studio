@@ -3,6 +3,7 @@
   "name": "Snap Studio",
   "version": "0.1.0",
   "description": "Snap a screen, annotate it with the house component kit, export or copy it — built for the support team's ticket workflow.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw6k0refjGq1nC1cPLtuUOCQnnNIpH02zW2pSXqRSsBTqBDl0DQXNJENFWwhhxP2rFsEZU8C7lZMoJIhmC1P5VKQnaZyTyW3FJ2g5yZ07xVbvQ7LR/ae9yisAJ/EUeTMxQo+danIiKfajyBumJY/pSB2PJ5YyjKrT0msbDr1By5fFRAJ1A4cLlD/6iqtpQl6aI3uMLPT7Ji94EAlzQTIe98K1JyIPN/G99tWa1abxEe+10eWuIGKYPt2mAv/OBX/ZvKPWwRyYBTt4JlbpK/6M6d/YsMuzeVcmeyGngrEkuu/e4qqqOuksXWaSj55ncQkCy9KRif4VI9QAtHEqve6A+QIDAQAB",
   "permissions": ["activeTab", "tabs", "tabGroups", "storage", "scripting", "webNavigation", "clipboardWrite", "desktopCapture", "nativeMessaging", "debugger"],
   "host_permissions": ["<all_urls>"],
   "icons": {

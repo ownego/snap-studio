@@ -406,8 +406,9 @@ gõ ngày vào nội dung. Chứng minh được một mục cũ sai thì truy�
      topbar của Shopify admin). Phải cộng offset của iframe trên trang cha. Đo được lần này:
      `canvas = frame + (240, 121)` — 240 = bề rộng sidebar, 121 = topbar + page header. **Con số
      này của riêng layout Shopify admin ở cỡ cửa sổ đó**, không phải hằng số: đo lại bằng cách
-     đối chiếu một element có `rect` với vị trí của nó trên ảnh đã chụp. Ánh xạ tự động là việc
-     của Phase 2 trong `KB-STUDIO-PLAN.md`; tới lúc đó vẫn phải làm tay.
+     đối chiếu một element có `rect` với vị trí của nó trên ảnh đã chụp. Lúc ghi chú này vẫn
+     phải làm tay; ánh xạ tự động đã build sau đó — xem `at` của `snap_add` và `cmdFrameRect()`
+     trong `src/bridge-worker.js`.
   2. **`zoom` che mất ngữ cảnh xung quanh nó.** Nó phóng to *tại chỗ*, nên vùng 198×198 dưới nó
      bị thay thế. Lần này zoom lên cặp radio Discount type đã che luôn tiêu đề "Tier settings"
      ngay trên. Chấp nhận được vì phần phóng to chính là nội dung chính, nhưng **hãy chọn tâm
