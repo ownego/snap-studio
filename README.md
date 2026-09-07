@@ -4,9 +4,15 @@ A quick-capture screenshot + annotate tool for the support team. This started as
 of a larger idea (a Monosnap-style capture tool sharing a design system and engine with a
 "Guide Studio" documentation tool) prototyped inside the **Ownego Marketing Material
 Toolkit** (`github.com/pdtoan2811-bit/ownegoMarketingMaterialToolkit`) — this repo is that
-one piece, `tools/snap-studio/`, lifted out to stand on its own. This is the V1 slice of
-that roadmap: capture, annotate, copy/export. No Snap Library, no ticket integration, no
-Component Forge yet — those were sketched as V2/V3 in the original proposal.
+one piece, `tools/snap-studio/`, lifted out to stand on its own. V1's core slice — capture,
+annotate, copy/export — is done, and so is a local-profile slice of two things the original
+proposal sketched for later: a **Library** tab (save/reopen/auto-expire, one browser
+profile, no server) and **Component Forge** (preview the kit, author new components, no
+branch/PR/governance yet). What the proposal's V2/V3 still means and this repo doesn't have:
+ticket/Slack integration, cross-device history, a share link, and Component Forge's
+governance gate — see "What this is NOT (yet)" below. The **KB** tab — a spec doc and a live
+app in, an annotated knowledge-base article out — is newer work altogether, outside that
+original proposal.
 
 Forked from that toolkit's `tools/doc-guide/packages/userguidesnap`, but the editor is a
 **new, smaller** implementation: one image at a time, not a multi-slide guide/job. That's a
@@ -33,7 +39,14 @@ deliberate cut, not an oversight — see "What this is NOT" below.
    window), so the crop tool opens immediately on the full frame instead — drag it down to
    the part you want, `Enter` to apply, `Esc` to keep the whole shot.
 3. Add components from the left rail, drag them into place, edit text/options on the
-   right. Toggle **Context stamp** in the topbar on/off.
+   right. The topbar's two toggles — **Image frame** (a padded ground + rounded frame
+   around the whole export, on by default) and **Context stamp** — flip on/off per
+   capture. **⛶ Crop** redraws the frame the export is cropped to: it opens centered at
+   80% of the shot, drag the corner handles to resize, `Enter` applies, `Esc` cancels.
+   Applying repositions every annotation to match rather than deleting or clamping
+   whatever falls outside the new edge, and — unlike closing a tab or **Replace base
+   image…** — it doesn't ask for confirmation first, since it never drops an annotation,
+   only moves it.
 4. **⧉ Copy image** — or just `Ctrl+C` with the stage focused — to paste straight into a
    ticket, or **⬇ Export PNG** to save a file. **⧉ Copy context** copies the
    browser/OS/URL/time as plain text, independent of the visual stamp.
@@ -57,10 +70,14 @@ deliberate cut, not an oversight — see "What this is NOT" below.
    click it before you close/replace/crop if you want the capture to survive that. Click a
    card in the Library to reopen it as a new tab with every annotation intact. Saved snaps
    auto-expire (14 days by default — change it, or turn it off, in the tab's Retention
-   setting) and never leave this browser profile.
+   setting) and never leave this browser profile; **Clear library…** wipes all of them at
+   once.
 8. The **Components** tab (topbar) is the kit itself: every component on a light ground, a
-   dark ground, or your live capture — and **+ New component** to author a new one.
-   Anything you make there shows up in the Snap rail under **Yours**.
+   dark ground, or your live capture, with mock UI content underneath (toggleable) so
+   glass/blur components have something real to bend — and **+ New component** to author a
+   new one. Anything you make there shows up in the Snap rail under **Yours**. The same
+   tab's **Accent colour** picker (five presets plus a custom swatch) re-tones every
+   component and the editor chrome at once, including whatever's already on the canvas.
 
 ## The KB tab needs one more setup pass
 
