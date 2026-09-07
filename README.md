@@ -112,7 +112,7 @@ honestly than to fight that.
   panel, not by clicking into the component directly — the original editor's contenteditable
   approach needs care to avoid losing cursor position on re-render, and V1 sidesteps it by
   never re-rendering the DOM node a textarea is bound to (see `syncNode()` vs `render()`
-  in `editor.js` — that split is deliberate, not a missing feature).
+  in `src/surface.js` — that split is deliberate, not a missing feature).
 - **No ticket/Slack integration.** V2 in the proposal.
 - **Component Forge, but only the local slice.** The **Components** tab previews all eight
   kit components on a light ground, a dark ground, or the live capture, and lets you author
@@ -121,12 +121,16 @@ honestly than to fight that.
   no PR, no `catalog.json` duplicate check, no permission gate. Components authored there
   live in `chrome.storage` for one browser profile until someone pastes the CSS into
   `tokens.css` — which forks this repo's vendored copy of the kit rather than syncing it.
-- **Barely tested in a real browser.** The Components tab and the custom-component
-  round-trip were exercised in Chrome over `file://`, so the glass, the grounds, the lint
-  and the lab→stage handoff are known to render. Everything that needs the extension
-  itself — `captureVisibleTab`, the region crop, export, `chrome.storage` — is still only
-  read back, not run. Load it unpacked and walk the golden path above before trusting it
-  with a real ticket.
+- **Exercised for real, but not yet by a human on the golden path above.** The Components
+  tab and the custom-component round-trip were exercised in Chrome over `file://`, so the
+  glass, the grounds, the lint and the lab→stage handoff are known to render. Separately,
+  the `snap-bridge` KB pipeline has been driving the loaded extension for real since the
+  2026-08-27 trial recorded in [KB-BRIDGE.md](KB-BRIDGE.md): `captureVisibleTab`, the
+  editor's screenshot-based export, and all eight annotation components have real exported
+  PNGs to show for it. What that trial doesn't cover — the region drag-select UI, the
+  desktop/window picker (`Ctrl+Shift+9`), the popup, and the Library tab — is still only
+  read back, not run. Load it unpacked and walk the golden path above before trusting those
+  specific paths with a real ticket.
 
 ## Design-system wiring (and why this repo is standalone)
 
