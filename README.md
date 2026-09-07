@@ -1,8 +1,8 @@
 # Snap Studio
 
-A quick-capture screenshot + annotate tool for the support team. This started as one piece
-of a larger idea (a Monosnap-style capture tool sharing a design system and engine with a
-"Guide Studio" documentation tool) — **team OE's idea from Hackathon 06** — prototyped
+A quick-capture screenshot + annotate tool for the support team. This started as one piece  
+of a larger idea (a Monosnap-style capture tool sharing a design system and engine with a  
+"Guide Studio" documentation tool) — **idea from team OE Hackathon 06** — prototyped  
 inside a shared toolkit as `tools/snap-studio/`; this repo is that one piece, lifted out to
 stand on its own. V1's core slice — capture,
 annotate, copy/export — is done, and so is a local-profile slice of two things the original
@@ -21,63 +21,63 @@ deliberate cut, not an oversight — see "What this is NOT" below.
 ## Try it
 
 1. Chrome → `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select
-   this repo's root folder.
+ this repo's root folder.
 2. Click the extension icon on any normal page → **Snap visible tab** (or **Snap a
-   region…**, or the shortcuts `Alt+Shift+S` / `Alt+Shift+R`). A **Snap Studio** browser tab
-   opens with the capture already dropped in. Snapping again — from the same page or a
-   different one — never overwrites it: the new capture opens as its own tab in the strip
-   above the canvas, and the old one stays right there to switch back to and copy from.
-   **Snap a window/screen…** (`Ctrl+Shift+9` — a **global** shortcut, so it fires even while
-   another app has focus; Chrome only allows that for `Ctrl+Shift+[0-9]` combos, see the
-   comment on `captureDesktop()` in `background.js`) is the same idea for anything
-   `captureVisibleTab` can't reach — another app's window, a second monitor, the whole
-   desktop: it opens Chrome's own screen/window picker (via `chrome.desktopCapture`, the one
-   API that can be triggered from anywhere and still land the grab in a stable tab), grabs
-   one frame once you pick a source, and always opens it as its own new tab — same as a
-   whole-tab or region snap, never merged into whatever's already open. There's no live
-   drag-to-select for this path (a selection overlay can't be injected into another app's
-   window), so the crop tool opens immediately on the full frame instead — drag it down to
-   the part you want, `Enter` to apply, `Esc` to keep the whole shot.
+ region…**, or the shortcuts `Alt+Shift+S` / `Alt+Shift+R`). A **Snap Studio** browser tab
+ opens with the capture already dropped in. Snapping again — from the same page or a
+ different one — never overwrites it: the new capture opens as its own tab in the strip
+ above the canvas, and the old one stays right there to switch back to and copy from.
+ **Snap a window/screen…** (`Ctrl+Shift+9` — a **global** shortcut, so it fires even while
+ another app has focus; Chrome only allows that for `Ctrl+Shift+[0-9]` combos, see the
+ comment on `captureDesktop()` in `background.js`) is the same idea for anything
+ `captureVisibleTab` can't reach — another app's window, a second monitor, the whole
+ desktop: it opens Chrome's own screen/window picker (via `chrome.desktopCapture`, the one
+ API that can be triggered from anywhere and still land the grab in a stable tab), grabs
+ one frame once you pick a source, and always opens it as its own new tab — same as a
+ whole-tab or region snap, never merged into whatever's already open. There's no live
+ drag-to-select for this path (a selection overlay can't be injected into another app's
+ window), so the crop tool opens immediately on the full frame instead — drag it down to
+ the part you want, `Enter` to apply, `Esc` to keep the whole shot.
 3. Add components from the left rail, drag them into place, edit text/options on the
-   right. The topbar's two toggles — **Image frame** (a padded ground + rounded frame
-   around the whole export, on by default) and **Context stamp** — flip on/off per
-   capture. **⛶ Crop** redraws the frame the export is cropped to: it opens centered at
-   80% of the shot, drag the corner handles to resize, `Enter` applies, `Esc` cancels.
-   Applying repositions every annotation to match rather than deleting or clamping
-   whatever falls outside the new edge, and — unlike closing a tab or **Replace base
-   image…** — it doesn't ask for confirmation first, since it never drops an annotation,
-   only moves it.
+ right. The topbar's two toggles — **Image frame** (a padded ground + rounded frame
+ around the whole export, on by default) and **Context stamp** — flip on/off per
+ capture. **⛶ Crop** redraws the frame the export is cropped to: it opens centered at
+ 80% of the shot, drag the corner handles to resize, `Enter` applies, `Esc` cancels.
+ Applying repositions every annotation to match rather than deleting or clamping
+ whatever falls outside the new edge, and — unlike closing a tab or **Replace base
+ image…** — it doesn't ask for confirmation first, since it never drops an annotation,
+ only moves it.
 4. **⧉ Copy image** — or just `Ctrl+C` with the stage focused — to paste straight into a
-   ticket, or **⬇ Export PNG** to save a file. **⧉ Copy context** copies the
-   browser/OS/URL/time as plain text, independent of the visual stamp.
+ ticket, or **⬇ Export PNG** to save a file. **⧉ Copy context** copies the
+ browser/OS/URL/time as plain text, independent of the visual stamp.
 5. `Ctrl+V` pastes whatever image is on your clipboard — a Snipping Tool grab, a
-   screenshot a customer sent you, an image copied out of any other app. On an empty
-   stage the first paste becomes the shot; after that each paste **adds an image layer**
-   you can drag, resize (aspect always locked) and stack — two shots in one frame for a
-   before/after, or a zoomed detail beside the whole page. Nothing is ever replaced by a
-   paste; **Replace base image…** in the base layer's panel is the deliberate start-over.
+ screenshot a customer sent you, an image copied out of any other app. On an empty
+ stage the first paste becomes the shot; after that each paste **adds an image layer**
+ you can drag, resize (aspect always locked) and stack — two shots in one frame for a
+ before/after, or a zoomed detail beside the whole page. Nothing is ever replaced by a
+ paste; **Replace base image…** in the base layer's panel is the deliberate start-over.
 6. **Layers** in the left rail lists everything in paint order, starting with the shot
-   itself (**Base image** — selectable, not deletable, since it sets the exported frame).
-   Pasted images always sit below the annotations so a new one can't bury a text-box or
-   highlight you already placed.
+ itself (**Base image** — selectable, not deletable, since it sets the exported frame).
+ Pasted images always sit below the annotations so a new one can't bury a text-box or
+ highlight you already placed.
 7. The tab strip above the canvas holds every capture you've snapped, uploaded, or reopened
-   from the Library this session — click one to switch to it (to copy an image or a layer
-   across), or **✕** on it to close it. Closing a tab, **Replace base image…** in the base
-   layer's panel, and applying a crop all discard a capture (or its pre-crop pixels) for
-   good — on direct instruction none of them save to the Library for you; each one confirms
-   first (crop doesn't, since it never drops an annotation) rather than pretending there's a
-   safety net. **⤓ Save to library** in the toolbar is the only thing that ever writes there —
-   click it before you close/replace/crop if you want the capture to survive that. Click a
-   card in the Library to reopen it as a new tab with every annotation intact. Saved snaps
-   auto-expire (14 days by default — change it, or turn it off, in the tab's Retention
-   setting) and never leave this browser profile; **Clear library…** wipes all of them at
-   once.
+ from the Library this session — click one to switch to it (to copy an image or a layer
+ across), or **✕** on it to close it. Closing a tab, **Replace base image…** in the base
+ layer's panel, and applying a crop all discard a capture (or its pre-crop pixels) for
+ good — on direct instruction none of them save to the Library for you; each one confirms
+ first (crop doesn't, since it never drops an annotation) rather than pretending there's a
+ safety net. **⤓ Save to library** in the toolbar is the only thing that ever writes there —
+ click it before you close/replace/crop if you want the capture to survive that. Click a
+ card in the Library to reopen it as a new tab with every annotation intact. Saved snaps
+ auto-expire (14 days by default — change it, or turn it off, in the tab's Retention
+ setting) and never leave this browser profile; **Clear library…** wipes all of them at
+ once.
 8. The **Components** tab (topbar) is the kit itself: every component on a light ground, a
-   dark ground, or your live capture, with mock UI content underneath (toggleable) so
-   glass/blur components have something real to bend — and **+ New component** to author a
-   new one. Anything you make there shows up in the Snap rail under **Yours**. The same
-   tab's **Accent colour** picker (five presets plus a custom swatch) re-tones every
-   component and the editor chrome at once, including whatever's already on the canvas.
+ dark ground, or your live capture, with mock UI content underneath (toggleable) so
+ glass/blur components have something real to bend — and **+ New component** to author a
+ new one. Anything you make there shows up in the Snap rail under **Yours**. The same
+ tab's **Accent colour** picker (five presets plus a custom swatch) re-tones every
+ component and the editor chrome at once, including whatever's already on the canvas.
 
 ## The KB tab needs one more setup pass
 
@@ -113,41 +113,41 @@ honestly than to fight that.
 ## What this is NOT (yet)
 
 - **No server, no cross-device history, no automatic saving.** The **Library** tab (V2's
-  "Snap Library") only ever gets written to by the user clicking **⤓ Save to library** — on
-  direct instruction, closing a tab, **Replace base image…**, and cropping do NOT save there
-  for you; the first two confirm before discarding instead. It's `chrome.storage`'s cousin,
-  not a server: history lives in this one browser profile only, auto-expires (14/7/30 days,
-  or never, set in the Library tab), and there is no share link and no sync between machines.
-  See `src/library.js` and `ROADMAP.md`'s V2 section.
+"Snap Library") only ever gets written to by the user clicking **⤓ Save to library** — on
+direct instruction, closing a tab, **Replace base image…**, and cropping do NOT save there
+for you; the first two confirm before discarding instead. It's `chrome.storage`'s cousin,
+not a server: history lives in this one browser profile only, auto-expires (14/7/30 days,
+or never, set in the Library tab), and there is no share link and no sync between machines.
+See `src/library.js` and `ROADMAP.md`'s V2 section.
 - **No connector wiring.** The kit's `__connector` parts — text-box's and
-  zoom-magnify's optional relocate-with-a-line-back mode, and the arrow's own
-  anchor-dot convention they both cite — exist in `tokens.css` but nothing in
-  `editor.js` drags one out or recomputes it as its anchor moves. In place (the
-  kit's own default anatomy) works fully; only the relocate exception is missing.
-  Revisit if support agents actually need to detach an annotation from its target.
+zoom-magnify's optional relocate-with-a-line-back mode, and the arrow's own
+anchor-dot convention they both cite — exist in `tokens.css` but nothing in
+`editor.js` drags one out or recomputes it as its anchor moves. In place (the
+kit's own default anatomy) works fully; only the relocate exception is missing.
+Revisit if support agents actually need to detach an annotation from its target.
 - **No inline text editing on the canvas.** Text-box/label text is edited in the Properties
-  panel, not by clicking into the component directly — the original editor's contenteditable
-  approach needs care to avoid losing cursor position on re-render, and V1 sidesteps it by
-  never re-rendering the DOM node a textarea is bound to (see `syncNode()` vs `render()`
-  in `src/surface.js` — that split is deliberate, not a missing feature).
+panel, not by clicking into the component directly — the original editor's contenteditable
+approach needs care to avoid losing cursor position on re-render, and V1 sidesteps it by
+never re-rendering the DOM node a textarea is bound to (see `syncNode()` vs `render()`
+in `src/surface.js` — that split is deliberate, not a missing feature).
 - **No ticket/Slack integration.** V2 in the proposal.
 - **Component Forge, but only the local slice.** The **Components** tab previews all eight
-  kit components on a light ground, a dark ground, or the live capture, and lets you author
-  new ones (pick a base, edit the CSS, live preview, drop them on the shot like any kit
-  component). What it does NOT have is the governance half of the V3 proposal: no branch,
-  no PR, no `catalog.json` duplicate check, no permission gate. Components authored there
-  live in `chrome.storage` for one browser profile until someone pastes the CSS into
-  `tokens.css` — which forks this repo's vendored copy of the kit rather than syncing it.
+kit components on a light ground, a dark ground, or the live capture, and lets you author
+new ones (pick a base, edit the CSS, live preview, drop them on the shot like any kit
+component). What it does NOT have is the governance half of the V3 proposal: no branch,
+no PR, no `catalog.json` duplicate check, no permission gate. Components authored there
+live in `chrome.storage` for one browser profile until someone pastes the CSS into
+`tokens.css` — which forks this repo's vendored copy of the kit rather than syncing it.
 - **Exercised for real, but not yet by a human on the golden path above.** The Components
-  tab and the custom-component round-trip were exercised in Chrome over `file://`, so the
-  glass, the grounds, the lint and the lab→stage handoff are known to render. Separately,
-  the `snap-bridge` KB pipeline has been driving the loaded extension for real since the
-  2026-08-27 trial recorded in [KB-BRIDGE.md](KB-BRIDGE.md): `captureVisibleTab`, the
-  editor's screenshot-based export, and all eight annotation components have real exported
-  PNGs to show for it. What that trial doesn't cover — the region drag-select UI, the
-  desktop/window picker (`Ctrl+Shift+9`), the popup, and the Library tab — is still only
-  read back, not run. Load it unpacked and walk the golden path above before trusting those
-  specific paths with a real ticket.
+tab and the custom-component round-trip were exercised in Chrome over `file://`, so the
+glass, the grounds, the lint and the lab→stage handoff are known to render. Separately,
+the `snap-bridge` KB pipeline has been driving the loaded extension for real since the
+2026-08-27 trial recorded in [KB-BRIDGE.md](KB-BRIDGE.md): `captureVisibleTab`, the
+editor's screenshot-based export, and all eight annotation components have real exported
+PNGs to show for it. What that trial doesn't cover — the region drag-select UI, the
+desktop/window picker (`Ctrl+Shift+9`), the popup, and the Library tab — is still only
+read back, not run. Load it unpacked and walk the golden path above before trusting those
+specific paths with a real ticket.
 
 ## Design-system wiring (and why this repo is standalone)
 
@@ -179,23 +179,26 @@ back on the end. An edit made above the banner is lost the next time anyone does
 
 ### What changed in the swap
 
-| was | is now | note |
-|---|---|---|
-| `.cmp-badge` | `.cmp-step-marker` | labelled `Step {n}`, never a bare numeral; `--compact` / `--video` |
-| `.cmp-callout` | `.cmp-text-box` | opaque white card, `mode: step \| note`, composed step badge |
-| `.cmp-highlight` | `.cmp-highlight-box` | `--shaded` variant; bordered is the default |
-| `.cmp-blur` | `.cmp-privacy-blur` | carries a 92% neutral-300 fill over the blur (upstream deviation, documented) |
-| `.cmp-mag` | `.cmp-zoom-magnify` | rounded rectangle, never a circle — the circle is the pattern it replaces |
-| `.cmp-arrow` | `.cmp-arrow` | same name, new internals: straight/curved/elbow, real stroke-behind-stroke outline, anchor dot |
-| `.cmp-connector` | — | dropped; the anchor-dot convention now lives on the arrow, and text-box / zoom-magnify carry their own `__connector` parts |
-| `.cmp-pill` | `.cmp-label` | not a kit component any more — Snap Studio's own, in `EXTRAS`, because the context stamp needs a chip and the kit has no small-label primitive |
-| — | `.cmp-spotlight-cutout` | **new**: dims the whole frame, leaves one region lit |
-| — | `.cmp-screenshot-canvas` | **new**: the padded ground + rounded frame, on by default via the **Image frame** toggle |
+
+| was              | is now                   | note                                                                                                                                           |
+| ---------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.cmp-badge`     | `.cmp-step-marker`       | labelled `Step {n}`, never a bare numeral; `--compact` / `--video`                                                                             |
+| `.cmp-callout`   | `.cmp-text-box`          | opaque white card, `mode: step \| note`, composed step badge                                                                                    |
+| `.cmp-highlight` | `.cmp-highlight-box`     | `--shaded` variant; bordered is the default                                                                                                    |
+| `.cmp-blur`      | `.cmp-privacy-blur`      | carries a 92% neutral-300 fill over the blur (upstream deviation, documented)                                                                  |
+| `.cmp-mag`       | `.cmp-zoom-magnify`      | rounded rectangle, never a circle — the circle is the pattern it replaces                                                                      |
+| `.cmp-arrow`     | `.cmp-arrow`             | same name, new internals: straight/curved/elbow, real stroke-behind-stroke outline, anchor dot                                                 |
+| `.cmp-connector` | —                        | dropped; the anchor-dot convention now lives on the arrow, and text-box / zoom-magnify carry their own `__connector` parts                     |
+| `.cmp-pill`      | `.cmp-label`             | not a kit component any more — Snap Studio's own, in `EXTRAS`, because the context stamp needs a chip and the kit has no small-label primitive |
+| —                | `.cmp-spotlight-cutout`  | **new**: dims the whole frame, leaves one region lit                                                                                           |
+| —                | `.cmp-screenshot-canvas` | **new**: the padded ground + rounded frame, on by default via the **Image frame** toggle                                                       |
+
 
 ## Not yet wired up
 
 - **No Hub / toolkit integration.** As a standalone repo this doesn't register with
-  anything — the toolkit's Hub assumes every tool has a `studio` npm script on a port, and
-  V1 has no server (just a packed extension + a static editor page) to register anyway.
+anything — the toolkit's Hub assumes every tool has a `studio` npm script on a port, and
+V1 has no server (just a packed extension + a static editor page) to register anyway.
 - **Fonts load from Google Fonts CDN** in `editor.html` — a packed MV3 extension's default
-  CSP blocks remote fonts, so this only works unpacked/dev. Self-host before shipping.
+CSP blocks remote fonts, so this only works unpacked/dev. Self-host before shipping.
+
