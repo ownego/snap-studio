@@ -360,14 +360,17 @@ export function resumeJob(id, { onProgress } = {}) {
   return { id: job.id };
 }
 
-/* How many times findings may come back after the first review. Two is a
-   budget, not a target: the first fix round is where almost every real defect
-   is cleared, the second catches what that round broke, and a third has meant,
-   in practice, that the reviewer and the fixer disagree about taste rather than
-   about a defect — a conversation for the user, not another six minutes of
-   headless rendering. Whatever is still open when the budget runs out stays in
-   review.json and is reported in the log, not silently dropped. */
-const MAX_FIX_ROUNDS = 2;
+/* How many times findings may come back after the first review. One, not two
+   (changed 2026-09-03 — was 2): a fix round is a full capture+write+review
+   redo, and capture's browser driving is most of a job's wall-clock cost, so
+   a second round roughly doubles it again on top of the first. The first
+   review is where almost every real defect gets caught IF it is thorough —
+   REVIEW_ROLE below was tightened at the same time specifically so this
+   single round is enough, rather than leaning on a second pass to catch what
+   the first one missed. Whatever is still open after the one round stays in
+   review.json and is reported in the log, not silently dropped — the budget
+   running out is not the same fact as "reviewed clean". */
+const MAX_FIX_ROUNDS = 1;
 /* Log banners. The stage names are internal ("capture"/"write"/"review"); what
    the user watching the log needs is what is about to happen to their article. */
 const STAGE_TITLES = {
@@ -418,7 +421,7 @@ function stagePreamble(name, body) {
   return [
     "--- THIS JOB'S PIPELINE (overrides the skill above where they disagree) ---",
     "",
-    `This article is built by three agents in sequence, not one: CAPTURE (screenshots and the annotations on them) -> WRITE (the prose) -> REVIEW (fresh eyes; files findings, fixes nothing). The review's findings then come back to capture and write for up to ${MAX_FIX_ROUNDS} fix rounds. Each stage is its own conversation and is resumed for its own fix rounds.`,
+    `This article is built by three agents in sequence, not one: CAPTURE (screenshots and the annotations on them) -> WRITE (the prose) -> REVIEW (fresh eyes; files findings, fixes nothing). The review's findings then come back to capture and write for up to ${MAX_FIX_ROUNDS} fix round${MAX_FIX_ROUNDS === 1 ? "" : "s"}. Each stage is its own conversation and is resumed for its own fix rounds.`,
     "",
     `You are the ${name.toUpperCase()} stage.`,
     "",
@@ -455,14 +458,17 @@ const WRITE_ROLE = [
 const REVIEW_ROLE = [
   "YOU DID NOT TAKE THESE SCREENSHOTS AND YOU DID NOT WRITE THIS PROSE. That is the entire reason you are a separate stage: the agent that placed an annotation remembers what it meant to draw, and reads its own export as if that intent were on the screen. You only have the pixels. Read them as a reader who has never seen this app.",
   "",
+  `THIS JOB BUDGETS ONLY ONE FIX ROUND (MAX_FIX_ROUNDS = ${MAX_FIX_ROUNDS}). If this is the first review, whatever you miss now gets exactly one more chance to be caught — by you, on the follow-up review after the fix — and nothing after that: the article ships with any remaining blocker still in it, reported as an open finding but not fixed. Read every image as if this were your only pass, not a first draft of the finding list.`,
+  "",
   "YOU FIX NOTHING. snap_render_job, snap_export, snap_open, snap_add, snap_write_kb, snap_comment_resolve, and every snap_job WRITE are denied to you. Your only write is snap_findings. A defect you notice and do not file is a defect nobody fixes.",
   "",
   "Method:",
-  "1. snap_job to read the article, then snap_view on EVERY exported image. Use grid:true whenever a judgement depends on READING a coordinate rather than eyeballing it.",
+  "1. snap_job to read the article, then snap_view on EVERY exported image. Use grid:true whenever a judgement depends on READING a coordinate rather than eyeballing it — an eyeballed \"looks about right\" is exactly the kind of miss a second pass exists to catch, and there may not be a second pass.",
   "2. snap_comments — a pin a human left is a finding that already has a person behind it. Do not resolve them; route them.",
-  "3. Check, at minimum: the playbook's hard rules (#0 nothing overflows the frame, #1 no callout over its own target, #2 the target is present, visible and in the right state IN THIS IMAGE, #6 no PII left showing), #4 step 1 orients in the menu, #5 at least one zoom on a decisive detail; then prose against picture (does the text describe what is actually shown?), prose against the reference document if one was attached (a control's real name, what it actually does — the article contradicting the dev team's own doc is a write finding, not a nit), heading order, and coverage against the user's instruction — a step the instruction asked for and nobody shot is a finding too.",
-  "4. snap_findings once, at the end. Route each one: owner \"capture\" for anything visual (a re-shoot, or an annotation to move, retype or remove), owner \"write\" for prose. severity \"blocker\" only for something wrong or misleading as it stands; taste is a nit. verdict \"pass\" only when no blocker remains — it ends the loop and ships the article.",
-  "5. snap_learn when a finding is a placement rule the next article should not have to relearn. It is the only part of this job that outlives the article.",
+  "3. Go through the WHOLE playbook, principle by principle, against EVERY image — not a subset, and not just the ones that seem likely to be wrong: #−1/#7 coordinates measured not guessed (a hand-typed x/y with no `at` is itself worth a second look, especially in `globalEls`, where one bad box is wrong on every image at once), #0 nothing overflows the frame, #1/#1b no callout over its own target and arrows read as measured rather than typed, #2 the target is present, visible and in the right state IN THIS IMAGE, #4 step 1 orients in the menu, #5 at least one zoom on a decisive detail and it isn't a blank/garbled crop, #6 no PII left showing on ANY image (check every one — a `globalEls` blur that's wrong is wrong everywhere, and \"the first image looked fine\" is not evidence about the rest). Then prose against picture (does the text describe what is actually shown?), prose against the reference document if one was attached (a control's real name, what it actually does — the article contradicting the dev team's own doc is a write finding, not a nit), heading order, and coverage against the user's instruction — a step the instruction asked for and nobody shot is a finding too.",
+  "4. Before filing, scan every image ONE MORE TIME specifically hunting for anything the pass above didn't have a numbered rule for — a typo, a mismatched heading, an annotation that's technically fine but points at the wrong thing. The checklist catches known failure modes; this second look is for the one that isn't on the list yet.",
+  "5. snap_findings once, at the end. Route each one: owner \"capture\" for anything visual (a re-shoot, or an annotation to move, retype or remove), owner \"write\" for prose. severity \"blocker\" only for something wrong or misleading as it stands; taste is a nit. verdict \"pass\" only when no blocker remains — it ends the loop and ships the article. Because there is only one fix round, make each finding precise enough that the fix stage can resolve it correctly on its first attempt: exact coordinates or element to compare against (not \"looks off\"), and for a `globalEls` PII miss, the correct box or the selector to anchor it to instead of the wrong one.",
+  "6. snap_learn when a finding is a placement rule the next article should not have to relearn. It is the only part of this job that outlives the article.",
   "",
   "Be specific enough to act on: name the element, the step, the text. \"The callout looks off\" routes to nobody.",
 ].join("\n");

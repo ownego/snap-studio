@@ -100,16 +100,15 @@ await atest("a fix round skips the stage nothing was routed to, but still re-rev
   assert.deepEqual(calls, ["capture:0", "write:0", "review:0", "write:1", "review:1"]);
 });
 
-await atest("the fix-round budget is two, and what is still open does not block done", async () => {
+await atest("the fix-round budget is one, and what is still open does not block done", async () => {
   const calls = [];
   stubStages(calls, [
     { verdict: "changes", findings: [finding("capture")], round: 1 },
     { verdict: "changes", findings: [finding("capture")], round: 2 },
-    { verdict: "changes", findings: [finding("capture")], round: 3 },
   ]);
   const job = newJob();
   await driveAuthorPipeline(job, () => {});
-  assert.deepEqual(calls, ["capture:0", "write:0", "review:0", "capture:1", "review:1", "capture:2", "review:2"]);
+  assert.deepEqual(calls, ["capture:0", "write:0", "review:0", "capture:1", "review:1"]);
   assert.equal(job.status, "done");
 });
 
