@@ -732,14 +732,25 @@ Trong pipeline tự động không ai đọc toast đó. Vậy `snap_export` ph�
 
 ### Đăng ký với Claude Code
 
-Sao y mô hình Chrome Bridge — HTTP local kèm Bearer token, scope project để chia sẻ qua git:
+> **Cách đăng ký thực tế nằm ở [KB-SETUP.md](KB-SETUP.md) bước 7** — `--scope user`, token đọc
+> thẳng từ `snap-bridge/.token`. Phần dưới đây là ý tưởng ban đầu, giữ lại làm dấu vết thiết kế;
+> ba điểm của nó đã hết đúng: pipeline **không còn dùng Chrome Bridge** (đã thay bằng
+> `snap_navigate`/`snap_frame_*`), `claude mcp add` không kèm `--scope` rơi vào **local scope**
+> (key theo đường dẫn project, lệch vì case ổ đĩa Windows — xem mục "Kết quả trial"), và
+> **`$SNAP_BRIDGE_TOKEN` không tồn tại như biến môi trường** ở đâu trong repo: token là một
+> *file*, nên trong `bash` nó giãn thành rỗng và đăng ký ra một header `Bearer ` trống.
+
+Ý tưởng ban đầu — sao y mô hình Chrome Bridge, HTTP local kèm Bearer token, scope project để
+chia sẻ qua git:
 
 ```bash
 claude mcp add --transport http snap http://127.0.0.1:8788/mcp \
   --header "Authorization: Bearer $SNAP_BRIDGE_TOKEN"
 ```
 
-hoặc `.mcp.json` ở gốc repo:
+hoặc `.mcp.json` ở gốc repo — dạng này Claude Code **có** hỗ trợ (nó giãn `${…}` lúc nạp config,
+thiếu biến thì bỏ qua server kèm cảnh báo `Missing environment variables`), nhưng đổi lại mỗi máy
+vẫn phải tự export biến đó từ `.token` của mình, cộng một lần duyệt tay server của `.mcp.json`:
 
 ```json
 {

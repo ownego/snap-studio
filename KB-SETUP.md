@@ -57,7 +57,8 @@ npm install
 ```
 
 Kéo luôn Chromium của Playwright ([render.mjs](snap-bridge/render.mjs) dùng nó để render ảnh
-KB đã chú thích). Nếu mạng chặn phần tải trình duyệt:
+KB đã chú thích), và chạy luôn bộ cài của bước 3 qua `postinstall` — nên output ở đây có cả
+phần native host là bình thường. Nếu mạng chặn phần tải trình duyệt:
 
 ```bash
 npx playwright install chromium
@@ -99,19 +100,26 @@ node snap-bridge/native-host/verify.mjs
 ```
 
 Nó đi đúng chuỗi Chrome đi và bắt tay thật với shim đã cài (đây là thứ duy nhất chứng minh
-đường dẫn node trong shim còn dùng được). Mong đợi:
+đường dẫn node trong shim còn dùng được). Nó soát **từng trình duyệt** tìm thấy trên máy, nên
+số dòng đổi theo máy — trên một máy Windows có cả Chrome lẫn Edge:
 
 ```
-[ok]   host       .../snap-bridge-host.mjs
-[ok]   manifest   Chrome: ...
-[ok]   shim       ...
+[ok]   host       …/snap-bridge/native-host/snap-bridge-host.mjs
+[ok]   manifest   Chrome: …/com.snapstudio.bridge.json
+[ok]   shim       …/snap-bridge-host.cmd
 [ok]   id         Chrome: <id> khớp allowed_origins
+[ok]   manifest   Edge: …
+[ok]   shim       …
+[?]    id         Edge: không thấy extension nạp unpacked từ repo này — bỏ qua đối chiếu
 [ok]   bắt tay    {"ok":true,"running":false,"port":8788}
-[i]    bridge     chưa chạy — bình thường; bấm "Start bridge" trong tab KB
+
+[i]    bridge     chưa chạy — bình thường; bấm "Start bridge" trong tab KB, hoặc: cd snap-bridge && npm start
 ```
 
-`bridge chưa chạy` ở đây **không phải lỗi** — đó chính là việc của nút. Còn dòng `[LỖI]` nào
-thì sửa theo đúng câu nó nói rồi chạy lại; thoát khác 0 nghĩa là chưa đạt.
+Ba dòng cuối hay bị đọc nhầm thành hỏng, thực ra đều đạt: `[?]` là trình duyệt đó không nạp
+Snap Studio (nạp ở Chrome là đủ), `bắt tay` là phép thử thật với shim, còn `bridge chưa chạy`
+chính là việc của nút ở bước 6. Chốt bằng dòng cuối — `Tất cả đạt.` — và mã thoát `0`. Có dòng
+`[LỖI]` nào thì sửa theo đúng câu nó nói rồi chạy lại; thoát khác 0 nghĩa là chưa đạt.
 
 ## Bước 5 👤 — reload extension
 
@@ -129,6 +137,62 @@ và danh sách bài tự hiện.
 
 Thích terminal hơn thì `cd snap-bridge && npm start` cũng ra kết quả y hệt.
 
+## Bước 7 — đăng ký MCP, để Claude Code lái được bridge
+
+Sáu bước trên đủ cho tab KB *bên trong extension*. Muốn dùng skill `/kb` — Claude Code tự
+chụp, tự chú thích, tự ghi `kb/<slug>.md` — thì snap-bridge phải được đăng ký làm MCP server:
+skill đó chạy hoàn toàn bằng 24 tool `snap_*` mà bridge xuất ra (điều hướng bằng `snap_navigate`
+/`snap_frame_*`, không phụ thuộc trình duyệt nào khác), không đăng ký thì nó không gọi được gì.
+
+**Chạy sau bước 6, không sớm hơn.** Token nằm ở `snap-bridge/.token` và **chỉ sinh ra ở lần
+server chạy đầu tiên** — đăng ký trước thì chưa có gì để đọc.
+
+**Windows**
+
+```powershell
+$t = (Get-Content snap-bridge\.token -Raw).Trim()
+claude mcp add --scope user --transport http snap http://127.0.0.1:8788/mcp --header "Authorization: Bearer $t"
+```
+
+**macOS / Linux**
+
+```bash
+claude mcp add --scope user --transport http snap http://127.0.0.1:8788/mcp --header "Authorization: Bearer $(tr -d '\n' < snap-bridge/.token)"
+```
+
+`--scope user` là bắt buộc chứ không phải gu cá nhân, và phải gõ ra: CLI mặc định `local`.
+Hai lý do, cả hai đều đã cắn thật:
+
+- **local scope** key theo đường dẫn project, mà case ổ đĩa Windows không nhất quán giữa các
+  lần gọi CLI (`D:/…` vs `d:/…`) — cùng một thư mục ra hai key, tool "biến mất" giữa các phiên
+  ([KB-BRIDGE.md](KB-BRIDGE.md) mục "Kết quả trial").
+- **project scope** ghi `.mcp.json` vào repo, mà token thì tự sinh theo **từng máy** và bị
+  gitignore. Vẫn dùng được, nhưng phải để nguyên placeholder `${SNAP_BRIDGE_TOKEN}` cho Claude
+  Code giãn lúc nạp (thiếu biến thì server bị bỏ qua kèm cảnh báo *"Missing environment
+  variables"*) — tức mỗi người vẫn phải tự export biến đó từ `.token` máy mình, cộng một lần
+  duyệt tay `.mcp.json`. Còn `claude mcp add` thì **shell** giãn `$SNAP_BRIDGE_TOKEN` ngay lúc
+  gõ và nướng token thật vào file — commit lên là phát token của máy này cho cả repo.
+
+Kiểm tra — **mở lại Claude Code trước**, MCP server chỉ được nối lúc phiên khởi động (agent
+đang đọc file này không tự làm được việc đó, phải là bạn):
+
+```bash
+claude mcp list
+# snap: http://127.0.0.1:8788/mcp (HTTP) - ✔ Connected
+```
+
+Trong phiên thì gõ `/mcp`. Ra `✘ Failed to connect — ConnectionRefused` nghĩa là đăng ký đúng
+nhưng bridge không chạy — quay lại bước 6.
+
+**Chốt cả chuỗi**: trong phiên mới đó, bảo Claude gọi `snap_status`. Phải ra `{"connected":true}`
+— nghĩa là Claude Code → MCP → snap-bridge → extension đã thông suốt từ đầu tới cuối. Ra
+`{"connected":false}` thì service worker đang ngủ hoặc chưa nạp: chuyển qua lại một tab bất kỳ
+trong Chrome (extension nghe `tabs.onActivated`, việc đó đánh thức nó), hoặc reload extension.
+Cần có ít nhất một cửa sổ Chrome bình thường đang mở.
+
+Xong bước này là dùng được `/kb` và `/kb-review` — hai skill đi theo repo ở `.claude/skills/`,
+không phải cài thêm gì.
+
 ---
 
 ## Xong rồi thì sao
@@ -137,10 +201,8 @@ Rail rỗng là **đúng**: `kb/` bị gitignore, bài viết không đi theo re
 viết instruction, thêm session tab để agent dựng bài đầu tiên — hoặc dùng skill `/kb` trong
 Claude Code.
 
-**Tuỳ chọn** — muốn Claude Code lái thẳng snap-bridge qua MCP thì đăng ký như
-[KB-BRIDGE.md](KB-BRIDGE.md) mục "Đăng ký với Claude Code". Token nằm ở `snap-bridge/.token`,
-**tự sinh trên từng máy** lúc server chạy lần đầu và bị gitignore — đừng chép token của máy
-khác sang.
+Hai đường khác nhau ở một chỗ: **+ New job** chỉ cần bridge chạy (bước 6), còn `/kb` cần thêm
+bước 7. Thiết kế đầy đủ của bề mặt MCP nằm ở [KB-BRIDGE.md](KB-BRIDGE.md).
 
 ---
 
@@ -154,6 +216,10 @@ khác sang.
 | `verify` báo `id ... không khớp allowed_origins` | ID pin từ `manifest.json` nên hiếm gặp giờ — nếu vẫn thấy: bộ cài chạy từ **trước** khi `manifest.json` có `"key"` (2026-09-07), ghi lại ID cũ | Chạy lại bộ cài, reload extension |
 | `verify` báo lỗi ở dòng `bắt tay` | Đường dẫn node trong shim đã sai (gỡ/nâng cấp node, đổi nvm) | Chạy lại bộ cài |
 | Job chạy nhưng không xuất được ảnh | Thiếu Chromium của Playwright | `npx playwright install chromium` |
+| `/kb` không thấy tool `snap_*` nào | Bước 7 chưa xong, hoặc chưa mở lại Claude Code | Đăng ký rồi khởi động lại phiên |
+| `claude mcp list` báo `snap ✘ ConnectionRefused` | Đăng ký đúng, bridge không chạy | Bước 6 |
+| Tool `snap_*` "biến mất" giữa các phiên | Đăng ký nhầm local scope (key lệch theo case ổ đĩa) | Đăng ký lại `--scope user` |
+| `snap_status` ra `{"connected":false}` | Service worker của Snap Studio đang ngủ / chưa nạp | Chuyển tab trong Chrome, hoặc reload extension; giữ một cửa sổ Chrome mở |
 
 Bridge chết giữa chừng vì bất kỳ lý do gì: rail tự hiện lại panel vàng, và tự nạp lại danh
 sách ngay khi bridge quay lại — không cần refresh trang.
