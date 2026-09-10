@@ -15,6 +15,11 @@ import path from 'node:path';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const isWin = process.platform === 'win32';
 
+// Settle the port BEFORE anything else looks at one. A machine where something
+// already owns 8788 gets moved to the next free port here, at setup, instead of
+// at the first launch that quietly fails — see snap-bridge/choose-port.mjs.
+spawnSync(process.execPath, [path.join(here, '..', 'choose-port.mjs')], { stdio: 'inherit' });
+
 const result = isWin
   ? spawnSync('powershell', ['-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'install.ps1')], { stdio: 'inherit' })
   : spawnSync('bash', [path.join(here, 'install.sh')], { stdio: 'inherit' });

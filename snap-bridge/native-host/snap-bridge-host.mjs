@@ -24,7 +24,7 @@
    Installed (manifest + registry key + the .cmd shim Chrome actually
    launches) by install.ps1 in this folder. */
 import { spawn } from "node:child_process";
-import http from "node:http";
+import { resolvePort, inspectPort } from "../port.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdirSync, openSync } from "node:fs";
@@ -33,36 +33,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BRIDGE_DIR = path.resolve(__dirname, "..");
 const SERVER_JS = path.join(BRIDGE_DIR, "server.js");
 const LOG_DIR = path.join(BRIDGE_DIR, "logs");
-const PORT = Number(process.env.SNAP_BRIDGE_PORT || 8788);
+// Chrome spawns this process, so its environment is Chrome's, not the shell's
+// — which is exactly why the machine's chosen port lives in a file. port.js
+// still lets SNAP_BRIDGE_PORT win when Chrome does happen to carry one.
+const PORT = resolvePort();
 const HOST = "127.0.0.1";
 
-/** Three answers, not two. A bare TCP connect (what this used to do) cannot
- *  tell OUR server from whatever else grabbed the port, and counting a stranger
- *  as "already running" is exactly how the button reported success while the
- *  extension's socket kept bouncing off someone else's server. /health is
- *  unauthenticated for this one reason.
- *
- *  "free"    nothing is listening      -> safe to spawn
- *  "ours"    snap-bridge answered      -> already running
- *  "foreign" someone else is there     -> spawning would only crash on bind */
-function inspect(timeoutMs = 900) {
-  return new Promise((resolve) => {
-    const req = http.get({ host: HOST, port: PORT, path: "/health", timeout: timeoutMs }, (res) => {
-      let body = "";
-      res.setEncoding("utf8");
-      res.on("data", (c) => { if (body.length < 512) body += c; });
-      res.on("end", () => {
-        let parsed;
-        try { parsed = JSON.parse(body); } catch { parsed = null; }
-        resolve(parsed && parsed.service === "snap-bridge" ? "ours" : "foreign");
-      });
-    });
-    req.on("timeout", () => { req.destroy(); resolve("foreign"); });
-    // ECONNREFUSED is the only error that means "nobody is home"; a reset or a
-    // protocol error means somebody is, just not us.
-    req.on("error", (e) => resolve(e && e.code === "ECONNREFUSED" ? "free" : "foreign"));
-  });
-}
+/** free | ours | foreign — shared with the server, verify.mjs and the setup
+ *  chooser so all four agree on what "the bridge is up" means. */
+const inspect = () => inspectPort(PORT);
 
 /** Poll until the freshly spawned server is actually accepting connections.
  *  Replying the instant spawn() returns would be a lie: the extension would
@@ -94,7 +73,7 @@ function spawnBridge() {
   return child.pid;
 }
 
-const PORT_TAKEN = `port ${PORT} is held by another process, not snap-bridge. Free it, or move the bridge: set SNAP_BRIDGE_PORT where Chrome can see it (setx on Windows, launchctl setenv on macOS), restart Chrome, and re-register the snap MCP server on the new port — KB-SETUP.md, "Cổng 8788 bị chiếm".`;
+const PORT_TAKEN = `port ${PORT} is held by another process, not snap-bridge. Move the setup off it: run "node snap-bridge/choose-port.mjs" (picks the next free port, writes snap-bridge/.port, which this launcher and the extension both follow), then re-register the snap MCP server on the new port — KB-SETUP.md, "Cổng bị chiếm".`;
 
 async function handle(msg) {
   const cmd = msg && msg.cmd;

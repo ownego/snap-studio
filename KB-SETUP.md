@@ -56,9 +56,33 @@ cd snap-bridge
 npm install
 ```
 
-Kéo luôn Chromium của Playwright ([render.mjs](snap-bridge/render.mjs) dùng nó để render ảnh
-KB đã chú thích), và chạy luôn bộ cài của bước 3 qua `postinstall` — nên output ở đây có cả
-phần native host là bình thường. Nếu mạng chặn phần tải trình duyệt:
+Ba việc trong một lệnh, nên output ở đây dài hơn bạn tưởng là bình thường:
+
+- kéo Chromium của Playwright ([render.mjs](snap-bridge/render.mjs) dùng nó để render ảnh KB đã
+  chú thích);
+- **chốt cổng cho máy này** ([choose-port.mjs](snap-bridge/choose-port.mjs)) — `8788` còn trống
+  thì giữ nguyên, đang bị tool khác giữ thì **tự nhảy sang cổng trống kế tiếp** và ghi vào
+  `snap-bridge/.port`;
+- chạy luôn bộ cài native host của bước 3 (`postinstall`).
+
+Dòng cần đọc là dòng `[port]`:
+
+```
+[port] dùng cổng 8788 — còn trống.
+```
+
+hoặc, trên máy có thứ khác đang giữ `8788`:
+
+```
+[port] cổng 8788 đang bị một tiến trình khác giữ → chuyển sang 8789.
+[port] Đã ghi .../snap-bridge/.port; server, native host và verify đều đọc từ đó, extension học
+       lại cổng từ native host.
+```
+
+Từ đó **mọi thứ tự đi theo cổng ấy** — không phải sửa file nào. Việc duy nhất còn lại của bạn là
+bước 7 đăng ký MCP đúng cổng, và lệnh ở bước 7 đã tự đọc cổng ra rồi.
+
+Nếu mạng chặn phần tải trình duyệt:
 
 ```bash
 npx playwright install chromium
@@ -121,9 +145,11 @@ Snap Studio (nạp ở Chrome là đủ), `bắt tay` là phép thử thật v�
 chính là việc của nút ở bước 6. Chốt bằng dòng cuối — `Tất cả đạt.` — và mã thoát `0`. Có dòng
 `[LỖI]` nào thì sửa theo đúng câu nó nói rồi chạy lại; thoát khác 0 nghĩa là chưa đạt.
 
-Verify phân biệt được **bridge của mình** với **một tool khác đang giữ cổng**: nó hỏi `/health`
-chứ không chỉ dò xem cổng có ai lắng nghe hay không. Cổng bị chiếm thì đây là một dòng
-`[LỖI] cổng` và thoát 1 — xem [Cổng 8788 bị chiếm](#cổng-8788-bị-chiếm--cách-đổi-sang-cổng-khác).
+Dòng `cổng:` ở đầu output cho biết nó đang kiểm cổng nào và cổng đó từ đâu ra
+(`default` / `snap-bridge/.port` / `SNAP_BRIDGE_PORT`). Verify cũng phân biệt được **bridge của
+mình** với **một tool khác đang giữ cổng** — nó hỏi `/health` chứ không chỉ dò xem có ai lắng
+nghe — nên cổng bị chiếm là một dòng `[LỖI] cổng` và thoát 1, xem
+[Cổng bị chiếm](#cổng-bị-chiếm--đổi-cổng-bằng-tay).
 
 ## Bước 5 👤 — reload extension
 
@@ -151,17 +177,22 @@ skill đó chạy hoàn toàn bằng 24 tool `snap_*` mà bridge xuất ra (đi�
 **Chạy sau bước 6, không sớm hơn.** Token nằm ở `snap-bridge/.token` và **chỉ sinh ra ở lần
 server chạy đầu tiên** — đăng ký trước thì chưa có gì để đọc.
 
+Cả hai lệnh dưới đây **tự đọc cổng** (`--print` in đúng một con số ra stdout), nên máy đã bị dời
+cổng ở bước 2 cũng chạy y nguyên, không sửa gì:
+
 **Windows**
 
 ```powershell
 $t = (Get-Content snap-bridge\.token -Raw).Trim()
-claude mcp add --scope user --transport http snap http://127.0.0.1:8788/mcp --header "Authorization: Bearer $t"
+$p = node snap-bridge\choose-port.mjs --print 2>$null
+claude mcp add --scope user --transport http snap "http://127.0.0.1:$p/mcp" --header "Authorization: Bearer $t"
 ```
 
 **macOS / Linux**
 
 ```bash
-claude mcp add --scope user --transport http snap http://127.0.0.1:8788/mcp --header "Authorization: Bearer $(tr -d '\n' < snap-bridge/.token)"
+PORT=$(node snap-bridge/choose-port.mjs --print 2>/dev/null)
+claude mcp add --scope user --transport http snap "http://127.0.0.1:$PORT/mcp" --header "Authorization: Bearer $(tr -d '\n' < snap-bridge/.token)"
 ```
 
 `--scope user` là bắt buộc chứ không phải gu cá nhân, và phải gõ ra: CLI mặc định `local`.
@@ -182,7 +213,7 @@ Kiểm tra — **mở lại Claude Code trước**, MCP server chỉ được n�
 
 ```bash
 claude mcp list
-# snap: http://127.0.0.1:8788/mcp (HTTP) - ✔ Connected
+# snap: http://127.0.0.1:8788/mcp (HTTP) - ✔ Connected      (hoặc cổng máy bạn đã chốt)
 ```
 
 Trong phiên thì gõ `/mcp`. Ra `✘ Failed to connect — ConnectionRefused` nghĩa là đăng ký đúng
@@ -197,72 +228,65 @@ Cần có ít nhất một cửa sổ Chrome bình thường đang mở.
 Xong bước này là dùng được `/kb` và `/kb-review` — hai skill đi theo repo ở `.claude/skills/`,
 không phải cài thêm gì.
 
-## Cổng 8788 bị chiếm — cách đổi sang cổng khác
+## Cổng bị chiếm — đổi cổng bằng tay
 
-Không dùng chung được: một cổng chỉ một tiến trình giữ. Nhưng cả ba đường vào đều **nói thẳng**
-ra, không còn báo xanh giả:
+Trường hợp thường gặp **đã được xử lý ở bước 2**: `npm install` gọi
+[choose-port.mjs](snap-bridge/choose-port.mjs), thấy `8788` bị tool khác giữ thì nhảy sang cổng
+trống kế tiếp và ghi `snap-bridge/.port`. Mục này dành cho lúc bạn muốn tự quyết, hoặc cổng bị
+chiếm *sau khi* đã setup xong.
 
-- `npm start` → thoát 1, `[snap-bridge] port 8788 is already held by another process — nothing`
-  `was started.` kèm hai dòng chỉ đường.
-- Nút **▶ Start bridge** → panel vàng hiện đúng câu *"port 8788 is held by another process, not
-  snap-bridge…"*, và **không** spawn gì cả.
+Thứ tự ưu tiên khi mọi thứ hỏi "cổng nào" ([port.js](snap-bridge/port.js)):
+
+**`SNAP_BRIDGE_PORT`** (một shell, một lần chạy) → **`snap-bridge/.port`** (máy này, gitignore)
+→ **8788**.
+
+```bash
+node snap-bridge/choose-port.mjs --print       # cổng đang có hiệu lực (số ra stdout, nguồn ra stderr)
+node snap-bridge/choose-port.mjs               # dò lại, tự chuyển nếu cổng hiện tại bị chiếm
+node snap-bridge/choose-port.mjs --port 8790   # ép một cổng cụ thể, ghi vào .port
+```
+
+Extension đi theo cùng cổng đó mà không cần ai sửa gì: native host đọc `.port`, và **cổng nằm
+trong mọi câu trả lời của host** — extension lấy từ đó rồi cất vào `chrome.storage.local`. Nó
+học lại khi bạn bấm **▶ Start bridge**, hoặc tự động sau khoảng 8 giây socket không lên (hỏi
+host nhiều nhất một lần mỗi phút, vì mỗi lần hỏi là một tiến trình node).
+
+**Đổi cổng sau khi đã đăng ký MCP thì phải đăng ký lại** — URL trong `~/.claude.json` là cổng cũ:
+`claude mcp remove snap`, rồi chạy lại lệnh ở bước 7 (nó tự đọc cổng mới), rồi mở lại Claude Code.
+
+### Khi cổng bị chiếm, ba chỗ đều nói thẳng
+
+- `npm start` → thoát 1: `[snap-bridge] port 8788 is already held by another process — nothing`
+  `was started.`
+- Nút **▶ Start bridge** → panel vàng: *"port 8788 is held by another process, not snap-bridge…"*,
+  và **không** spawn gì cả.
 - `verify.mjs` → `[LỖI] cổng 8788 đang bị một tiến trình KHÁC giữ`, thoát 1.
 
-Phân biệt được là nhờ server có endpoint `/health` không cần token; native host và verify hỏi
-đúng chỗ đó thay vì chỉ TCP-connect. (Trước bản này thì cả hai đều bị lừa: nút báo bật xong,
-verify báo `[ok]`, mà rail vẫn vàng.)
-
-Xem ai đang giữ cổng:
+Phân biệt được là nhờ server có endpoint `/health` không cần token, và cả ba chỗ hỏi đúng nó
+thay vì chỉ TCP-connect. Xem ai đang giữ cổng:
 
 ```bash
 netstat -ano | findstr :8788        # Windows → PID, rồi: tasklist /FI "PID eq <pid>"
 lsof -nP -iTCP:8788 -sTCP:LISTEN    # macOS / Linux
 ```
 
-### Đổi cổng — hai việc
+### Chạy bridge ở cổng khác chỉ cho một lần
 
-Extension **tự học** cổng từ native host, nên không phải sửa source. Đổi sang `8790` chẳng hạn:
+```bash
+SNAP_BRIDGE_PORT=8790 npm start                      # PowerShell: $env:SNAP_BRIDGE_PORT=8790; npm start
+```
 
-1. **Đặt env ở chỗ Chrome nhìn thấy.** Native host là con của **Chrome**, không phải của
-   terminal bạn đang gõ, nên `export` trong shell không tới được nó.
-
-   ```powershell
-   setx SNAP_BRIDGE_PORT 8790       # Windows — rồi THOÁT HẲN Chrome và mở lại
-   ```
-
-   ```bash
-   launchctl setenv SNAP_BRIDGE_PORT 8790   # macOS — rồi mở lại Chrome
-   # Linux: đặt trong ~/.profile (nơi phiên đăng nhập đọc), rồi đăng xuất/đăng nhập lại
-   ```
-
-2. **Đăng ký lại MCP theo cổng mới**: `claude mcp remove snap`, rồi làm lại bước 7 với
-   `http://127.0.0.1:8790/mcp`, và mở lại Claude Code.
-
-Chạy bridge từ terminal thì thêm env cho lần chạy đó: `SNAP_BRIDGE_PORT=8790 npm start`
-(PowerShell: `$env:SNAP_BRIDGE_PORT=8790; npm start`).
-
-Extension biết cổng mới bằng hai đường, không cần bạn làm gì thêm: bấm **▶ Start bridge** (host
-trả cổng của nó về trong chính câu trả lời), hoặc tự nó — sau khoảng 8 giây socket không lên,
-nó hỏi lại host rồi nối sang cổng đúng. Cổng học được cất ở `chrome.storage.local.bridgePort`
-nên sống qua restart.
-
-**Không đặt được env cho Chrome** (máy công ty, hoặc bạn chỉ chạy bridge tay từ terminal)? Ghim
-thẳng cổng vào storage của extension: `chrome://extensions` → Snap Studio → **service worker** →
-Console:
+Env thắng `.port` nhưng **không** ghi đè nó, và Chrome thì không thấy env của terminal bạn —
+nên nút ▶ Start bridge vẫn bật ở cổng trong `.port`. Muốn cả hai cùng cổng thì dùng `--port`
+ở trên chứ đừng dùng env. Không sửa được `.port` (repo read-only chẳng hạn) thì ghim thẳng vào
+extension: `chrome://extensions` → Snap Studio → **service worker** → Console:
 
 ```js
 chrome.storage.local.set({ bridgePort: 8790, bridgePortPinned: true })
 ```
 
-`bridgePortPinned` là phần quan trọng: thiếu nó, lần tới host báo về cổng khác (8788 chẳng hạn,
-vì Chrome không có env) là giá trị bạn vừa ghi bị đè mất.
-
-Chốt lại:
-
-```bash
-SNAP_BRIDGE_PORT=8790 node snap-bridge/native-host/verify.mjs    # dòng bắt tay phải in "port":8790
-```
-
+`bridgePortPinned` là phần quan trọng — thiếu nó, lần host báo về một cổng khác là giá trị bạn
+vừa ghi bị đè mất.
 ---
 
 ## Xong rồi thì sao
@@ -290,9 +314,10 @@ bước 7. Thiết kế đầy đủ của bề mặt MCP nằm ở [KB-BRIDGE.m
 | `claude mcp list` báo `snap ✘ ConnectionRefused` | Đăng ký đúng, bridge không chạy | Bước 6 |
 | Tool `snap_*` "biến mất" giữa các phiên | Đăng ký nhầm local scope (key lệch theo case ổ đĩa) | Đăng ký lại `--scope user` |
 | `snap_status` ra `{"connected":false}` | Service worker của Snap Studio đang ngủ / chưa nạp | Chuyển tab trong Chrome, hoặc reload extension; giữ một cửa sổ Chrome mở |
-| Nút báo *"port 8788 is held by another process"* | Một tool khác đang giữ cổng của bridge | [Đổi cổng](#cổng-8788-bị-chiếm--cách-đổi-sang-cổng-khác) |
-| `npm start` thoát 1 với *"port 8788 is already held"* | Cùng nguyên nhân | [Đổi cổng](#cổng-8788-bị-chiếm--cách-đổi-sang-cổng-khác) |
-| `verify` báo `[LỖI] cổng` | Cùng nguyên nhân | [Đổi cổng](#cổng-8788-bị-chiếm--cách-đổi-sang-cổng-khác) |
+| Nút báo *"port … is held by another process"* | Cổng bị chiếm **sau** khi setup đã chốt nó | `node snap-bridge/choose-port.mjs` rồi [đăng ký lại MCP](#cổng-bị-chiếm--đổi-cổng-bằng-tay) |
+| `npm start` thoát 1 với *"already held"* | Cùng nguyên nhân | như trên |
+| `verify` báo `[LỖI] cổng` | Cùng nguyên nhân | như trên |
+| `claude mcp list` báo cổng cũ, bridge chạy ở cổng mới | Đổi cổng sau khi đã đăng ký MCP | `claude mcp remove snap` rồi làm lại bước 7 |
 
 Bridge chết giữa chừng vì bất kỳ lý do gì: rail tự hiện lại panel vàng, và tự nạp lại danh
 sách ngay khi bridge quay lại — không cần refresh trang.

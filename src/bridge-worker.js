@@ -32,6 +32,12 @@ let failedConnects = 0;
 chrome.storage.local.get(['bridgePort', 'bridgePortPinned']).then((r) => {
   if (typeof r.bridgePort === 'number' && r.bridgePort > 0) bridgePort = r.bridgePort;
   bridgePortPinned = !!r.bridgePortPinned;
+  // Nothing cached yet: this is a fresh install, and on a machine whose setup
+  // moved off 8788 the default is already wrong. Ask once now rather than
+  // letting the first connection fail its way there.
+  if (typeof r.bridgePort !== 'number') {
+    relearnBridgePort().then((moved) => { if (moved && !bridgeIsUp()) connectBridge(); });
+  }
 }).catch(() => {});
 
 /** Remember a port the host told us about. Returns whether it actually moved,

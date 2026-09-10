@@ -22,6 +22,7 @@ import { playbookPath, appendLearning } from "./kb-playbook.js";
 import { noteLines } from "./kb-notes.js";
 import { renderSteps, renderGridOverlay } from "./render.mjs";
 import { kitRegistry } from "./kit-introspect.js";
+import { resolvePort, portSource } from "./port.js";
 import {
   uiScaleFor, arrowBetween, arrowPlacement as arrowPlacementIn, CALLOUT_TYPES,
   geometryFor as geometryForIn, isCentreAnchored as isCentreAnchoredIn,
@@ -31,7 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const OUT_ROOT = path.resolve(REPO_ROOT, "kb");
 const TOKEN_PATH = path.join(__dirname, ".token");
-const PORT = Number(process.env.SNAP_BRIDGE_PORT || 8788);
+const PORT = resolvePort();   // SNAP_BRIDGE_PORT > snap-bridge/.port > 8788 — see port.js
 
 /* kit-geometry takes the repo root explicitly (so it stays testable without
    this server); every call from here is against this one. */
@@ -1688,8 +1689,8 @@ httpServer.on("upgrade", (req, socket, head) => {
 httpServer.on("error", (e) => {
   if (!e || e.code !== "EADDRINUSE") throw e;
   console.error(`[snap-bridge] port ${PORT} is already held by another process — nothing was started.`);
-  console.error(`[snap-bridge] Free it, or run somewhere else: SNAP_BRIDGE_PORT=<port> npm start`);
-  console.error(`[snap-bridge] Moving the port takes two more steps (Chrome's env, and the MCP registration) — KB-SETUP.md, "Cổng 8788 bị chiếm".`);
+  console.error(`[snap-bridge] Move the whole setup off it: node choose-port.mjs (picks the next free port and writes .port), then re-register the snap MCP server on the new port.`);
+  console.error(`[snap-bridge] One-off override for this shell only: SNAP_BRIDGE_PORT=<port> npm start`);
   process.exit(1);
 });
 
@@ -1697,4 +1698,5 @@ httpServer.listen(PORT, "127.0.0.1", () => {
   console.error(`[snap-bridge] MCP:   http://127.0.0.1:${PORT}/mcp   (token in ${TOKEN_PATH})`);
   console.error(`[snap-bridge] WS:    ws://127.0.0.1:${PORT}/ext     (waiting for the Snap Studio extension)`);
   console.error(`[snap-bridge] files: ${OUT_ROOT}`);
+  if (PORT !== 8788) console.error(`[snap-bridge] port:  ${PORT} (from ${portSource()})`);
 });

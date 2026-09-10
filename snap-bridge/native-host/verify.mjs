@@ -15,14 +15,14 @@ import { spawn, execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, accessSync, constants } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import http from "node:http";
+import { resolvePort, portSource, inspectPort } from "../port.js";
 import { fileURLToPath } from "node:url";
 
 const HOST_NAME = "com.snapstudio.bridge";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const HOST_SCRIPT = path.join(__dirname, "snap-bridge-host.mjs");
-const PORT = Number(process.env.SNAP_BRIDGE_PORT || 8788);
+const PORT = resolvePort();
 
 let failed = 0;
 const ok = (label, detail) => console.log(`[ok]   ${label.padEnd(10)} ${detail}`);
@@ -126,28 +126,12 @@ function handshake(shimPath) {
   });
 }
 
-/** "free" | "ours" | "foreign" — cùng phép thử /health mà native host dùng.
- *  Bản cũ chỉ TCP-connect, nên một tool khác đang giữ cổng cũng được báo là
- *  "bridge đang chạy" và cả file này thoát 0 trong lúc chẳng có gì chạy. */
-function portState(timeoutMs = 800) {
-  return new Promise((resolve) => {
-    const req = http.get({ host: "127.0.0.1", port: PORT, path: "/health", timeout: timeoutMs }, (res) => {
-      let body = "";
-      res.setEncoding("utf8");
-      res.on("data", (c) => { if (body.length < 512) body += c; });
-      res.on("end", () => {
-        let parsed;
-        try { parsed = JSON.parse(body); } catch { parsed = null; }
-        resolve(parsed && parsed.service === "snap-bridge" ? "ours" : "foreign");
-      });
-    });
-    req.on("timeout", () => { req.destroy(); resolve("foreign"); });
-    req.on("error", (e) => resolve(e && e.code === "ECONNREFUSED" ? "free" : "foreign"));
-  });
-}
+/** free | ours | foreign — dùng chung với server và native host qua port.js. */
+const portState = () => inspectPort(PORT);
 
 // ---------------------------------------------------------------------------
 console.log(`Snap Studio native host — kiểm tra trên ${process.platform}`);
+console.log(`cổng: ${PORT} (${portSource()})`);
 console.log(`repo: ${REPO_ROOT}\n`);
 
 if (existsSync(HOST_SCRIPT)) ok("host", HOST_SCRIPT);
@@ -207,7 +191,7 @@ if (!registered.length) {
 const state = await portState();
 console.log("");
 if (state === "ours") console.log(`[ok]   bridge     đang chạy trên 127.0.0.1:${PORT}`);
-else if (state === "foreign") bad("cổng", `${PORT} đang bị một tiến trình KHÁC giữ (không phải snap-bridge) — bridge sẽ không bật lên được ở cổng này. Nhả cổng đó, hoặc đổi cổng: xem KB-SETUP.md mục "Cổng 8788 bị chiếm"`);
+else if (state === "foreign") bad("cổng", `${PORT} đang bị một tiến trình KHÁC giữ (không phải snap-bridge) — bridge sẽ không bật lên được ở cổng này. Chuyển cả setup sang cổng khác: node snap-bridge/choose-port.mjs (rồi đăng ký lại MCP theo cổng mới)`);
 else console.log(`[i]    bridge     chưa chạy — bình thường; bấm "Start bridge" trong tab KB, hoặc: cd snap-bridge && npm start`);
 
 console.log("");
