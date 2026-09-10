@@ -6,6 +6,7 @@ snap-bridge/.token
 /kb/
 *.zip
 .claude/settings.json
+.claude/settings.local.json
 
 # generated per-machine by snap-bridge/native-host/install.ps1 (Windows) or
 # install.sh (macOS/Linux): absolute paths, node location, and this profile's
