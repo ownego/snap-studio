@@ -15,7 +15,7 @@ import { spawn, execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, accessSync, constants } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import net from "node:net";
+import http from "node:http";
 import { fileURLToPath } from "node:url";
 
 const HOST_NAME = "com.snapstudio.bridge";
@@ -126,14 +126,23 @@ function handshake(shimPath) {
   });
 }
 
-function portUp() {
+/** "free" | "ours" | "foreign" — cùng phép thử /health mà native host dùng.
+ *  Bản cũ chỉ TCP-connect, nên một tool khác đang giữ cổng cũng được báo là
+ *  "bridge đang chạy" và cả file này thoát 0 trong lúc chẳng có gì chạy. */
+function portState(timeoutMs = 800) {
   return new Promise((resolve) => {
-    const sock = net.connect({ port: PORT, host: "127.0.0.1" });
-    const done = (up) => { try { sock.destroy(); } catch {} resolve(up); };
-    sock.setTimeout(800);
-    sock.once("connect", () => done(true));
-    sock.once("timeout", () => done(false));
-    sock.once("error", () => done(false));
+    const req = http.get({ host: "127.0.0.1", port: PORT, path: "/health", timeout: timeoutMs }, (res) => {
+      let body = "";
+      res.setEncoding("utf8");
+      res.on("data", (c) => { if (body.length < 512) body += c; });
+      res.on("end", () => {
+        let parsed;
+        try { parsed = JSON.parse(body); } catch { parsed = null; }
+        resolve(parsed && parsed.service === "snap-bridge" ? "ours" : "foreign");
+      });
+    });
+    req.on("timeout", () => { req.destroy(); resolve("foreign"); });
+    req.on("error", (e) => resolve(e && e.code === "ECONNREFUSED" ? "free" : "foreign"));
   });
 }
 
@@ -195,9 +204,10 @@ if (!registered.length) {
   }
 }
 
-const up = await portUp();
+const state = await portState();
 console.log("");
-if (up) console.log(`[ok]   bridge     đang chạy trên 127.0.0.1:${PORT}`);
+if (state === "ours") console.log(`[ok]   bridge     đang chạy trên 127.0.0.1:${PORT}`);
+else if (state === "foreign") bad("cổng", `${PORT} đang bị một tiến trình KHÁC giữ (không phải snap-bridge) — bridge sẽ không bật lên được ở cổng này. Nhả cổng đó, hoặc đổi cổng: xem KB-SETUP.md mục "Cổng 8788 bị chiếm"`);
 else console.log(`[i]    bridge     chưa chạy — bình thường; bấm "Start bridge" trong tab KB, hoặc: cd snap-bridge && npm start`);
 
 console.log("");

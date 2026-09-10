@@ -11,9 +11,58 @@
    snap_capture_tab are answered here directly: both only need tabs/window
    APIs this file already has, same as background.js's own capture path. */
 
-const BRIDGE_URL = 'ws://127.0.0.1:8788/ext';
+/* The port is a default, not a constant. A machine where something else
+   already owns 8788 runs snap-bridge somewhere else (SNAP_BRIDGE_PORT), and an
+   extension cannot read an env var — the native host, being Chrome's own child,
+   can. So the port is LEARNED from the host and cached here, and a hand-set
+   chrome.storage.local.bridgePort overrides both. See KB-SETUP.md, mục
+   "Cổng 8788 bị chiếm". */
+const DEFAULT_BRIDGE_PORT = 8788;
 const PING_MS = 20000;        // Chrome 116+: WS activity resets the 30s SW idle timer
 const RECONNECT_MS = 4000;
+
+let bridgePort = DEFAULT_BRIDGE_PORT;
+// Pinned = a human wrote this port down and does not want the host's answer
+// overriding it — the case where the bridge is run by hand from a terminal on a
+// machine whose Chrome has no SNAP_BRIDGE_PORT to report.
+let bridgePortPinned = false;
+const bridgeUrl = () => `ws://127.0.0.1:${bridgePort}/ext`;
+let failedConnects = 0;
+
+chrome.storage.local.get(['bridgePort', 'bridgePortPinned']).then((r) => {
+  if (typeof r.bridgePort === 'number' && r.bridgePort > 0) bridgePort = r.bridgePort;
+  bridgePortPinned = !!r.bridgePortPinned;
+}).catch(() => {});
+
+/** Remember a port the host told us about. Returns whether it actually moved,
+ *  since the only reason to reconnect right now is that it did. */
+function adoptBridgePort(port) {
+  if (typeof port !== 'number' || port <= 0 || port === bridgePort) return false;
+  if (bridgePortPinned) { console.log('[snap-bridge] host says port', port, '— keeping pinned', bridgePort); return false; }
+  console.log('[snap-bridge] port moved:', bridgePort, '->', port);
+  bridgePort = port;
+  chrome.storage.local.set({ bridgePort: port });
+  return true;
+}
+
+/** Ask the native host which port it would run the bridge on. Every call spawns
+ *  a short-lived node process, so this is rate-limited on top of only being
+ *  reached after the socket has missed twice: a bridge that is simply not
+ *  running is the common case, and it must not cost a process every few
+ *  seconds for as long as the rail sits offline. */
+let lastRelearn = 0;
+const RELEARN_EVERY_MS = 60000;
+async function relearnBridgePort() {
+  if (bridgePortPinned) return false;   // no point spawning the host to be ignored
+  const now = Date.now();
+  if (now - lastRelearn < RELEARN_EVERY_MS) return false;
+  lastRelearn = now;
+  try {
+    const res = await chrome.runtime.sendNativeMessage(NATIVE_HOST, { cmd: 'status' });
+    if (res && res.portBusy) console.warn('[snap-bridge] port', res.port, 'is held by something that is not snap-bridge');
+    return adoptBridgePort(res && res.port);
+  } catch (e) { return false; }   // host not installed: the default stands
+}
 
 let bridgeWs = null;
 let pingTimer = null;
@@ -22,12 +71,16 @@ const kbPending = new Map();       // reqId -> { resolve, reject, timer } — th
 
 function connectBridge() {
   if (bridgeWs) return;
+  const url = bridgeUrl();
   let ws;
-  try { ws = new WebSocket(BRIDGE_URL); } catch (e) { scheduleReconnect(); return; }
+  try { ws = new WebSocket(url); } catch (e) { scheduleReconnect(); return; }
   bridgeWs = ws;
+  let opened = false;
 
   ws.addEventListener('open', () => {
-    console.log('[snap-bridge] connected to', BRIDGE_URL);
+    opened = true;
+    failedConnects = 0;
+    console.log('[snap-bridge] connected to', url);
     broadcastBridgeStatus(true);
     pingTimer = setInterval(() => {
       try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) {}
@@ -44,7 +97,17 @@ function connectBridge() {
     if (msg.reqId && msg.cmd) handleBridgeCommand(msg).catch(() => {});
   });
 
-  ws.addEventListener('close', () => { teardownBridge(); scheduleReconnect(); });
+  ws.addEventListener('close', () => {
+    teardownBridge();
+    if (opened) { scheduleReconnect(); return; }
+    // Never opened: either the bridge is down (normal, keep retrying) or it is
+    // up on a different port (retrying this one forever would be a yellow rail
+    // that never explains itself). Two misses is ~8s — past "still booting",
+    // well short of "the user gave up".
+    failedConnects++;
+    if (failedConnects % 2) { scheduleReconnect(); return; }
+    relearnBridgePort().then((moved) => moved ? connectBridge() : scheduleReconnect());
+  });
   ws.addEventListener('error', () => { try { ws.close(); } catch (e) {} });
 }
 
@@ -144,6 +207,9 @@ chrome.runtime.onMessage.addListener((msg) => {
       if (bridgeIsUp()) return { connected: true, already: true };
       const res = await chrome.runtime.sendNativeMessage(NATIVE_HOST, { cmd: 'start' });
       if (!res || !res.ok) throw new Error((res && res.error) || 'the launcher returned no answer');
+      // The host runs with Chrome's environment, so its port is the authority
+      // over anything cached here from an earlier setup.
+      adoptBridgePort(res.port);
       // The host only replies once the port is live, so the 4s reconnect
       // backoff is pure latency at this point — reach for the socket now.
       connectBridge();

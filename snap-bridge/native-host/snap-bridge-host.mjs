@@ -24,7 +24,7 @@
    Installed (manifest + registry key + the .cmd shim Chrome actually
    launches) by install.ps1 in this folder. */
 import { spawn } from "node:child_process";
-import net from "node:net";
+import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdirSync, openSync } from "node:fs";
@@ -36,17 +36,31 @@ const LOG_DIR = path.join(BRIDGE_DIR, "logs");
 const PORT = Number(process.env.SNAP_BRIDGE_PORT || 8788);
 const HOST = "127.0.0.1";
 
-/** Is something listening on the bridge port? A TCP connect is the same check
- *  the extension's WebSocket makes, one layer down — cheaper and, unlike a
- *  process-name scan, it cannot be fooled by an unrelated node.exe. */
-function probe(timeoutMs = 600) {
+/** Three answers, not two. A bare TCP connect (what this used to do) cannot
+ *  tell OUR server from whatever else grabbed the port, and counting a stranger
+ *  as "already running" is exactly how the button reported success while the
+ *  extension's socket kept bouncing off someone else's server. /health is
+ *  unauthenticated for this one reason.
+ *
+ *  "free"    nothing is listening      -> safe to spawn
+ *  "ours"    snap-bridge answered      -> already running
+ *  "foreign" someone else is there     -> spawning would only crash on bind */
+function inspect(timeoutMs = 900) {
   return new Promise((resolve) => {
-    const sock = net.connect({ port: PORT, host: HOST });
-    const done = (up) => { try { sock.destroy(); } catch {} resolve(up); };
-    sock.setTimeout(timeoutMs);
-    sock.once("connect", () => done(true));
-    sock.once("timeout", () => done(false));
-    sock.once("error", () => done(false));
+    const req = http.get({ host: HOST, port: PORT, path: "/health", timeout: timeoutMs }, (res) => {
+      let body = "";
+      res.setEncoding("utf8");
+      res.on("data", (c) => { if (body.length < 512) body += c; });
+      res.on("end", () => {
+        let parsed;
+        try { parsed = JSON.parse(body); } catch { parsed = null; }
+        resolve(parsed && parsed.service === "snap-bridge" ? "ours" : "foreign");
+      });
+    });
+    req.on("timeout", () => { req.destroy(); resolve("foreign"); });
+    // ECONNREFUSED is the only error that means "nobody is home"; a reset or a
+    // protocol error means somebody is, just not us.
+    req.on("error", (e) => resolve(e && e.code === "ECONNREFUSED" ? "free" : "foreign"));
   });
 }
 
@@ -56,7 +70,7 @@ function probe(timeoutMs = 600) {
 async function waitUntilUp(deadlineMs = 12000) {
   const until = Date.now() + deadlineMs;
   while (Date.now() < until) {
-    if (await probe()) return true;
+    if (await inspect() === "ours") return true;
     await new Promise((r) => setTimeout(r, 300));
   }
   return false;
@@ -80,13 +94,20 @@ function spawnBridge() {
   return child.pid;
 }
 
+const PORT_TAKEN = `port ${PORT} is held by another process, not snap-bridge. Free it, or move the bridge: set SNAP_BRIDGE_PORT where Chrome can see it (setx on Windows, launchctl setenv on macOS), restart Chrome, and re-register the snap MCP server on the new port — KB-SETUP.md, "Cổng 8788 bị chiếm".`;
+
 async function handle(msg) {
   const cmd = msg && msg.cmd;
   if (cmd === "status") {
-    return { ok: true, running: await probe(), port: PORT };
+    const state = await inspect();
+    // portBusy travels with every status reply so the extension can say why the
+    // socket will not come up, instead of retrying into a stranger forever.
+    return { ok: true, running: state === "ours", portBusy: state === "foreign", port: PORT };
   }
   if (cmd === "start") {
-    if (await probe()) return { ok: true, running: true, already: true, port: PORT };
+    const state = await inspect();
+    if (state === "ours") return { ok: true, running: true, already: true, port: PORT };
+    if (state === "foreign") return { ok: false, portBusy: true, port: PORT, error: PORT_TAKEN };
     let pid;
     try { pid = spawnBridge(); }
     catch (e) { return { ok: false, error: `could not spawn snap-bridge: ${e.message}` }; }

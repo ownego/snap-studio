@@ -1635,6 +1635,16 @@ function readJsonBody(req) {
 
 const httpServer = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  // Unauthenticated on purpose, and it answers with nothing but "this is us".
+  // The native host has to tell THIS server apart from whatever else grabbed
+  // the port before it decides to spawn or to report a clash, and it holds no
+  // token to ask with. Anything secret would be readable by any local process
+  // that guessed the port, so keep this reply as boring as it looks.
+  if (url.pathname === "/health") {
+    res.writeHead(200, { "content-type": "application/json" })
+       .end(JSON.stringify({ ok: true, service: "snap-bridge", port: PORT }));
+    return;
+  }
   if (url.pathname !== "/mcp") { res.writeHead(404).end("not found"); return; }
   if (!checkAuth(req)) {
     res.writeHead(401, { "content-type": "application/json" }).end(JSON.stringify({ error: "unauthorized" }));
@@ -1671,6 +1681,16 @@ httpServer.on("upgrade", (req, socket, head) => {
   const origin = req.headers.origin || "";
   if (url.pathname !== "/ext" || origin !== EXTENSION_ORIGIN) { socket.destroy(); return; }
   wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+});
+
+// A busy port used to arrive as an unhandled 'error' event: a raw stack trace,
+// on a failure whose fix is one sentence long. Say the sentence instead.
+httpServer.on("error", (e) => {
+  if (!e || e.code !== "EADDRINUSE") throw e;
+  console.error(`[snap-bridge] port ${PORT} is already held by another process — nothing was started.`);
+  console.error(`[snap-bridge] Free it, or run somewhere else: SNAP_BRIDGE_PORT=<port> npm start`);
+  console.error(`[snap-bridge] Moving the port takes two more steps (Chrome's env, and the MCP registration) — KB-SETUP.md, "Cổng 8788 bị chiếm".`);
+  process.exit(1);
 });
 
 httpServer.listen(PORT, "127.0.0.1", () => {
