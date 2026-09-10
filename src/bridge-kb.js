@@ -67,6 +67,7 @@
     const articlePanel = $('#kbArticlePanel');
     const articleTitle = $('#kbArticleTitle');
     const articleEditor = $('#kbArticleEditor');
+    const articleToolbar = $('#kbArticleToolbar');
     const articlePreview = $('#kbArticlePreview');
     const articleSaveBtn = $('#kbArticleSave');
     const articleSaveNote = $('#kbArticleSaveNote');
@@ -425,6 +426,12 @@
       s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
       s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       s = s.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
+      s = s.replace(/~~([^~]+)~~/g, '<s>$1</s>');
+      // <u> is the one HTML tag this hand-rolled parser passes through — matched
+      // on its escaped form since escapeHtml() already ran above, same trick the
+      // markdown link syntax elsewhere in this file relies on being processed
+      // after escaping rather than before it.
+      s = s.replace(/&lt;u&gt;([\s\S]+?)&lt;\/u&gt;/g, '<u>$1</u>');
       return s;
     }
     function parseTableRow(line) {
@@ -1401,6 +1408,85 @@
       }
     }
     articleEditor.addEventListener('input', () => { mdDirty = true; refreshDirty(); renderPreview(); });
+
+    /** Wraps the current selection in before/after (or inserts placeholder
+     *  between them with nothing selected), leaves the inner text selected so
+     *  the user can type straight over it, and fires 'input' so the existing
+     *  dirty/preview wiring above picks the change up like any typed edit. */
+    function wrapSelection(before, after, placeholder) {
+      const ta = articleEditor;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const val = ta.value;
+      const sel = val.slice(start, end) || placeholder;
+      ta.value = val.slice(0, start) + before + sel + after + val.slice(end);
+      ta.selectionStart = start + before.length;
+      ta.selectionEnd = ta.selectionStart + sel.length;
+      ta.focus();
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    /** Prefixes every line the selection touches (or just the caret's own line,
+     *  with nothing selected) with marker — marker(i) for the ordered list's
+     *  numbering, a plain string for "- " and "> ". */
+    function prefixLines(marker) {
+      const ta = articleEditor;
+      const val = ta.value;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+      let lineEnd = val.indexOf('\n', end);
+      if (lineEnd === -1) lineEnd = val.length;
+      const out = val.slice(lineStart, lineEnd).split('\n')
+        .map((line, i) => (typeof marker === 'function' ? marker(i + 1) : marker) + line).join('\n');
+      ta.value = val.slice(0, lineStart) + out + val.slice(lineEnd);
+      ta.selectionStart = lineStart;
+      ta.selectionEnd = lineStart + out.length;
+      ta.focus();
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    /** [text](url) — a plain wrapSelection() can't do this one because the two
+     *  halves need different treatment: the text becomes the selection's own
+     *  content (or a placeholder), but the *cursor* belongs on the url half so
+     *  typing a real address is the very next keystroke either way. */
+    function insertLink() {
+      const ta = articleEditor;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const val = ta.value;
+      const hasSel = start !== end;
+      const text = hasSel ? val.slice(start, end) : 'link text';
+      const url = 'https://';
+      ta.value = val.slice(0, start) + `[${text}](${url})` + val.slice(end);
+      const urlStart = start + text.length + 3; // '[' + text + ']('
+      ta.selectionStart = urlStart;
+      ta.selectionEnd = urlStart + url.length;
+      ta.focus();
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    function applyMd(action) {
+      if (articleEditor.disabled) return;
+      switch (action) {
+        case 'bold': wrapSelection('**', '**', 'bold text'); break;
+        case 'italic': wrapSelection('*', '*', 'italic text'); break;
+        case 'underline': wrapSelection('<u>', '</u>', 'underlined text'); break;
+        case 'strike': wrapSelection('~~', '~~', 'strikethrough text'); break;
+        case 'link': insertLink(); break;
+        case 'ol': prefixLines((i) => `${i}. `); break;
+        case 'ul': prefixLines('- '); break;
+        case 'quote': prefixLines('> '); break;
+        case 'code': wrapSelection('`', '`', 'code'); break;
+        case 'codeblock': wrapSelection('```\n', '\n```', 'code'); break;
+      }
+    }
+    articleToolbar.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('.kb-tb-btn');
+      if (!btn) return;
+      applyMd(btn.dataset.md);
+    });
+    articleEditor.addEventListener('keydown', (ev) => {
+      if (!(ev.ctrlKey || ev.metaKey) || ev.altKey) return;
+      const action = { b: 'bold', i: 'italic', u: 'underline', k: 'link' }[ev.key.toLowerCase()];
+      if (!action) return;
+      ev.preventDefault();
+      applyMd(action);
+    });
     articleSaveBtn.addEventListener('click', async () => {
       if (!selectedSlug) return;
       articleSaveBtn.disabled = true;

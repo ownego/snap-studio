@@ -513,6 +513,25 @@ body.render .lab, body.render .library, body.render .kb, body.render .viewtabs {
 /* Same [hidden]-vs-author-display footgun as .kb-history-panel above. */
 .kb-article-log[hidden] { display: none; }
 
+/* Inserts markdown syntax into .kb-article-editor at the caret/selection —
+   see bridge-kb.js's applyMd(). B/I/U/S are styled letters (not icons) so
+   the glyph itself previews the format it inserts, same convention the rest
+   of this bar's SVG icons follow. */
+.kb-article-toolbar { flex: none; display: flex; align-items: center; gap: var(--space-1);
+  margin-bottom: var(--space-2); padding: var(--space-1); background: var(--paper);
+  border: 1px solid var(--line); border-radius: var(--radius-md); }
+.kb-tb-btn { display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; color: var(--ink-2); cursor: pointer; font-family: var(--font-sans);
+  font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: 1; }
+.kb-tb-btn svg { width: 16px; height: 16px; }
+.kb-tb-btn:hover { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-line); }
+.kb-tb-btn:active { background: var(--accent-line); }
+.kb-tb-btn.kb-tb-italic { font-style: italic; }
+.kb-tb-btn.kb-tb-underline { text-decoration: underline; }
+.kb-tb-btn.kb-tb-strike { text-decoration: line-through; }
+.kb-tb-sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 var(--space-1); }
+
 .kb-article-split { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); min-height: 0; }
 .kb-article-editor { font-family: var(--mono); font-size: var(--text-xs); line-height: 1.6; background: var(--paper);
   border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); margin: 0; color: var(--ink);
