@@ -113,7 +113,16 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
 body.render .topbar, body.render .body > aside, body.render .zoom-hud, body.render #dropHint, body.render .snap-tabs { display: none !important; }
 body.render .stage-wrap { position: fixed; inset: 0; overflow: hidden; padding: 0; background: var(--color-neutral-0); }
 body.render .stage-scroll { overflow: hidden; }
-body.render .stage-scaler { padding: 0; transform: none !important; }
+/* --render-scale defaults to 1 (plain "natural size") but export.js sets it to 1/dpr
+   before shooting: capture.img.w/h are raw device-pixel counts from the ORIGINAL
+   screenshot, applied 1:1 as this stage's CSS px (see baseImg sizing in editor.js) —
+   on a HiDPI/Retina screen that means the unscaled stage needs dpr× the physical
+   screen pixels a same-resolution capture actually requires just to redisplay it,
+   which is what was cropping exports on 13" MacBook (dpr 2) screens that could
+   otherwise show the image at its true resolution just fine. Scaling by 1/dpr here
+   makes 1 source pixel land on exactly 1 device pixel again, so the exported PNG
+   comes out at the image's real pixel size instead of dpr× too large. */
+body.render .stage-scaler { padding: 0; transform: scale(var(--render-scale, 1)) !important; }
 body.render .stage { box-shadow: none; border-radius: 0; }
 
 /* Covers the swap into/out of body.render above (chrome hidden, zoom reset to natural

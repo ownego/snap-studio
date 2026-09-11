@@ -37,9 +37,17 @@
     // of a silently short image.
     async function renderToPngDataUrl({ strict = false } = {}) {
       const veil = $('#renderVeil');
+      const dpr = window.devicePixelRatio || 1;
       veil.classList.add('show');
       await new Promise((r) => setTimeout(r, 130));   // let the veil's own fade-in finish
       document.body.classList.add('render');
+      // capture.img.w/h are raw device-pixel counts from the original screenshot, but
+      // editor.js sizes the stage's CSS box to that same number of px (see baseImg
+      // sizing) — on a HiDPI/Retina screen (any MacBook, dpr 2) that makes the
+      // "natural size" stage physically dpr× too big for the window it was captured
+      // from, which is what was cropping exports that should have fit. Scale it back
+      // down by 1/dpr so 1 source pixel lands on exactly 1 device pixel again.
+      document.documentElement.style.setProperty('--render-scale', String(1 / dpr));
       // two rAFs: one to flush the class toggle, one more so backdrop-filter has
       // actually painted before the compositor screenshot fires
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -52,7 +60,6 @@
       veil.style.transition = 'none';
       veil.classList.remove('show');
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      const dpr = window.devicePixelRatio || 1;
       // Measure the stage HERE, while render mode is still active — it has to be read
       // in the same layout the screenshot below actually captures (chrome-less, natural
       // size, flex-centered per editor.css). Reading it after the finally block reverts
@@ -67,6 +74,7 @@
         // back out once the normal layout has repainted underneath.
         veil.classList.add('show');
         document.body.classList.remove('render');
+        document.documentElement.style.removeProperty('--render-scale');
         // one more frame so the restored layout is painted behind the veil before it lifts
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
         veil.style.transition = '';
@@ -74,11 +82,13 @@
       }
       if (!res || res.error) throw new Error((res && res.error) || 'capture failed');
       // Measure the stage rather than the image: with the screenshot-canvas on, the
-      // export is image + padding, and the frame is part of the deliverable.
+      // export is image + padding, and the frame is part of the deliverable. box is in
+      // CSS px at the 1/dpr render scale, so *dpr here converts back to the device-px
+      // size the export actually comes out at (≈ the original capture's own pixel size).
       const wantW = Math.round(box.width * dpr), wantH = Math.round(box.height * dpr);
       const availW = Math.round(document.documentElement.clientWidth * dpr), availH = Math.round(document.documentElement.clientHeight * dpr);
       if (wantW > availW || wantH > availH) {
-        const msg = `Browser window is smaller than the export (${Math.round(box.width)}×${Math.round(box.height)}px) — the image would be cropped. Enlarge the window, then export again for the full frame.`;
+        const msg = `Browser window is smaller than the export (${wantW}×${wantH}px) — the image would be cropped. Enlarge the window, then export again for the full frame.`;
         if (strict) throw new Error(msg);
         toast(msg, 5000);
       }
