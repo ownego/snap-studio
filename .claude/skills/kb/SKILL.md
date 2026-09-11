@@ -83,41 +83,40 @@ nào.
 Nguyên tắc cho **nội dung/văn phong** của bài — khác trục với mục "Chú thích" (đặt annotation
 lên ảnh) ở dưới, không thay thế nó. Áp dụng từ lúc lên kế hoạch (mục 1) tới lúc ghi bài (mục 7).
 
-- **Viết bằng tiếng Anh**, giọng thân thiện, rõ ràng, để merchant tự đọc — tự làm được nhiều
-  nhất có thể, không cần hỏi thêm ai.
+- **Viết bằng tiếng Anh**, giọng văn chuyên nghiệp, rõ ràng, để merchant tự đọc và tự làm được nhiều nhất có thể.
+- **Giải thích ngắn gọn, không rườm rà**. Các option, setting không cần giải thích quá sâu, chi tiết, tránh gây confuse cho merchant.
 - **Hạn chế dùng thuật ngữ kỹ thuật.** Không tránh được một từ kỹ thuật thì giải thích ngay sau nó trong cùng câu, đừng để merchant tự tra.
 - **Chỉ viết dựa trên nội dung có thật** — spec, ảnh chụp, `notes` bàn giao. Không suy diễn hay
-  bịa hành vi app: tên setting, giá trị mặc định, điều kiện bật/tắt không thấy trong spec/ảnh
-  thì không được đoán ra cho bài đọc trôi chảy hơn.
+bịa hành vi app: tên setting, giá trị mặc định, điều kiện bật/tắt không thấy trong spec/ảnh
+thì không được đoán ra cho bài đọc trôi chảy hơn.
   - Topology A (`/kb` trực tiếp) và job **"revise"**: thiếu thông tin → **hỏi trong chat trước**,
-    đừng viết rồi sửa sau.
+  đừng viết rồi sửa sau.
   - Job **"author"** (ba agent nối tiếp, chạy **unattended** — không ai đứng chờ trả lời giữa
-    chừng): không có kênh hỏi. Thiếu thông tin thì để trống phần đó và nói rõ trong `notes`/một
-    finding ("thiếu X trong spec, cần bổ sung") thay vì bịa hoặc lờ đi im lặng — cùng tinh thần
-    "STOP và báo" đã áp dụng cho case thiếu origin ở mục "Cần có trước".
+  chừng): không có kênh hỏi. Thiếu thông tin thì để trống phần đó và nói rõ trong `notes`/một
+  finding ("thiếu X trong spec, cần bổ sung") thay vì bịa hoặc lờ đi im lặng — cùng tinh thần
+  "STOP và báo" đã áp dụng cho case thiếu origin ở mục "Cần có trước".
 - **Không thêm placeholder.** Một section không viết chính xác được thì để trống/bỏ hẳn section
-  đó (xem "Khung bài" dưới), không nhét `[TBD]` hay câu chung chung cho có.
+đó (xem "Khung bài" dưới), không nhét `[TBD]` hay câu chung chung cho có.
 - **Một bước vẫn = một màn hình** (mục 1), không đổi thành một bước = một hành động. Một màn
-  hình cần nhiều hành động liên tiếp (bật toggle rồi bấm Save) thì viết chúng thành **list đánh
-  số trong `body`** của cùng bước đó, và đặt nhiều callout (`step`/`label`) theo đúng thứ tự
-  trên cùng một ảnh (mục 5 đã hỗ trợ nhiều callout cùng ảnh, phân biệt bằng `at.fromId`) — rõ
-  từng hành động mà không tăng số ảnh phải chụp.
+hình cần nhiều hành động liên tiếp (bật toggle rồi bấm Save) thì viết chúng thành **list đánh
+số trong `body`** của cùng bước đó, và đặt nhiều callout (`step`/`label`) theo đúng thứ tự
+trên cùng một ảnh (mục 5 đã hỗ trợ nhiều callout cùng ảnh, phân biệt bằng `at.fromId`) — rõ
+từng hành động mà không tăng số ảnh phải chụp.
 
 ### Khung bài
 
 Bài theo khung sau. Đây **không phải field mới** trong `job.json` — chỉ là quy ước xếp chữ vào
 `intro`/`steps[]`/`outro` đã có sẵn (mục 7):
 
-| Section trong bài | Field trong `job.json` |
-|---|---|
-| `# [Feature Name]` | `title` |
-| `## What it does` (1-2 câu) | đầu `intro` |
-| `## Requirements` — bỏ hẳn nếu không có | cuối `intro`, sau "What it does" |
-| `## How to set it up` | **không phải heading riêng** — chính là chuỗi `## N. heading` + ảnh mỗi bước đã có (`steps[]`, mục 5-6b); đừng thêm heading "How to set it up" bọc ngoài, nó trùng ý với các `## N.` ngay bên dưới |
-| `## Settings explained` (bảng) | đầu `outro`, ngay sau bước cuối |
-| `## Verify it's working` | giữa `outro`, sau Settings explained |
-| `## Troubleshooting` (bảng) — bỏ hẳn nếu không có | cuối `outro`, trước Related articles |
-| `## Related articles` — bỏ hẳn nếu không có | cuối `outro` |
+
+| Section trong bài                           | Field trong `job.json`                                                                                                                                                                             |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `# [Feature Name]`                          | `title`                                                                                                                                                                                            |
+| `## What it does` (1-2 câu)                 | đầu `intro`                                                                                                                                                                                        |
+| `## Requirements` — bỏ hẳn nếu không có     | cuối `intro`, sau "What it does"                                                                                                                                                                   |
+| `## How to set it up`                       | **không phải heading riêng** — chính là chuỗi `## N. heading` + ảnh mỗi bước đã có (`steps[]`, mục 5-6b); đừng thêm heading "How to set it up" bọc ngoài, nó trùng ý với các `## N.` ngay bên dưới |
+| `## Related articles` — bỏ hẳn nếu không có | cuối `outro`                                                                                                                                                                                       |
+
 
 Callout `> 💡 **Note:** …` / `> ⚠️ **Important:** …` (mục 7b cho icon): trong một bước dùng
 `notes[].kind: "Note"` hoặc `"Important"`; nằm trong `intro`/`outro` (ví dụ ngay dưới bảng
@@ -200,12 +199,11 @@ tool đọc file — ví dụ job spawn từ KB Studio — dùng `snap_view` tha
 Nhìn thật sự và kiểm tra xem:
 
 - các component đã sử dụng hình dạng (tròn, vuông, elip) hợp lý chưa? có component nào bị cắt mép không?
-
 - callout có đè nội dung không? 
 - highlight đã cover đủ nội dung chưa? Viền highlight không được quá sát nội dung cần highlight, chừa ra 1 khoảng nhỏ xung quanh
-- zoom đã đúng tỉ lệ cần thiết chưa? có bị dính sang điểm khác không?
+- zoom đã zoom đúng tỉ lệ cần thiết chưa? có bị dính sang điểm khác không?
 - mũi tên có trỏ vào chỗ trống không? các đầu mũi tên đã nối đúng giữa callout và nội dung chưa? có đè lên nhau không?
-- PII còn lộ không? 
+- PII còn lộ không?
 
 Nếu có → sửa toạ độ, export lại. **Không bỏ qua bước này** — mọi lỗi của bài KB đầu tiên đều lẽ ra bắt được ở đây.
 
@@ -276,11 +274,19 @@ có) đặt ở đầu `text`.
 finding hợp lệ, `owner: "write"`, `severity: "nit"` — không phải `blocker` trừ khi nó khiến
 hướng dẫn hiểu sai.
 
-### 8. Dọn dẹp — bắt buộc nếu đã click vào app thật
+### 8. Dọn dẹp — chỉ còn cần cho thao tác không đảo ngược được
 
-Nếu trong quá trình làm có click đổi state (radio, checkbox, form): **khôi phục lại**. Bấm
-Discard của app, hoặc chọn lại giá trị cũ. **Không để lại "Unsaved changes" trên store thật
-của người dùng.** Xác nhận bằng ảnh chụp cuối.
+Tab được giao để chụp là **store test của job**, không phải store thật của người dùng — đổi
+radio/checkbox/dropdown, bấm Save, để xem đúng option nào tạo ra kết quả bài viết đang mô tả là
+việc bình thường của quy trình này, **không** còn phải Discard hay khôi phục lại giá trị cũ sau
+đó. Không cần để lại ảnh "trước khi đổi" chỉ để chứng minh đã dọn — cứ để store ở đúng trạng thái
+cuối cùng bài viết mô tả.
+
+Ranh giới vẫn còn đúng một chỗ: **dừng lại và hỏi trước** khi thao tác **không đảo ngược lại được
+chỉ bằng bấm lại UI** — xoá hẳn dữ liệu (sản phẩm, offer, theme, ngôn ngữ), gỡ cài một app, đổi/huỷ
+gói cước nếu store có gắn thẻ thanh toán thật, hoặc bất cứ gì gửi ra ngoài store (email, webhook,
+thông báo tới một địa chỉ thật). Những cái đó không "chọn lại giá trị cũ" được, nên không tự quyết
+lấy.
 
 ## Vòng review — khi người dùng ghim comment lên ảnh
 
@@ -288,26 +294,26 @@ Trong KB Studio (tab KB) người dùng bật **💬 Comment** rồi click thẳ
 là đường chính để họ sửa cách bạn đặt annotation — cụ thể hơn mọi lời mô tả, vì nó chỉ đúng chỗ.
 
 1. `**snap_comments**` (không tham số) → bài nào đang có feedback chờ. `snap_comments({slug})` →
- từng pin, kèm:
+ừng pin, kèm:
   - `at.x` / `at.y` — **pixel thật trong hệ toạ độ của ảnh gốc** (`at.space.base`), đúng hệ mà
    `props` của `snap_add` và `els` trong `job.json` đang dùng. Không phải tự quy đổi.
   - `step` — bước nào trong `job.json` sở hữu ảnh đó, và file job ở đâu.
   - `nearestEls` — element gần pin nhất kèm `props`, sắp theo khoảng cách. Comment kiểu "mũi tên
   trỏ vào chỗ trống" gần như luôn nói về `nearestEls[0]`.
 2. **Đọc lại `PLACEMENT_PLAYBOOK.md`** trước khi dời bất cứ thứ gì — comment thường chỉ là một
- luật đã có trong đó bị vi phạm lần nữa.
+uật đã có trong đó bị vi phạm lần nữa.
 3. **Sửa `els` trong `job.json`** (`snap_job` đọc/ghi cả object, nếu phiên không sửa file trực tiếp
- được) rồi `snap_render_job`. Không chụp lại, không đụng app thật —
- trừ khi comment nói ảnh chụp sai state (playbook #2); lúc đó phải quay lại bước 2–4.
+ược) rồi `snap_render_job`. Không chụp lại, không đụng app thật —
+rừ khi comment nói ảnh chụp sai state (playbook #2); lúc đó phải quay lại bước 2–4.
 4. `**Read` — hoặc `snap_view` — file PNG vừa render** và nhìn thật (bước 6). Chưa nhìn là chưa xong.
 5. `**snap_comment_resolve({slug, id, note})**` — `note` một dòng nói bạn đã đổi gì; nó hiện ngay
- trên pin trong KB Studio. Chỉ resolve cái đã thực sự sửa. Cái bạn quyết định **không** sửa thì
- để mở và nói ra, đừng resolve cho sạch bảng.
+rên pin trong KB Studio. Chỉ resolve cái đã thực sự sửa. Cái bạn quyết định **không** sửa thì
+ể mở và nói ra, đừng resolve cho sạch bảng.
 6. `**snap_learn**` nếu comment đó sửa một quyết định *đặt* (tràn mép, đè target, trỏ vào chỗ
- trống, lộ PII). Đây là bước duy nhất khiến lần sau không lặp lại — bỏ nó thì vòng review
- chỉ vá được đúng một bài. Đừng gõ ngày vào nội dung: tool đóng dấu ngày và id cho bạn.
- Nếu thứ bạn vừa chứng minh **mâu thuẫn** với một learning đang có (id in cạnh ngày của
- nó), truyền `supersedes` kèm id đó — một learning sai không tự hết hạn.
+rống, lộ PII). Đây là bước duy nhất khiến lần sau không lặp lại — bỏ nó thì vòng review
+hỉ vá được đúng một bài. Đừng gõ ngày vào nội dung: tool đóng dấu ngày và id cho bạn.
+ếu thứ bạn vừa chứng minh **mâu thuẫn** với một learning đang có (id in cạnh ngày của
+ó), truyền `supersedes` kèm id đó — một learning sai không tự hết hạn.
 
 **Đừng** thêm hay xoá comment hộ người dùng — bộ tool cố tình không có đường đó. Pin là phía họ
 nói; bạn đọc, sửa, và trả lời bằng `note`.
@@ -393,8 +399,13 @@ Tuyệt đối không dời annotation sang một target không có trong ảnh 
 - **Đừng** dùng `mcp__chrome__javascript_eval` / `read_page` / `get_page_text` cho nội dung
 portal — chúng kéo cả PII vào context rồi có thể trôi thẳng vào bài viết; ảnh còn blur được,
 đoạn văn thì không (`KB-BRIDGE.md` mục 7).
-- **Đừng** tự đăng nhập, tự đổi cài đặt, tự Save. Chỉ đọc và chụp; mọi thay đổi để test phải
-hoàn tác.
+- **Đừng** tự đăng nhập hộ — dùng đúng phiên đã đăng nhập sẵn trong tab được giao (`KB-BRIDGE.md`
+mục 5.2), không tự nhập credential ở nơi khác.
+- **Đổi cài đặt, bấm Save, thử qua từng option** để xem đúng kết quả nào khớp với bài viết là
+việc job này *nên* làm, không phải việc phải né — tab được giao cho job là **store test của
+job**, không phải store thật của người dùng, nên tự do bật/tắt toggle, chọn giá trị dropdown,
+Save rồi chụp lại để xác minh, sao cho mỗi bước trong bài mô tả đúng cái app thật sự làm. Ranh
+giới duy nhất là thao tác **không đảo ngược lại được bằng UI** — xem mục 8.
 - **Đừng** hard-code kích thước canvas — đọc từ response của `snap_capture_tab`.
 
 ## Khi người dùng sửa lại chỗ đặt của bạn

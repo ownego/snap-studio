@@ -413,7 +413,15 @@
     // is inside it, so asking it how much room there is would be circular.
     function fit() { built.apply(Math.min(1, (figure.clientWidth || capture.img.w) / capture.img.w)); }
     fit();
-    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null;
+    // fit() resizes frame, a child of the observed figure, so calling it straight
+    // from the observer callback re-triggers the same cycle and Chrome logs
+    // "ResizeObserver loop completed with undelivered notifications." Deferring
+    // to the next frame breaks the same-cycle feedback.
+    let fitRaf = 0;
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
+      cancelAnimationFrame(fitRaf);
+      fitRaf = requestAnimationFrame(fit);
+    }) : null;
     if (ro) ro.observe(figure);
 
     // ---- the read-only view -------------------------------------------------
@@ -474,6 +482,7 @@
       setReadOnly, setMode, refit: fit,
       openEditor: open,
       destroy() {
+        cancelAnimationFrame(fitRaf);
         if (ro) ro.disconnect();
         if (editor) editor.close();
         view.destroy();
@@ -506,13 +515,14 @@
 
   function mountAgent(container, opts) {
     opts = opts || {};
-    let capture = null, built = null, view = null, editor = null, ro = null;
+    let capture = null, built = null, view = null, editor = null, ro = null, fitRaf = 0;
 
     function showHint() {
       container.innerHTML = '<p class="empty-hint">The agent\u2019s screenshot appears here as soon as it loads one \u2014 click it to open the editor.</p>';
     }
     function clear() {
       if (editor) { editor.close(); editor = null; }
+      cancelAnimationFrame(fitRaf);
       if (ro) { ro.disconnect(); ro = null; }
       if (view) { view.destroy(); view = null; }
       built = null;
@@ -553,7 +563,13 @@
       });
       view.render();
       fit();
-      ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null;
+      // See mount()'s fit(): fit() resizes a child of the observed box, so the
+      // callback must defer to the next frame or Chrome logs "ResizeObserver
+      // loop completed with undelivered notifications."
+      ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
+        cancelAnimationFrame(fitRaf);
+        fitRaf = requestAnimationFrame(fit);
+      }) : null;
       if (ro) ro.observe(container);
       built.frame.addEventListener('click', edit);
       if (opts.onChange) opts.onChange();

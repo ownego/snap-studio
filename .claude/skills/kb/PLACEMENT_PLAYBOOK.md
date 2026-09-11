@@ -295,6 +295,32 @@ Ngoại lệ: PII chỉ xuất hiện ở một ảnh (tên khách trong một �
 > initials vẫn lộ rõ trên cả 5 ảnh. Không phải quên luật, mà là đoán toạ độ cho đúng một element
 > thật thay vì đo nó — xem đoạn `at` ngay trên, đây là lý do quy tắc đó được thêm vào.
 
+> **RÀ SOÁT 2026-09-11** (audit tay, không qua `snap_learn` — phiên review không có snap-bridge) —
+> lỗi này **vẫn đang sống**, ở dạng thứ tư: một `globalEls` blur duy nhất, toạ độ đo đúng cho MỘT
+> ảnh, vẫn lộ PII ở ảnh khác **trong cùng bài**, dù W×H hai ảnh giống hệt nhau (không phải lỗi
+> `uiScale`). Bằng chứng, hai bài độc lập:
+> - `volume-discount-translations`: `globalEls` blur `{x:1798,y:10,w:112,h:38}` trên canvas
+>   1920×945. Ở `img/01-nav-translations-annotated.png` nó che đúng đoạn tên cửa hàng ở giữa chip
+>   (nhưng avatar "HB" và tag "dev" hai bên vẫn lộ — che một phần, không phải toàn bộ chip). Ở
+>   `img/03-translation-mode-annotated.png` **cùng box đó** không che gì cả — chip hiện đủ chữ
+>   `huynq-vl` không mờ.
+> - `variant-swatches-volume`: `globalEls` blur `{x:1798,y:6,w:112,h:40}` trên canvas 1920×945.
+>   Che đúng ở `img/01-menu-annotated.png` (thấy rõ ô pixelated) nhưng **không che gì** ở
+>   `img/04-color-annotated.png` — avatar tím và `huynq-vl` hiện đầy đủ.
+>
+> Nguyên nhân nhiều khả năng nhất: chip tài khoản/tên cửa hàng trên topbar Shopify admin **không
+> đứng yên một toạ độ cố định qua mọi bước** — nó co giãn theo độ dài tên cửa hàng đang hiển thị,
+> theo việc có badge "dev"/thông báo hay không, theo trạng thái sidebar. Hai ảnh cùng 1920×945
+> vẫn có thể có chip lệch nhau vài chục đến hơn trăm pixel nếu chụp khác thời điểm/khác trang.
+> Một `globalEls` box đo trên đúng MỘT ảnh (thường là ảnh đầu) là một phép ngoại suy cho N ảnh
+> còn lại, không phải một phép đo.
+>
+> **Luật rút ra**: đo `globalEls` xong, đừng chỉ nhìn ảnh đầu để xác nhận (mục 6 "kiểm tra bằng
+> mắt" của SKILL.md) — **nhìn ít nhất một ảnh ở giữa bài và ảnh cuối bài** trước khi coi PII đã
+> chặn xong. Nếu chip lệch giữa các bước, `globalEls` một box không đủ: hoặc nới rộng box đó (đo
+> theo ảnh có chip **rộng nhất** trong bài, không phải ảnh đầu), hoặc bỏ `globalEls` cho riêng
+> (các) bước lệch và thêm một `blur` khác trong `steps[].els` của đúng bước đó với toạ độ đo lại.
+
 ### 7. Đọc toạ độ bằng lưới, đừng ước lượng bằng mắt. (hard rule)
 
 Ảnh trả về cho bạn qua `snap_view`/`Read` **luôn bị thu nhỏ** cho vừa ngân sách ảnh (2560px
@@ -310,6 +336,67 @@ snap_view({ path: "img/03-foo.png", grid: true })
 Lưới có nhãn, vẽ theo **pixel thật của ảnh**. Đọc số trên nhãn. Không nhân, không quy đổi.
 
 Thứ tự ưu tiên vẫn là: `at` (không cần toạ độ) → `grid:true` (đọc số) → ước lượng (đừng).
+
+### 8. Callout đánh số bước: `step`, không phải `label`. (hard rule — rà soát 2026-09-11 lộ ra là bị vi phạm ở CẢ BỐN bài đã ship)
+
+File này tự nhận "dạy CÁCH ĐẶT, không dạy CHỌN component" (chọn là việc của `snap_kit`/
+`kit-catalog.js`) — nhưng việc chọn sai đúng một chỗ đang lặp lại ở mọi bài, nên luật này đứng ở
+đây để không ai phải đoán lại lần thứ năm.
+
+**`label` không phải component đánh số bước.** Đọc `editorial-glass/SKILL.md` và comment đầu
+`src/components/label.js`: `label` là "NOT a kit component" — Snap Studio tự thêm vì kit gốc
+không có ô tag tự do nào, dùng cho context-stamp và những chú thích ngắn KHÔNG cần thứ tự
+("1"/"2"/"3" đánh số cột bảng, tên một field). Component **đánh số bước thật sự** trong kit là
+`step` (`step-marker`, luôn `"Step {n}"`, pill accent + viền trắng — mục "ĐÍNH CHÍNH" ở dưới) hoặc
+`textbox` với `mode:"step"` khi cần thêm mô tả dài.
+
+**Bằng chứng — rà soát toàn bộ 4 bài đã ship (21 ảnh annotated, `kb/*.md` + `kb/*/job.json`)**:
+
+| Bài | Số callout bước dùng `label` (kiểu `"Step N: <câu>"`) | Số callout dùng `step` | Số dùng `textbox` |
+|---|---|---|---|
+| `mega-menu-translations` | 5/5 | 0 | 0 |
+| `qikify-upsell-translations` | 4/4 | 0 | 0 |
+| `volume-discount-translations` | 8/8 | 0 | 0 |
+| `variant-swatches-volume` | 4/5 (1 bước dùng `step` đúng) | 1 | 0 |
+
+`textbox` — cấu kiện có `title`+`body`+badge, phù hợp nhất cho một callout cần nói nhiều hơn một
+cụm từ — **chưa từng được dùng, ở bất kỳ bài nào.** `spotlight` cũng vậy (xem "BỘ COMPONENT" dưới).
+
+Xem trực tiếp để thấy khác biệt: `kb/img/01-menus-list-annotated.png` (label, pill đen đặc, chữ
+"Step 1: Open Translations") so với `kb/variant-swatches-volume/img/01-menu-annotated.png` (step
+thật, pill accent + viền trắng, chỉ "Step 1" — không kèm câu). Cùng một việc "định vị mục menu ở
+bước 1" (PRINCIPLE #4), nhưng chỉ ảnh thứ hai còn giữ được cái vòng ring mà `kit-catalog.js` gọi
+là *load-bearing* cho step-marker.
+
+**Vì sao đây không chỉ là gu thẩm mỹ:**
+
+1. **Trùng chữ.** Bài KB nào cũng có prose kèm ảnh (khung bài ở `SKILL.md`: mỗi bước là một `##
+   N. heading` + `body` viết đầy đủ "In your Shopify admin, go to..."). Gõ lại đúng câu đó vào
+   một `label` trên ảnh là lặp lại thông tin đã có, đúng thứ mà `text-box`'s `use_when` trong
+   `kit-catalog.js` dành riêng cho trường hợp **ngược lại** — "ảnh phải tự đứng một mình, không
+   có bài viết kèm theo" (community post, video frame). Bài `/kb` luôn có bài viết kèm theo, nên
+   theo đúng use_when, callout trên ảnh chỉ cần đánh số + tối đa vài chữ định hướng, không phải
+   một câu hoàn chỉnh.
+2. **Mất tín hiệu thị giác.** `step` luôn tô `--color-primary-500` (accent) — cùng màu với mọi
+   `highlight`/`arrow` khác trên ảnh, nên mắt nối được "cụm accent này thuộc về nhau: khung, mũi
+   tên, số bước". `label` mặc định tô đen (`--color-neutral-900`, có prop `accent` để đổi nhưng
+   không bài nào đang set `true`) — một pill đen giữa các pill accent đọc như "hai hệ thống đánh
+   dấu khác nhau" dù ý đồ là cùng một hệ.
+3. **Không phải lỗi engine đã sửa rồi bị quên.** Learning `L-2026-08-30-a` (bị `supersedes`, xem
+   ĐÍNH CHÍNH ngay dưới) từng kết luận sai "step không đặt được số nên dùng label cho mọi bước".
+   Kết luận đó đã bị bác từ 2026-08-30, nhưng thực tế `label` vẫn là lựa chọn mặc định ở **cả 3
+   bài dựng sau ngày đó** — tức là việc sửa engine (`customNumber`, `stepLabel()`) không tự động
+   sửa được thói quen đặt, vì thói quen không đọc lại phần ĐÍNH CHÍNH này.
+
+**Quy tắc**: đặt callout đánh số bước → mặc định `step` (compact khi ảnh chật, theo đúng
+`kit-catalog.js`'s "compact is the fallback for tight space, not the default"). Chỉ viết câu dài
+vào callout khi ảnh thật sự phải tự đứng một mình (không có `body` nào đi kèm nó trong bài) — lúc
+đó dùng `textbox` (`mode:"step"`, `title` ngắn, `customNumber` nếu cần chỉnh số) chứ không phải
+kéo dài `label`. Dùng `label` (không `accent`) đúng vai của nó: tag không cần thứ tự — số cột/hàng
+bảng, một field name ngắn — không phải "Step N: …".
+
+Chi tiết đủ mọi prop thật của `step`/`textbox`/`label` và khi nào chọn cái nào (kể cả `spotlight`,
+`zoom`, `highlight`, `arrow`, `blur` còn lại) — xem "BỘ COMPONENT" ngay dưới ĐÍNH CHÍNH.
 
 ## ĐÍNH CHÍNH — đọc trước phần LEARNINGS
 
@@ -355,6 +442,143 @@ Cả hai còn có: `hideTitle`, `hideBody`, `compactBadge`, `border`, `borderWid
 **Cách tra cho chắc, thay vì đoán**: `snap_kit` giờ trả về **danh sách prop thật** của từng
 component (đọc thẳng từ `defaults()` của nó) kèm `anchor` và giá trị mặc định. Prop nào không
 có trong danh sách đó thì `snap_add`/`snap_job` sẽ cảnh báo là bị bỏ qua — không còn im lặng.
+
+---
+
+## BỘ COMPONENT — dùng khi nào, prop thật nào, và bài đã ship đang sai ở đâu
+
+Phần này **tổng hợp lại** từ ba nguồn — `src/kit-catalog.js` (`use_when`/`gotchas` của kit gốc),
+`src/components/*.js` (prop thật + default, đọc trực tiếp từ `defaults()`/`propsHtml()`, không
+đoán), và một lượt rà soát bằng mắt toàn bộ 4 bài đã ship (`mega-menu-translations`,
+`qikify-upsell-translations`, `variant-swatches-volume`, `volume-discount-translations` — 21 ảnh
+annotated) — để một bài mới không phải lục ba chỗ mới ráp lại được bức tranh đầy đủ cho một
+component. PRINCIPLES ở trên dạy **toạ độ đặt ở đâu**; phần này dạy **chọn cái gì** và **set prop
+gì** — hai trục khác nhau, đọc cả hai trước khi thêm annotation đầu tiên.
+
+### Bảng chọn nhanh theo tình huống
+
+| Tình huống trên ảnh | Component đúng | Đừng dùng |
+|---|---|---|
+| Đánh số một bước trong chuỗi thao tác, bài có prose kèm theo | `step` (compact nếu chật chỗ) | `label`, `textbox` |
+| Đánh số một bước, nhưng ảnh phải tự đứng một mình (không prose kèm — hiếm trong `/kb`) | `textbox` (`mode:"step"`) | `label` |
+| Một câu tip/cảnh báo cần neo **tại đúng chỗ trên ảnh**, không chỉ nằm trong blockquote dưới ảnh | `textbox` (`mode:"note"`) | nhét vào `label`, hoặc bỏ qua và chỉ viết trong `notes[]` |
+| Tag ngắn không theo thứ tự — số cột/hàng bảng, tên field, nhãn tự do | `label` | `step` |
+| Khoanh một vùng để mắt nhìn thấy ranh giới, có `arrow`/`step` đi kèm | `highlight` (`shaded:false`, mặc định) | `highlight` (`shaded:true`), `spotlight` |
+| Khoanh một vùng phải tự mang hết sức nặng chú ý, không gì khác trỏ vào nó | `highlight` (`shaded:true`) hoặc `spotlight` | `highlight` viền mỏng đơn độc |
+| Một khoảnh khắc "chỉ nhìn đúng một chỗ này" kiểu onboarding, mọi thứ khác phải mờ đi | `spotlight` | `highlight` dù có shaded |
+| Một chi tiết nhỏ (toggle, badge, giá trị) cần phóng to để đọc được | `zoom` (neo bằng `at`) | tả bằng lời, hoặc `highlight` khoanh mỗi chi tiết nhỏ |
+| Nối một callout tới đúng target của nó | `arrow` (neo `at` + `fromId`, không gõ độ dài — PRINCIPLE #1b) | gõ tay `x1/y1/x2/y2` khi có element để neo |
+| Che PII lặp lại ở cùng vị trí trên mọi ảnh | `blur` trong `job.globalEls`, neo `at` | `blur` gõ tay lặp lại từng bước |
+| Che PII chỉ xuất hiện đúng một ảnh | `blur` trong `steps[].els` của ảnh đó | thêm vào `globalEls` rồi hy vọng nó không lệch ở ảnh khác |
+
+### `step` — pill đánh số, load-bearing, mặc định cho MỌI callout tuần tự
+
+- Prop thật (`src/components/step.js`): `x/y` (**tâm**), `compact` (bool, vòng tròn chỉ số trần —
+  "fallback cho chỗ chật, không phải mặc định"), `video` (32px thay vì 28px, cho export video),
+  `w/h` (tự co theo `uiScale`, kéo góc để resize tự do). **Không có prop đặt số** — số luôn là vị
+  trí của nó trong `capture.els` (`stepNumber()`); cần số khác thứ tự thật thì đây không phải
+  component đúng, đổi sang `textbox` + `customNumber` (xem ĐÍNH CHÍNH ở trên).
+- Luôn tô `--color-primary-500` + viền trắng 2px — **không có** biến thể on-dark vì viền trắng đã
+  đủ tương phản trên mọi nền (`kit-catalog.js`: "documented no-op, not a missing case").
+- Đặt bằng `at` để nó tự chọn TÂM đúng ngữ nghĩa (bảng x/y ở đầu file) và tự chọn phía còn trống.
+
+### `textbox` — thẻ card, dùng khi cần NÓI nhiều hơn một cụm từ
+
+- Prop thật (`src/components/textbox.js` `defaults()`): `x/y` (**góc trên-trái**, không phải
+  tâm — khác `step`/`label`/`zoom`), `w` (280 mặc định, tự co chiều rộng, chiều cao luôn theo nội
+  dung), `mode` (`"step"` | `"note"`, loại trừ nhau), `title`, `body`, `label` (chỉ dùng ở mode
+  note), `hideTitle`, `hideBody`, `compactBadge`, `customNumber`, `border`, `borderWidth`,
+  `fontSize`.
+- `mode:"step"` → badge "Step N" (dùng `step`-marker con bên trong) + `title` ngắn + `body` mô tả
+  dài hơn một `label` chịu được — dùng khi một callout cần giải thích **tại sao**, không chỉ **ở
+  đâu**. `mode:"note"` → nhãn tự do (mặc định "Tip", đổi được qua `label`) + `body` — đây là
+  component đúng cho một cảnh báo/tip cần neo **tại đúng chỗ trên ảnh**, khác với `notes[]` (luôn
+  render thành blockquote **dưới** ảnh, tách khỏi vị trí thị giác của thứ nó nói tới).
+- **Chưa từng được dùng trong 4 bài đã ship.** Ví dụ cụ thể lẽ ra hợp: bước 2 của
+  `qikify-upsell-translations` (`kb/img/02-translations-page-annotated.png`) có một
+  `notes[].kind:"Important"` dài về việc dropdown bị khoá cần plan trả phí — nội dung đó chỉ nằm
+  trong blockquote dưới ảnh, trong khi một `textbox` (`mode:"note"`) neo cạnh chính cái dropdown
+  đang mờ sẽ nối được ý "vì sao nó xám" với **đúng pixel** đang xám, không chỉ với đoạn văn cách
+  đó vài trăm px.
+- Border (khi bật) luôn màu neutral — primary-500 dành riêng cho badge/connector, viền accent ở
+  đây sẽ làm cái card trông quan trọng ngang với thứ nó đang giải thích, lật ngược thứ bậc.
+
+### `label` — tag tự do, KHÔNG phải số thứ tự bước
+
+- Prop thật (`src/components/label.js`): `x/y` (**tâm**), `text`, `accent` (bool — đổi từ đen
+  neutral-900 sang accent primary-500; **không bài nào đang bật**, dù nó tồn tại đúng để một
+  `label` hoà được với các pill accent khác trên ảnh khi thật sự cần dùng label cạnh chúng).
+- Không phải component trong kit gốc (`catalogId: null`) — Snap Studio tự thêm cho context-stamp
+  và tag ngắn không cần thứ tự. Xem PRINCIPLE #8 ở trên cho lý do đây không phải chỗ đặt "Step N".
+- Dùng đúng: số cột/hàng bảng tham chiếu (như `variant-swatches-volume` bước 2 — "1"/"2"/"3"/"4"
+  trên đầu 4 cột, không phải bước tuần tự), tên field ngắn, một cụm 2-3 chữ không cần đánh số.
+
+### `highlight` — khung/vùng tô, mặc định viền, không fill
+
+- Prop thật (`src/components/highlight.js`): `x/y` (**góc trên-trái**), `w/h`, `shape` (`"rect"` |
+  `"ellipse"` — ellipse là biến thể riêng của Snap Studio, kit gốc chỉ có rect bo góc), `shaded`
+  (bool), `borderWidth` (mặc định `2.5 × uiScale`).
+- **Viền là mặc định đúng** khi có `arrow`/`step` đi kèm — cả 4 bài đã ship đều theo đúng luật này
+  (không bài nào bật `shaded` hay dùng `shape:"ellipse"`, đúng như `kit-catalog.js` khuyến nghị
+  cho trường hợp có annotation khác cùng trỏ vào). Chỉ bật `shaded` khi box phải tự mang hết chú ý,
+  không gì khác trỏ vào nó — và không bao giờ bật trên vùng có chữ nhỏ (fill 10% vẫn đo được là
+  giảm tương phản).
+
+### `spotlight` — làm mờ cả khung, chừa đúng một lỗ
+
+- Prop thật (`src/components/spotlight.js`): `x/y/w/h` (**góc trên-trái**, giống `highlight`),
+  `dark` (bool, làm đậm thêm lớp phủ khi ảnh nền vốn đã tối).
+- **Chưa từng được dùng trong 4 bài đã ship** — nhưng điều đó hợp lý hơn trường hợp `textbox`:
+  cả 4 bài đều là hướng dẫn cấu hình trong Shopify admin (nhiều control cùng lúc trên màn hình),
+  không phải một khoảnh khắc onboarding "chỉ bấm đúng một nút này". Giữ nguyên tắc của
+  `kit-catalog.js`: dùng khi một bước **không được phép** có gì khác kéo mắt đi — ví dụ bước đầu
+  tiên của một luồng cài đặt lần đầu, nơi màn hình có sẵn nhiều nút nhưng bài chỉ muốn người đọc
+  thấy đúng một cái. Đừng dùng như "highlight mạnh hơn" cho mọi box quan trọng — đó là việc của
+  `shaded:true`, không phải lý do tồn tại của `spotlight`.
+
+### `zoom` — phóng to tại chỗ, mặc định 2.2×, nhưng thực tế mọi bài đều phóng thấp hơn
+
+- Prop thật (`src/components/zoom.js`): `x/y` (**tâm**, đồng thời là tâm vùng nguồn — đổi x/y để
+  "dời" bong bóng ra chỗ khác sẽ lấy mẫu từ chỗ trống, xem `L-2026-09-01-c`), `w/h` (khung hiển
+  thị), `zoom` (hệ số phóng, mặc định `2.2`), `shape` (`"rect"` | `"circle"`), `radius`, `border`,
+  `borderWidth`, `dark` (thêm viền trắng khi nền tối).
+- **Cả 4 bài đã ship đều phóng dưới mức mặc định khuyến nghị**: `qikify-upsell-translations` bước
+  3 dùng `zoom:1.8`; `volume-discount-translations` bước 2 dùng `zoom:1.6`;
+  `variant-swatches-volume` bước 4 dùng `zoom:1.7`. Cả ba đều nằm trong vùng chính comment của
+  `zoom.js` cảnh báo là "below the threshold where a magnifier reads as a magnifier" (ngưỡng an
+  toàn ghi trong code là ~1.5, mặc định khuyến nghị 2.2). Nhìn lại từng ảnh (`snap_view`) thì cả
+  ba **vẫn render rõ, không vỡ** — nên đây không phải lỗi cần sửa ngay, nhưng là một độ lệch có hệ
+  thống giữa "mặc định đã sửa vì lý do cụ thể" và "cái mọi người thực sự gõ". Đừng coi việc ba bài
+  trước dùng 1.6–1.8 mà không vỡ là bằng chứng an toàn để bài sau tiếp tục hạ thấp — mỗi lần đổi
+  `zoom` vẫn phải `snap_view` lại (PRINCIPLE trong LEARNING `L-2026-09-02-c`: đổi hệ số phóng
+  không phải phép toán an toàn, một tổ hợp x/y/w/h/zoom xấu có thể ra ảnh vỡ dù ba số kia không đổi).
+- Không chồng `zoom` lên đúng chỗ một `highlight` đã khoanh (PRINCIPLE #5) — chọn một.
+
+### `arrow` — nối callout với target, hình dạng là hệ quả của vị trí hai đầu
+
+- Prop thật (`src/components/arrow.js`): `x1/y1/x2/y2` (không có `x/y`), `shape` (`"straight"` |
+  `"curved"` | `"elbow"`), `elbow` (`"h-then-v"` | `"v-then-h"`, chỉ áp dụng khi `shape:"elbow"`),
+  `curvature`/`curveShift` (chỉ áp dụng khi `shape:"curved"`), `scale` (mặc định `1.5 × uiScale`),
+  `secondary` (bool, bỏ viền trắng — chỉ dùng cho nhấn mạnh thấp hơn, không phải mặc định),
+  `origin` (chấm tròn ở đuôi), `hideHead` (chỉ vẽ thân, không đầu mũi).
+- **Cả 4 bài đã ship đều dùng `shape:"straight"`** — không phải lỗi: mọi cặp callout+target trong
+  các bài đó đã thẳng hàng trục ngang hoặc dọc (đúng cách `at` tự đặt callout lệch sang một phía
+  cố định của target), nên `straight` giữa hai điểm thẳng hàng chính là lựa chọn đúng theo
+  `kit-catalog.js` — dùng `curved`/`elbow` chỉ khi hai đầu **thật sự** lệch trục.
+- `scale:2.25` xuất hiện lặp lại ở cả 3 bài có dùng nó tường minh — một con số hợp lý khi ảnh gốc
+  đủ lớn (2560px) và cần mũi tên rõ giữa nhiều chi tiết nhỏ, nhưng vẫn nên xuất phát từ nhìn ảnh
+  thật (PRINCIPLE #7) chứ không sao chép mù từ bài trước — `uiScale` của ảnh mới có thể khác.
+
+### `blur` — pixelate thật, không phải backdrop-filter
+
+- Prop thật (`src/components/blur.js`): `x/y/w/h` (**góc trên-trái**) — không có prop biến thể
+  nào khác (`bindProps` rỗng), đúng như kit gốc "no variants on this component".
+  Kích thước mosaic cell (12px nguồn, tự nhân `uiScale`) là hằng số, không chỉnh được từ UI.
+- Che **cả hàng dữ liệu**, không chỉ riêng phần chữ — box hẹp hơn text vẫn lộ hình dạng chữ qua vài
+  block mosaic (đúng nguyên văn ghi chú trong `propsHtml()` của chính component).
+- Xem mục "RÀ SOÁT 2026-09-11" ở PRINCIPLE #6 phía trên: đây là component **có tỉ lệ lỗi cao nhất**
+  trong 4 bài đã ship — không phải vì component sai, mà vì `globalEls` một box tĩnh không theo kịp
+  một chip tài khoản đổi vị trí/độ rộng giữa các bước.
 
 ---
 
