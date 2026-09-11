@@ -72,6 +72,7 @@
     const articleSaveBtn = $('#kbArticleSave');
     const articleSaveNote = $('#kbArticleSaveNote');
     const articleRefreshBtn = $('#kbArticleRefresh');
+    const articleCopyMdBtn = $('#kbArticleCopyMd');
     const commentModeBtn = $('#kbCommentModeBtn');
     const historyBtn = $('#kbHistoryBtn');
     const historyPanel = $('#kbHistoryPanel');
@@ -167,7 +168,14 @@
     const stepEls = new Map();      // step.out -> the els on screen right now, saved or not
     const stepSaved = new Map();    // step.out -> JSON of the els last written to disk
     const surfaces = new Map();     // step.out -> the mounted surface, while this preview stands
-    let mdDirty = false;            // the markdown half of "unsaved" — the els half is stepEls vs stepSaved
+    // The markdown half of "unsaved" — the els half is stepEls vs stepSaved. A
+    // comparison against the last-read/last-written text, same idea as that pair,
+    // not a flag an 'input' event sets: the textarea's own Ctrl/Cmd+Z can undo a
+    // toolbar edit back to this exact text (see replaceRange()'s comment below),
+    // and that has to read as clean again without a flag stuck on from the edit
+    // that came before it.
+    let articleMdSaved = '';
+    const mdDirty = () => articleEditor.value !== articleMdSaved;
     let previewGen = 0;             // renderPreview() runs per keystroke and mounting is async
 
     // The New job panel's own preview — the article a running authoring job is
@@ -442,10 +450,22 @@
       const out = [];
       let list = null;     // 'ul' | 'ol' | null
       let liBuf = null;    // text lines of the currently-open <li>, joined on flush
+      let liStart = 0;     // source line the CURRENT liBuf started on — see data-ln below
       let para = [];
-      const flushLi = () => { if (liBuf !== null) { out.push(`<li>${inlineMd(liBuf.join(' '))}</li>`); liBuf = null; } };
+      let paraStart = 0;   // source line the CURRENT para started on
+      // data-ln="<start>-<end>" (0-based, end exclusive) on every block: which raw
+      // markdown lines produced it. Read back by jumpToMarkdown() below, the click
+      // handler that lets the Preview pane double as a "click to edit" surface —
+      // clicking rendered text moves the caret in the real (left) editor instead of
+      // this pane owning its own edit state, which would mean reconciling two
+      // copies of the article (and the comment pins / live image surfaces already
+      // living in this DOM make an editable Preview its own can of worms).
+      // `i` is read live by these closures — always correct at the point they're
+      // actually called, since every call site below invokes them with `i` still
+      // sitting on the first line NOT part of the block being flushed.
+      const flushLi = () => { if (liBuf !== null) { out.push(`<li data-ln="${liStart}-${i}">${inlineMd(liBuf.join(' '))}</li>`); liBuf = null; } };
       const closeList = () => { flushLi(); if (list) { out.push('</' + list + '>'); list = null; } };
-      const flushPara = () => { if (para.length) { out.push('<p>' + para.join(' ') + '</p>'); para = []; } };
+      const flushPara = () => { if (para.length) { out.push(`<p data-ln="${paraStart}-${i}">` + para.join(' ') + '</p>'); para = []; } };
       let i = 0;
       while (i < lines.length) {
         const line = lines[i];
@@ -454,11 +474,12 @@
         // stray * or _ in a code sample must not turn into <em>/<strong>).
         if (/^```/.test(line)) {
           flushPara(); closeList();
+          const blockStart = i;
           const code = [];
           i++;
           while (i < lines.length && !/^```/.test(lines[i])) { code.push(lines[i]); i++; }
           i++;
-          out.push('<pre><code>' + escapeHtml(code.join('\n')) + '</code></pre>');
+          out.push(`<pre data-ln="${blockStart}-${i}"><code>` + escapeHtml(code.join('\n')) + '</code></pre>');
           continue;
         }
         // GFM table — header row + a |---|---| separator, then rows until a
@@ -467,31 +488,33 @@
         if (/^\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
           flushPara(); closeList();
           const header = parseTableRow(line);
+          const headerLine = i;
           i += 2;
           const rows = [];
-          while (i < lines.length && /^\|.*\|\s*$/.test(lines[i])) { rows.push(parseTableRow(lines[i])); i++; }
-          out.push('<table><thead><tr>' + header.map((c) => `<th>${inlineMd(c)}</th>`).join('') + '</tr></thead><tbody>'
-            + rows.map((r) => '<tr>' + r.map((c) => `<td>${inlineMd(c)}</td>`).join('') + '</tr>').join('') + '</tbody></table>');
+          const rowLines = [];
+          while (i < lines.length && /^\|.*\|\s*$/.test(lines[i])) { rows.push(parseTableRow(lines[i])); rowLines.push(i); i++; }
+          out.push(`<table data-ln="${headerLine}-${i}"><thead><tr data-ln="${headerLine}-${headerLine + 1}">` + header.map((c) => `<th>${inlineMd(c)}</th>`).join('') + '</tr></thead><tbody>'
+            + rows.map((r, idx) => `<tr data-ln="${rowLines[idx]}-${rowLines[idx] + 1}">` + r.map((c) => `<td>${inlineMd(c)}</td>`).join('') + '</tr>').join('') + '</tbody></table>');
           continue;
         }
         if (!line.trim()) { flushPara(); closeList(); i++; continue; }
         if ((m = /^(#{1,6})\s+(.*)$/.exec(line))) {
           flushPara(); closeList();
-          out.push(`<h${m[1].length}>${inlineMd(m[2])}</h${m[1].length}>`);
+          out.push(`<h${m[1].length} data-ln="${i}-${i + 1}">${inlineMd(m[2])}</h${m[1].length}>`);
         } else if (/^>\s?/.test(line)) {
           flushPara(); closeList();
-          out.push(`<blockquote>${inlineMd(line.replace(/^>\s?/, ''))}</blockquote>`);
+          out.push(`<blockquote data-ln="${i}-${i + 1}">${inlineMd(line.replace(/^>\s?/, ''))}</blockquote>`);
         } else if (/^(-{3,}|\*{3,})$/.test(line.trim())) {
           flushPara(); closeList();
           out.push('<hr>');
         } else if ((m = /^[-*]\s+(.*)$/.exec(line))) {
           flushPara();
           if (list !== 'ul') { closeList(); out.push('<ul>'); list = 'ul'; } else { flushLi(); }
-          liBuf = [m[1]];
+          liBuf = [m[1]]; liStart = i;
         } else if ((m = /^\d+\.\s+(.*)$/.exec(line))) {
           flushPara();
           if (list !== 'ol') { closeList(); out.push('<ol>'); list = 'ol'; } else { flushLi(); }
-          liBuf = [m[1]];
+          liBuf = [m[1]]; liStart = i;
         } else if (list && liBuf !== null && /^\s+\S/.test(line)) {
           // Indented continuation of the item currently being built — these
           // KB articles routinely wrap a list item across lines. Without
@@ -502,6 +525,7 @@
           liBuf.push(line.trim());
         } else {
           closeList();
+          if (!para.length) paraStart = i;
           para.push(inlineMd(line.trim()));
         }
         i++;
@@ -840,6 +864,70 @@
       if (!wrap || ev.target.closest('.kb-comment-pin') || ev.target.closest('.kb-comment-popover')) return;
       const rect = wrap.getBoundingClientRect();
       openComposer(wrap, wrap.dataset.src, (ev.clientX - rect.left) / rect.width, (ev.clientY - rect.top) / rect.height);
+    });
+    /** Click-to-edit for the Preview pane: the safe half of "let me edit the
+     *  article from the right side too" — Preview stays a read-only rendering
+     *  (it hosts comment pins and each step's own live annotation surface, and
+     *  those + a truly editable Preview would mean reconciling two copies of
+     *  the article), but clicking rendered prose moves the caret in the real
+     *  (left) markdown editor to the matching spot, ready to type over.
+     *
+     *  md2html() tags every block with data-ln="<startLine>-<endLine>" (0-based,
+     *  end exclusive). A click's position within the block's RENDERED text is
+     *  turned into a fraction (0 = start of block, 1 = end) and applied to the
+     *  same fraction of the block's RAW markdown lines — inline markup (`**`,
+     *  `[…](…)`, backticks) shifts rendered text a little short of the raw
+     *  source, so this lands close rather than exactly, which is fine for a
+     *  "jump near here" affordance and needs no character-level HTML<->Markdown
+     *  mapping to get there. */
+    function textOffsetInBlock(root, node, offset) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let total = 0, n;
+      while ((n = walker.nextNode())) {
+        if (n === node) return total + offset;
+        total += n.textContent.length;
+      }
+      return total;   // node wasn't a text descendant (e.g. an <img>) — treat as "at the end"
+    }
+    function jumpToMarkdown(startLine, endLine, fraction) {
+      const lines = articleEditor.value.replace(/\r\n/g, '\n').split('\n');
+      let blockOffset = 0;
+      for (let i = 0; i < startLine && i < lines.length; i++) blockOffset += lines[i].length + 1;
+      const raw = lines.slice(startLine, endLine).join('\n');
+      const clamped = Math.max(0, Math.min(1, fraction));
+      const pos = Math.max(0, Math.min(articleEditor.value.length, blockOffset + Math.round(clamped * raw.length)));
+      articleEditor.focus();
+      articleEditor.setSelectionRange(pos, pos);
+      // setSelectionRange alone only scrolls a caret already near the visible
+      // area into view — a block near the article's end needs the textarea's
+      // own scroll nudged toward it first, same idea as a code editor's "go to
+      // line". Approximate: exact line-height math would have to account for
+      // wrapped (not just source) lines, which a plain <textarea> won't report.
+      const lineHeight = parseFloat(getComputedStyle(articleEditor).lineHeight) || 20;
+      articleEditor.scrollTop = Math.max(0, (startLine - 3) * lineHeight);
+    }
+    articlePreview.addEventListener('click', (ev) => {
+      if (commentMode) return;
+      if (affordanceExcluded(ev.target) || ev.target.closest('.kb-comment-pin, .kb-comment-popover')) return;
+      // A click that ends a drag-to-select shouldn't also relocate the caret —
+      // that would fight whoever just selected article text to copy it.
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && articlePreview.contains(sel.anchorNode)) return;
+      const block = ev.target.closest ? ev.target.closest('[data-ln]') : null;
+      if (!block) return;
+      const [start, end] = (block.dataset.ln || '').split('-').map(Number);
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return;
+      let caretNode = ev.target, caretOffset = 0;
+      if (document.caretPositionFromPoint) {
+        const p = document.caretPositionFromPoint(ev.clientX, ev.clientY);
+        if (p) { caretNode = p.offsetNode; caretOffset = p.offset; }
+      } else if (document.caretRangeFromPoint) {
+        const r = document.caretRangeFromPoint(ev.clientX, ev.clientY);
+        if (r) { caretNode = r.startContainer; caretOffset = r.startOffset; }
+      }
+      const renderedOffset = textOffsetInBlock(block, caretNode, caretOffset);
+      const renderedLen = block.textContent.length || 1;
+      jumpToMarkdown(start, end, renderedOffset / renderedLen);
     });
     commentModeBtn.addEventListener('click', () => {
       commentMode = !commentMode;
@@ -1253,10 +1341,10 @@
           && JSON.stringify(stepEls.get(s.out)) !== stepSaved.get(s.out));
     }
     function changedSteps() { return changedStepEntries().map(({ n }) => n); }
-    function refreshDirty() { setDirty(mdDirty || changedSteps().length > 0); }
+    function refreshDirty() { setDirty(mdDirty() || changedSteps().length > 0); }
     /** After a save, or after loading: what is on screen IS what is on disk. */
     function markClean() {
-      mdDirty = false;
+      articleMdSaved = articleEditor.value;
       for (const [key, els] of stepEls) stepSaved.set(key, JSON.stringify(els));
       setDirty(false);
     }
@@ -1279,7 +1367,7 @@
       window.SnapKit.kbSurface.clearCache();   // decoded base captures of the article being left
       articleJob = null;
       stepEls.clear(); stepSaved.clear();
-      mdDirty = false;
+      articleMdSaved = '';
       setDirty(false);
     }
     /** Somebody else wrote this article — an agent's snap_job mid-job, most of
@@ -1299,8 +1387,9 @@
       // re-rendered the PNG on top of it.
       imageCache.clear();
       window.SnapKit.kbSurface.clearCache();
-      if ((data.md || '') !== articleEditor.value) {
-        articleEditor.value = data.md || '';
+      articleMdSaved = data.md || '';
+      if (articleMdSaved !== articleEditor.value) {
+        articleEditor.value = articleMdSaved;
         renderPreview();
       } else {
         for (const [key, inst] of surfaces) {
@@ -1394,7 +1483,8 @@
         // are in. Without it every step image here would be a flat PNG again.
         articleJob = data.job || null;
         seedStepsFromJob();
-        articleEditor.value = data.md || '';
+        articleMdSaved = data.md || '';
+        articleEditor.value = articleMdSaved;
         articleEditor.disabled = false;
         renderPreview();
         setDirty(false);
@@ -1407,22 +1497,36 @@
         toast(`Could not load "${slug}": ${e.message}`);
       }
     }
-    articleEditor.addEventListener('input', () => { mdDirty = true; refreshDirty(); renderPreview(); });
+    articleEditor.addEventListener('input', () => { refreshDirty(); renderPreview(); });
 
+    /** Replaces [start, end) with text via execCommand rather than a plain
+     *  ta.value assignment — assigning .value wipes the textarea's native
+     *  undo stack, so a toolbar click would leave Ctrl/Cmd+Z with nothing to
+     *  undo. execCommand('insertText') edits through the same path a real
+     *  keystroke would, so it lands as one native undo step and also fires
+     *  its own 'input' event — the .value fallback below is the only path
+     *  that needs to dispatch one by hand. */
+    function replaceRange(start, end, text) {
+      const ta = articleEditor;
+      ta.focus();
+      ta.setSelectionRange(start, end);
+      let inserted = false;
+      try { inserted = document.execCommand('insertText', false, text); } catch (e) { inserted = false; }
+      if (!inserted) {
+        const val = ta.value;
+        ta.value = val.slice(0, start) + text + val.slice(end);
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
     /** Wraps the current selection in before/after (or inserts placeholder
-     *  between them with nothing selected), leaves the inner text selected so
-     *  the user can type straight over it, and fires 'input' so the existing
-     *  dirty/preview wiring above picks the change up like any typed edit. */
+     *  between them with nothing selected), leaving the inner text selected
+     *  so the user can type straight over it. */
     function wrapSelection(before, after, placeholder) {
       const ta = articleEditor;
       const start = ta.selectionStart, end = ta.selectionEnd;
-      const val = ta.value;
-      const sel = val.slice(start, end) || placeholder;
-      ta.value = val.slice(0, start) + before + sel + after + val.slice(end);
-      ta.selectionStart = start + before.length;
-      ta.selectionEnd = ta.selectionStart + sel.length;
-      ta.focus();
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      const sel = ta.value.slice(start, end) || placeholder;
+      replaceRange(start, end, before + sel + after);
+      ta.setSelectionRange(start + before.length, start + before.length + sel.length);
     }
     /** Prefixes every line the selection touches (or just the caret's own line,
      *  with nothing selected) with marker — marker(i) for the ordered list's
@@ -1436,11 +1540,8 @@
       if (lineEnd === -1) lineEnd = val.length;
       const out = val.slice(lineStart, lineEnd).split('\n')
         .map((line, i) => (typeof marker === 'function' ? marker(i + 1) : marker) + line).join('\n');
-      ta.value = val.slice(0, lineStart) + out + val.slice(lineEnd);
-      ta.selectionStart = lineStart;
-      ta.selectionEnd = lineStart + out.length;
-      ta.focus();
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      replaceRange(lineStart, lineEnd, out);
+      ta.setSelectionRange(lineStart, lineStart + out.length);
     }
     /** [text](url) — a plain wrapSelection() can't do this one because the two
      *  halves need different treatment: the text becomes the selection's own
@@ -1449,16 +1550,12 @@
     function insertLink() {
       const ta = articleEditor;
       const start = ta.selectionStart, end = ta.selectionEnd;
-      const val = ta.value;
       const hasSel = start !== end;
-      const text = hasSel ? val.slice(start, end) : 'link text';
+      const text = hasSel ? ta.value.slice(start, end) : 'link text';
       const url = 'https://';
-      ta.value = val.slice(0, start) + `[${text}](${url})` + val.slice(end);
+      replaceRange(start, end, `[${text}](${url})`);
       const urlStart = start + text.length + 3; // '[' + text + ']('
-      ta.selectionStart = urlStart;
-      ta.selectionEnd = urlStart + url.length;
-      ta.focus();
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.setSelectionRange(urlStart, urlStart + url.length);
     }
     function applyMd(action) {
       if (articleEditor.disabled) return;
@@ -1497,7 +1594,7 @@
       const steps = changed.map(({ n }) => n);
       if (steps.length) articleSaveNote.textContent = `Re-rendering ${steps.length} image(s)…`;
       try {
-        if (mdDirty) await callBg('save_md', { slug: selectedSlug, md: articleEditor.value });
+        if (mdDirty()) await callBg('save_md', { slug: selectedSlug, md: articleEditor.value });
         if (steps.length) {
           const job = JSON.parse(JSON.stringify(articleJob));
           for (const s of job.steps) { if (s && s.out && stepEls.has(s.out)) s.els = stepEls.get(s.out); }
@@ -2014,6 +2111,14 @@
     boardNewBtn.addEventListener('click', selectNewJob);
     boardRunBtn.addEventListener('click', () => selectRunningJob());
     articleRefreshBtn.addEventListener('click', () => { if (selectedSlug) selectArticle(selectedSlug, articleTitle.textContent); });
+    // Whatever is on screen right now, unsaved edits included — the same thing
+    // Save would write to disk, not a re-read of the last-saved file.
+    articleCopyMdBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(articleEditor.value).then(
+        () => toast('Article copied as Markdown.'),
+        () => toast('Could not copy.')
+      );
+    });
 
     startBtn.addEventListener('click', async () => {
       const instruction = instructionInput.value.trim();

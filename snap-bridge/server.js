@@ -909,8 +909,6 @@ function assembleMarkdown(job, mdAbs) {
     return rel.startsWith(".") ? rel : "./" + rel;
   };
   const out = [];
-  out.push("---", `title: ${JSON.stringify(job.title || job.slug || "Untitled")}`,
-    `slug: ${job.slug || ""}`, "status: draft", "---", "");
   out.push(`# ${job.title || job.slug || "Untitled"}`, "");
   if (job.intro) out.push(job.intro.trim(), "");
   for (const [i, s] of (job.steps || []).entries()) {
