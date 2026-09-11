@@ -16,7 +16,7 @@
   };
 
   function init(deps) {
-    const { getCapture, getView, stage, toast, hasExt, cropDataUrl, loadImage, loadCapture, select, setView, startCrop } = deps;
+    const { getCapture, getView, stage, toast, hasExt, cropDataUrl, loadImage, loadCapture, select, setView, startCrop, pushUndo } = deps;
 
     function dataUrlToBlob(dataUrl) {
       const [head, b64] = dataUrl.split(',');
@@ -167,6 +167,7 @@
       // images live at the front of els = the bottom of the paint order, so a new one
       // never buries callouts and arrows that are already placed
       const last = capture.els.map((x) => x.type).lastIndexOf('image');
+      pushUndo();
       capture.els.splice(last + 1, 0, el);
       select(el.id);
       toast(`Pasted as a new image layer (${img.naturalWidth}×${img.naturalHeight}).`);

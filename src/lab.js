@@ -302,7 +302,7 @@
   }
 
   function init(deps) {
-    const { getCapture, getSelId, setSelId, render, renderLayers, getView, setView, newElement, toast } = deps;
+    const { getCapture, getSelId, setSelId, render, renderLayers, getView, setView, newElement, toast, pushUndo } = deps;
 
     let saveTimer = null;
     function persistCustoms() {
@@ -553,6 +553,7 @@
         if (comp && comp.demo) Object.assign(el, comp.demo);
       }
       if (!el) { toast('That component no longer exists.'); return; }
+      pushUndo();
       capture.els.push(el);
       setSelId(el.id);
       setView('snap');

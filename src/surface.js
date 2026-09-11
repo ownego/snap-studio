@@ -220,6 +220,63 @@
 
     const els = () => { const c = getCapture(); return c ? c.els : []; };
 
+    /* ---- undo / redo -------------------------------------------------
+       Ctrl/Cmd+Z. Scoped to the CURRENT capture's own element list, not to
+       the base image or the crop frame — those already gate themselves
+       behind a window.confirm() (see editor.js's "Replace base image…"
+       and the crop tool), which is a coarser but adequate safety net for
+       an action that also re-decodes an <img>. Stored ON the capture
+       object (`_hist`, an own property serializeCaptures()/restoreSession()
+       never read, since both build their own explicit {id,url,...} shape)
+       so switching tabs keeps each capture's history separate and a
+       session reload simply starts every tab with a clean stack.
+       Elements are already known JSON-safe — serializeCaptures() round-trips
+       them the same way for the session/library store. */
+    const MAX_HISTORY = 100;
+    const historyOf = (c) => c._hist || (c._hist = { undo: [], redo: [] });
+    const snapshotEls = () => { const c = getCapture(); return c ? JSON.stringify(c.els) : null; };
+    /** Call BEFORE a mutation commits. Skips a push that would be identical to the
+     *  top of the stack (a click that selected but didn't move anything, a Properties
+     *  field focused but never changed) so undo doesn't burn a step on a no-op. */
+    function pushUndo() {
+      const c = getCapture();
+      if (!c) return;
+      const snap = snapshotEls();
+      const hist = historyOf(c);
+      if (hist.undo.length && hist.undo[hist.undo.length - 1] === snap) return;
+      hist.undo.push(snap);
+      if (hist.undo.length > MAX_HISTORY) hist.undo.shift();
+      hist.redo.length = 0;
+    }
+    function restoreSnapshot(json) {
+      const c = getCapture();
+      if (!c) return;
+      c.els = JSON.parse(json);
+      if (selId && !c.els.some((e) => e.id === selId)) selId = null;
+      render();
+      renderPropsHook();
+      renderLayersHook();
+      onMutate();
+    }
+    function undo() {
+      const c = getCapture();
+      if (!c) return false;
+      const hist = historyOf(c);
+      if (!hist.undo.length) return false;
+      hist.redo.push(snapshotEls());
+      restoreSnapshot(hist.undo.pop());
+      return true;
+    }
+    function redo() {
+      const c = getCapture();
+      if (!c) return false;
+      const hist = historyOf(c);
+      if (!hist.redo.length) return false;
+      hist.undo.push(snapshotEls());
+      restoreSnapshot(hist.redo.pop());
+      return true;
+    }
+
     function stepNumber(id) {
       const seq = els().filter((e) => e.type === 'step' || (e.type === 'textbox' && e.mode === 'step'));
       const i = seq.findIndex((e) => e.id === id);
@@ -372,6 +429,7 @@
       if (j < 0 || j >= capture.els.length || capture.els[j].type !== 'image') {
         toast(dir === 'up' ? 'Already at the top of the image group.' : 'Already at the bottom of the image group.'); return;
       }
+      pushUndo();
       capture.els[i] = capture.els[j]; capture.els[j] = el;
       render();
     }
@@ -385,6 +443,7 @@
       const capture = getCapture();
       if (!capture) return;
       if (h.beforeRemove && h.beforeRemove(id) === false) return;
+      pushUndo();
       capture.els = capture.els.filter((e) => e.id !== id);
       if (id === selId) selId = null;
       if (h.afterRemove) h.afterRemove(id);
@@ -399,6 +458,7 @@
       if (BOX_DRAW_TYPES[type]) { startBoxPlacement(type); return; }
       const el = newElement(type, capture);
       if (!el) { toast('That component no longer exists.'); if (h.onMissingComponent) h.onMissingComponent(); return; }
+      pushUndo();
       capture.els.push(el);
       select(el.id);
     }
@@ -434,6 +494,7 @@
         const capture = getCapture();
         const start = clientToCanvas(e.clientX, e.clientY);
         const el = { ...newElement('arrow', capture), x1: start.x, y1: start.y, x2: start.x, y2: start.y };
+        pushUndo();
         capture.els.push(el);
         select(el.id);
         const move = (ev) => {
@@ -480,6 +541,7 @@
         const defaultW = el.w, defaultH = el.h; // the type's normal fixed size, for the no-drag fallback below
         const start = clientToCanvas(e.clientX, e.clientY);
         applyDrawnRect(el, start.x, start.y, start.x, start.y);
+        pushUndo();
         capture.els.push(el);
         select(el.id);
         const move = (ev) => {
@@ -519,6 +581,7 @@
       if (e.target.classList.contains('handle') || e.target.classList.contains('arrow-end') || e.target.classList.contains('el-del')) return; // own handlers below
       e.stopPropagation();
       select(el.id);
+      pushUndo();   // once per drag gesture; a click with no movement is deduped away
       const zoom = getZoom();
       const startX = e.clientX, startY = e.clientY;
       const orig = { ...el };
@@ -555,6 +618,7 @@
       if (!handle && !aend) { if (e.target === canvas) select(null); return; }
       const node = e.target.closest('.el');
       const el = els().find((x) => x.id === node.dataset.id);
+      pushUndo();   // once per resize/handle-drag gesture; deduped away if it never actually moves
       const zoom = getZoom();
       const startX = e.clientX, startY = e.clientY;
       const orig = { ...el };
@@ -640,11 +704,46 @@
       e.stopPropagation();
     });
 
+    // Covers every Properties-panel edit (field()/flag()/seg() in makeCtx, plus
+    // editor.js's own "Replace base image…" button) with one listener instead of
+    // threading pushUndo() through each of those helpers individually. focusin
+    // fires once when a field/checkbox/segmented-button gains focus — BEFORE the
+    // value actually changes (a click focuses before its own 'change'/'click'
+    // handler runs) — so a whole typing session in one textarea becomes a single
+    // undo step, not one per keystroke; the dedupe in pushUndo() drops it again if
+    // the field was focused but never actually edited.
+    // Only when a real propsRoot was handed in — a surface with none (kb-surface.js's
+    // read-only step previews, which fall back to `document`) has no Properties panel
+    // of its own, and listening on `document` would fire on every unrelated focus
+    // change on the whole page.
+    if (opts.propsRoot) {
+      propsRoot.addEventListener('focusin', (e) => {
+        const t = e.target;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'BUTTON')) pushUndo();
+      });
+    }
+
     // Gated on isActive() rather than on which element has focus: a surface embedded
     // in a KB article has no focusable chrome of its own, so "the selection is mine
     // and my tab is on screen" is the only workable definition of whose ⌫ this is.
     const onKeyDown = (e) => {
       if (!isActive()) return;
+      const mod = e.ctrlKey || e.metaKey;
+      // Ctrl/Cmd+Z (undo), Ctrl/Cmd+Shift+Z or Ctrl+Y (redo). Skipped while a text
+      // field has focus so the browser's own in-field undo runs instead — otherwise
+      // undoing a typo would also blow away whatever else was mutated in between.
+      if (mod && !e.altKey && (e.key === 'z' || e.key === 'Z')) {
+        if (isTyping()) return;
+        e.preventDefault();
+        if (e.shiftKey) { if (!redo()) toast('Nothing to redo.'); } else if (!undo()) toast('Nothing to undo.');
+        return;
+      }
+      if (mod && !e.altKey && (e.key === 'y' || e.key === 'Y')) {
+        if (isTyping()) return;
+        e.preventDefault();
+        if (!redo()) toast('Nothing to redo.');
+        return;
+      }
       if ((e.key === 'Backspace' || e.key === 'Delete') && selId) {
         if (isTyping()) return;
         e.preventDefault(); removeEl(selId);
@@ -655,6 +754,9 @@
     return {
       render, syncNode, select, removeEl, addElement, reorderImage,
       makeCtx, elInner, elStyle, clientToCanvas, stepNumber, stepLabel,
+      pushUndo, undo, redo,
+      canUndo: () => { const c = getCapture(); return !!c && historyOf(c).undo.length > 0; },
+      canRedo: () => { const c = getCapture(); return !!c && historyOf(c).redo.length > 0; },
       get sel() { return selId; },
       set sel(id) { selId = id; },
       selectedEl: () => els().find((e) => e.id === selId) || null,

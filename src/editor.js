@@ -509,7 +509,7 @@
   stampToggle.addEventListener('change', () => {
     if (!capture) return;
     const existing = capture.els.find((e) => e.type === 'stamp');
-    if (stampToggle.checked && !existing) { const s = newElement('stamp'); s.text = SnapKit.contextStamp.stampText(capture); capture.els.push(s); render(); }
+    if (stampToggle.checked && !existing) { const s = newElement('stamp'); s.text = SnapKit.contextStamp.stampText(capture); surface.pushUndo(); capture.els.push(s); render(); }
     else if (!stampToggle.checked && existing) { removeEl(existing.id); }
   });
 
@@ -665,6 +665,7 @@
     render, renderLayers,
     getView: () => view, setView,
     newElement, toast,
+    pushUndo: () => surface.pushUndo(),
   });
   SnapKit.export.init({
     getCapture: () => capture,
@@ -672,6 +673,7 @@
     stage, toast, hasExt,
     cropDataUrl, loadImage, loadCapture,
     select, setView, startCrop,
+    pushUndo: () => surface.pushUndo(),
   });
   SnapKit.library.init({
     getCapture: () => capture,
