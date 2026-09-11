@@ -294,26 +294,26 @@ Trong KB Studio (tab KB) người dùng bật **💬 Comment** rồi click thẳ
 là đường chính để họ sửa cách bạn đặt annotation — cụ thể hơn mọi lời mô tả, vì nó chỉ đúng chỗ.
 
 1. `**snap_comments**` (không tham số) → bài nào đang có feedback chờ. `snap_comments({slug})` →
-ừng pin, kèm:
+từng pin, kèm:
   - `at.x` / `at.y` — **pixel thật trong hệ toạ độ của ảnh gốc** (`at.space.base`), đúng hệ mà
-   `props` của `snap_add` và `els` trong `job.json` đang dùng. Không phải tự quy đổi.
+  `props` của `snap_add` và `els` trong `job.json` đang dùng. Không phải tự quy đổi.
   - `step` — bước nào trong `job.json` sở hữu ảnh đó, và file job ở đâu.
   - `nearestEls` — element gần pin nhất kèm `props`, sắp theo khoảng cách. Comment kiểu "mũi tên
   trỏ vào chỗ trống" gần như luôn nói về `nearestEls[0]`.
 2. **Đọc lại `PLACEMENT_PLAYBOOK.md`** trước khi dời bất cứ thứ gì — comment thường chỉ là một
-uật đã có trong đó bị vi phạm lần nữa.
+luật đã có trong đó bị vi phạm lần nữa.
 3. **Sửa `els` trong `job.json`** (`snap_job` đọc/ghi cả object, nếu phiên không sửa file trực tiếp
-ược) rồi `snap_render_job`. Không chụp lại, không đụng app thật —
-rừ khi comment nói ảnh chụp sai state (playbook #2); lúc đó phải quay lại bước 2–4.
+được) rồi `snap_render_job`. Không chụp lại, không đụng app thật —
+trừ khi comment nói ảnh chụp sai state (playbook #2); lúc đó phải quay lại bước 2–4.
 4. `**Read` — hoặc `snap_view` — file PNG vừa render** và nhìn thật (bước 6). Chưa nhìn là chưa xong.
 5. `**snap_comment_resolve({slug, id, note})**` — `note` một dòng nói bạn đã đổi gì; nó hiện ngay
-rên pin trong KB Studio. Chỉ resolve cái đã thực sự sửa. Cái bạn quyết định **không** sửa thì
-ể mở và nói ra, đừng resolve cho sạch bảng.
+trên pin trong KB Studio. Chỉ resolve cái đã thực sự sửa. Cái bạn quyết định **không** sửa thì
+để mở và nói ra, đừng resolve cho sạch bảng.
 6. `**snap_learn**` nếu comment đó sửa một quyết định *đặt* (tràn mép, đè target, trỏ vào chỗ
-rống, lộ PII). Đây là bước duy nhất khiến lần sau không lặp lại — bỏ nó thì vòng review
-hỉ vá được đúng một bài. Đừng gõ ngày vào nội dung: tool đóng dấu ngày và id cho bạn.
-ếu thứ bạn vừa chứng minh **mâu thuẫn** với một learning đang có (id in cạnh ngày của
-ó), truyền `supersedes` kèm id đó — một learning sai không tự hết hạn.
+trống, lộ PII). Đây là bước duy nhất khiến lần sau không lặp lại — bỏ nó thì vòng review
+chỉ vá được đúng một bài. Đừng gõ ngày vào nội dung: tool đóng dấu ngày và id cho bạn.
+Nếu thứ bạn vừa chứng minh **mâu thuẫn** với một learning đang có (id in cạnh ngày của
+nó), truyền `supersedes` kèm id đó — một learning sai không tự hết hạn.
 
 **Đừng** thêm hay xoá comment hộ người dùng — bộ tool cố tình không có đường đó. Pin là phía họ
 nói; bạn đọc, sửa, và trả lời bằng `note`.
