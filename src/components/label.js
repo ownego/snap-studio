@@ -1,7 +1,7 @@
 /* .cmp-label — NOT a kit component. The OneShot kit has no small-label
    primitive on purpose (step-marker owns numbering, text-box owns prose), so
    this lives here, owned by Snap Studio, drawn entirely from kit tokens —
-   see its rule + comment in tokens.css EXTRAS. Two element types share it:
+   see its rule + comment in tokens-extras.css. Two element types share it:
    "label" (a small free-standing tag, addable from the palette) and "stamp"
    (the context stamp — browser · OS · size · URL · time — placed by the
    topbar toggle rather than dragged from the palette; see context-stamp.js

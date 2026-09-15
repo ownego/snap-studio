@@ -724,7 +724,13 @@ export function geometryFor(repoRoot, type, r, at, k, frame, props) {
       // component's own default — a zoom tighter than that renders as a crop, not
       // a magnifier.
       const size = Math.max(Math.round(198 * k), Math.round(Math.max(r.w, r.h) * 1.8));
-      return { x: Math.round(r.x + r.w / 2), y: Math.round(r.y + r.h / 2), w: size, h: size };
+      const cx = Math.round(r.x + r.w / 2), cy = Math.round(r.y + r.h / 2);
+      // sourceX/sourceY mirror x/y here — a plain `at` zoom is still fully in-place
+      // (both point at the target). The relocate trick lives entirely in the CALLER:
+      // snap_add's `props overrides what "at" computes` merges an explicit
+      // props.x/y on top of x/y only, leaving these two untouched, so the glass
+      // moves while what it samples does not. See zoom.js's file header.
+      return { x: cx, y: cy, sourceX: cx, sourceY: cy, w: size, h: size };
     }
     case "step":
     case "label": {

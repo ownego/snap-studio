@@ -1,6 +1,6 @@
 ---
 name: editorial-glass
-description: The Editorial Glass annotation kit this repo's editor draws with — liquid-glass callout/badge/highlight/pill/blur/magnifier/arrow, the tokens they read colour from, and the house rules that are bugs someone already shipped, not preferences. Load this BEFORE touching src/tokens.css, src/editor.css, or any markup in src/editor.js that renders a `.cmp-*` element. Also when asked "what annotation components do we have", "why does the glass look flat", "add a new annotation type", or "change the accent colour".
+description: The Editorial Glass annotation kit this repo's editor draws with — liquid-glass callout/badge/highlight/pill/blur/magnifier/arrow, the tokens they read colour from, and the house rules that are bugs someone already shipped, not preferences. Load this BEFORE touching src/tokens.css, src/tokens-extras.css, src/editor.css, or any markup in src/editor.js that renders a `.cmp-*` element. Also when asked "what annotation components do we have", "why does the glass look flat", "add a new annotation type", or "change the accent colour".
 ---
 
 # Editorial Glass (vendored — snapshot-studio's slice)
@@ -22,18 +22,31 @@ when you actually want to add one here.
 
 All eight live in one vendored file, `src/tokens.css` (the layer is called
 `annotation-kit.css` in the source toolkit). `src/editor.js`'s `elInner()` function is
-where each gets its DOM markup — read that alongside this table, not instead of it:
+where each gets its DOM markup — read that alongside this table, not instead of it.
 
-| Class | What | Used in V1? |
+> **Corrigé 2026-09-15**: the table below used to list `.cmp-badge`, `.cmp-callout`,
+> `.cmp-highlight`, `.cmp-pill`, `.cmp-blur`, `.cmp-mag`, `.cmp-connector` — none of which
+> exist in this repo's actual `src/tokens.css` (verified by grep; the real classes are
+> `.cmp-step-marker`, `.cmp-text-box`, `.cmp-highlight-box`, `.cmp-label`,
+> `.cmp-privacy-blur`, `.cmp-zoom-magnify`, `.cmp-spotlight-cutout`, `.cmp-arrow` —
+> `catalogId` in each `src/components/*.js` confirms the same names). `.cmp-connector` in
+> particular isn't a separate component at all: it's the `arrow`'s own `origin` prop (dot
+> tail) — see `PLACEMENT_PLAYBOOK.md`'s `zoom` section for that same point from the other
+> side.
+
+| Class | Component (`src/components/*.js`) | Dùng trong 4 bài KB đã ship? |
 |---|---|---|
-| `.cmp-badge` | Numbered step bead | yes |
-| `.cmp-callout` | The headline component — frosted glass card, `.sz-s/.sz-l`, `.accent`, `.on-dark` variants | yes |
-| `.cmp-highlight` | Spotlight box — accent border + tint | yes |
-| `.cmp-pill` | Small glossy label, `.green` for the accent variant | yes (also doubles as the context-stamp element) |
-| `.cmp-blur` | Redaction patch — real `backdrop-filter` blur | yes |
-| `.cmp-mag` / `.rect` | Loupe showing an enlarged region of the same screenshot | yes |
-| `.cmp-arrow` | Free-drawn two-point arrow | yes |
-| `.cmp-connector` | Anchored, re-routing arrow with a dot tail | **no** — see README "What this is NOT". If you're adding it, this is the one component in the original kit worth reading closely first (it re-routes between two anchors rather than two fixed points). |
+| `.cmp-step-marker` | `step` — numbered step pill, accent + white ring | có |
+| `.cmp-text-box` | `textbox` — title+body card, `mode:"step"` (badge) / `"note"` (free label) | chưa |
+| `.cmp-highlight-box` | `highlight` — accent border box, `--shaded` variant for filled | có |
+| `.cmp-label` | `label` — free tag, **not** a kit component (`catalogId: null`, Snap Studio's own) | có |
+| `.cmp-privacy-blur` | `blur` — pixelated redaction patch, real mosaic not `backdrop-filter` | có |
+| `.cmp-zoom-magnify` | `zoom` — magnifier bubble sampling the same screenshot | có |
+| `.cmp-spotlight-cutout` | `spotlight` — dims the whole frame, cuts exactly one hole | chưa |
+| `.cmp-arrow` | `arrow` — two-point connector, `origin` dot for the "anchor-dot" convention | có |
+
+("Dùng trong 4 bài KB đã ship?" đối chiếu với bảng audit ở `PLACEMENT_PLAYBOOK.md`
+PRINCIPLE #8 — cùng một nguồn sự thật, để hai file không lệch nhau lần nữa.)
 
 `tokens.css` also carries `primitives.css` (`.ground-light/.ground-dark/.glass`),
 `typography.css` (`.eye/.head/.sub/.step-chip`) and `chrome.css` (`.shot`) — bundled because
@@ -72,22 +85,34 @@ toolkit before it got written down.
 
 ## Rebranding
 
-Edit the accent block near the top of `src/tokens.css` directly — this repo has no
-`bin/sync.mjs` to regenerate it, so this file **is** the source of truth here, not build
-output, whatever its own "GENERATED — DO NOT EDIT" banner says (that banner is honest about
-where the file *came from*, not about whether you're allowed to touch it *here*):
+Since the 2026-09 split (see both files' own banners), `src/tokens.css` is
+vendored-only — do NOT hand-edit it, it is overwritten wholesale on the next
+re-vendor. Rebrand from `src/tokens-extras.css` instead, by OVERRIDING the
+kit's colour ramp in its own `:root` block there rather than touching the
+vendored one — `tokens-extras.css` loads after `tokens.css`, so its `:root`
+wins the cascade for any variable it redeclares:
 
 ```css
---accent:#7c2cfb;  --accent-ink:#6415e1;  --accent-bright:#a571f7;
---accent-soft:#f3ecff;  --accent-line:#e5def0;
---accent-rgb:124,44,251;        /* translucent glows */
---accent-bright-rgb:165,113,247;
---accent-deep-rgb:70,20,150;    /* inner caustic, pressed bevel */
---accent-shadow-rgb:108,38,220; /* the long cast shadow under glass */
+:root {
+  --color-primary-50:  #eef3fd;  --color-primary-100: #dbe6fb;
+  --color-primary-200: #b3c9f7;  --color-primary-300: #86a8f2;
+  --color-primary-400: #4d7ceb;  --color-primary-500: #1350de; /* the accent */
+  --color-primary-600: #0f42b8;  --color-primary-700: #0c3491;
+  --color-primary-800: #09266b;  --color-primary-900: #061845;
+  --color-primary-500-rgb: 19, 80, 222;  /* keep in sync with -500 above —
+    rgba() can't take a hex var directly, this is exactly where a stale
+    rebrand hides (CLAUDE.md's no-hardcoded-values rule) */
+  --color-primary-400-rgb: 77, 124, 235;
+  --color-primary-700-rgb: 12, 52, 145;
+}
 ```
 
-`--green*` are aliases of `--accent*`, kept because `elInner()`/`annotation-kit.css` call
-sites reference both names. Don't delete them or set them independently of `--accent*`.
+The `--accent*` aliases (`--accent`, `--accent-ink`, `--accent-bright`,
+`--accent-soft`, `--accent-line`, `--accent-rgb`) already in
+`tokens-extras.css` just read `var(--color-primary-*)` — override the ramp
+above and every one of them, every component, follows with no further edit.
+There is no `--green*` in this kit (that was the OLD, now-gone purple
+"editorial-glass" — see the NOTE ON HISTORY in `tokens.css`'s own banner).
 
 ## Adding a component
 
@@ -98,14 +123,17 @@ Two paths, depending on whether you still have the source toolkit checked out so
   already one of the eight above plus content), run `node bin/sync.mjs`, then copy the
   regenerated `tools/snap-studio/src/tokens.css` over this repo's `src/tokens.css`. That
   keeps this repo's vendored copy honest instead of forking it further.
-- **You don't:** add the CSS directly to `src/tokens.css` in this repo, following the
-  house rules above (token-colours only, `.on-dark` variant, check both a light and dark
-  screenshot behind it). This repo is now the only source of truth for that component —
-  which is fine, just know you've forked, not synced.
+- **You don't:** add the CSS directly to `src/tokens-extras.css` in this repo (NOT
+  `src/tokens.css` — that file is vendored-only as of the 2026-09 split described in its
+  own banner; anything Snap Studio owns, including a forked component, belongs in the
+  sibling file so a future re-vendor can overwrite `tokens.css` wholesale without losing
+  it), following the house rules above (token-colours only, `.on-dark` variant, check both
+  a light and dark screenshot behind it). This repo is now the only source of truth for
+  that component — which is fine, just know you've forked, not synced.
 
 Either way, wire the new type into `src/editor.js`: a case in `elInner()` (markup), a case
 in `elStyle()` (positioning), a default in `newElement()`, a button in the palette
 (`editor.html`), and — if it needs drag/resize affordances beyond plain move — a rule in
-`src/editor.css` (this tool's own app-shell file; the source toolkit keeps this class of
-thing in a separate `extras/` file per consumer, since it's editor-only chrome that never
-survives into an exported PNG — same idea here, just not split into its own file).
+`src/tokens-extras.css` (editor-only chrome like drag handles/selection outlines — stripped
+by `body.render`, same file the app-shell aliases live in) or `src/editor.css` (this tool's
+own app-shell file: topbar, rails, panel, buttons) depending which one it is.

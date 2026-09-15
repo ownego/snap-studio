@@ -1,0 +1,54 @@
+{
+  "slug": "qikify-upsell-translations",
+  "round": 1,
+  "verdict": "changes-requested",
+  "summary": "Solid 4-step article, correctly scoped and mostly accurate against the dev reference, but Step 1's callout visibly overlaps the dashboard's promo banner (a real clutter/noise defect the user explicitly asked to avoid), plus a handful of write nits (ambiguous \"icon\" wording in Step 2, an incomplete troubleshooting cause, and the missing \"What it does\" heading).",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 1,
+      "img": "img/01-nav-translations-annotated.png",
+      "what": "The 'Step 1: Open Translations' label (props x=570,y=666, ~25-char text) computes to a bounding box of roughly x:414-726, y:645-687 on this 1920x945 capture. The green 'XFlow Back in Stock Alert' promo banner on the Shopify dashboard starts at x≈600 and runs to y≈717, so the label's right ~126px sits drawn on top of the banner (over its dark-green background and the '...Now' CTA button area). It doesn't cover the actual target (the highlighted 'Translations' nav item is fine), but it does clutter the shot with an unrelated ad element directly behind the callout text, which is exactly the 'gây nhiễu' the user asked to avoid.",
+      "why": "",
+      "fix": "Re-anchor the label further left so its right edge stays under x≈595 (e.g. center it around x≈420, inside the plain white gap between the sidebar at x=240 and the banner at x=600), then re-derive/redraw the arrow from that new position (or use at:{selector} on the nav item with side:\"right\" and let the tool pick a fit). Re-render and snap_view to confirm the pill no longer touches the banner."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 4,
+      "img": "img/04-save-changes-annotated.png",
+      "what": "Both the 'Discard' and 'Save' buttons get a red highlight box, but the step's label, heading and body are only about clicking Save (Discard is mentioned in prose merely as the alternative). Highlighting both equally under a single 'Step 4: Save' callout can make a reader think both need clicking, or be unsure which one the step points to.",
+      "why": "",
+      "fix": "Drop the highlight on 'Discard' and keep it only on 'Save', since Save is the actual instructed action for this step."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": 2,
+      "img": null,
+      "what": "Step 2 body says 'click the language dropdown — the icon next to your store's default language'. Per the dev reference, there is a separate DECORATIVE arrow icon (→) sitting between the primary-language text/badge and the actual dropdown, which has its own globe icon further right. Phrasing the dropdown as 'the icon next to your default language' risks pointing the reader at that non-interactive arrow instead of the real control just past it.",
+      "why": "",
+      "fix": "Reword to something like: \"click the language dropdown — the globe-icon control just past the small arrow next to your store's default language — and choose the language you want to add text for.\" so readers don't try to click the decorative arrow."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": null,
+      "img": null,
+      "what": "Troubleshooting row 'The language you had selected switched back on its own after clicking a tab' attributes this only to unsaved changes ('You had unsaved changes... check for the save bar'). Per the dev reference (§4), there is a second, unrelated cause: simply clicking from 'General settings' to an offer tab silently switches the dropdown to a different language even with nothing unsaved and no save bar involved. A merchant hitting that case won't find a save bar and the given explanation won't match what they're seeing.",
+      "why": "",
+      "fix": "Add a second troubleshooting row (or extend this one) noting the app can also silently switch the selected language just from clicking between tabs, independent of any unsaved changes — that's expected, not an error."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": null,
+      "img": null,
+      "what": "Per the article template, the intro should open with a '## What it does' heading (1-2 sentences) before '## Requirements'. The current intro starts directly with the descriptive paragraph and no heading, jumping straight to '## Requirements'.",
+      "why": "",
+      "fix": "Add a '## What it does' heading above the opening paragraph in job.intro, keeping the existing 1-2 sentence description under it."
+    }
+  ],
+  "updatedAt": 1788865758802
+}

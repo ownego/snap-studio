@@ -176,4 +176,15 @@ test("the real playbook parses, and every bullet carries an id", () => {
     "a playbook with retired learnings should reach the prompt smaller than it is on disk");
 });
 
+test("playbookPath: \"content\" resolves to the sibling playbook, and the real one parses too", () => {
+  const p = playbookPath(REPO_ROOT, "content");
+  assert.ok(p.endsWith("CONTENT_PLAYBOOK.md"));
+  const list = listLearnings(readFileSync(p, "utf8"));
+  assert.deepEqual(list, [], "a fresh CONTENT_PLAYBOOK.md ships with no learnings yet");
+});
+
+test("playbookPath: an unknown kind throws rather than silently defaulting", () => {
+  assert.throws(() => playbookPath(REPO_ROOT, "wording"), /unknown playbook kind/);
+});
+
 console.log("kb-playbook: " + passed + " passed" + (process.exitCode ? " (with failures above)" : ""));

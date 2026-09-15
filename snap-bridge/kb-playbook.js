@@ -51,8 +51,20 @@ const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
  *  template literals below reads worse than naming it once. */
 const TICK = String.fromCharCode(96);
 
-export function playbookPath(repoRoot) {
-  return path.join(repoRoot, ".claude", "skills", "kb", "PLACEMENT_PLAYBOOK.md");
+const PLAYBOOK_FILES = {
+  placement: "PLACEMENT_PLAYBOOK.md",
+  content: "CONTENT_PLAYBOOK.md",
+};
+
+/** `kind` picks which of the two sibling playbooks a learning goes to —
+ *  "placement" (where an annotation goes, the original and default) or
+ *  "content" (how the article is worded/structured). Same file format, same
+ *  `## LEARNINGS` heading, so every function below already works on either
+ *  one unmodified. */
+export function playbookPath(repoRoot, kind = "placement") {
+  const file = PLAYBOOK_FILES[kind];
+  if (!file) throw new Error(`unknown playbook kind "${kind}" — expected "placement" or "content".`);
+  return path.join(repoRoot, ".claude", "skills", "kb", file);
 }
 
 export function today() {

@@ -14,7 +14,7 @@ Người dùng duyệt.
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Gõ `/kb` trong một phiên Claude Code thường | **Bạn, một mình**, hết mục "Quy trình" bên dưới. Không có ai soi lại — mục 6 (nhìn bằng mắt) là lớp kiểm duy nhất |
 | KB Studio → **"+ New job"**                 | **Ba agent nối tiếp**: capture → write → review, cộng fix round. Xem mục *Job "author"*                           |
-| KB Studio → gõ prompt dưới một bài đã có    | **Một agent, không browser**. Xem mục *Job "revise"*                                                              |
+| KB Studio → gõ prompt dưới một bài đã có    | **Một agent — browser tuỳ chọn** (0+ tab gắn qua "🔗 Tabs"). Xem mục *Job "revise"*                               |
 
 
 **Đọc `PLACEMENT_PLAYBOOK.md` cạnh file này TRƯỚC khi đặt annotation đầu tiên** — nó chứa hệ
@@ -75,13 +75,18 @@ nào.
 | `snap_comment_resolve` | Đóng một comment, sau khi đã sửa **và** đã nhìn ảnh render lại                                                                                                                                                       |
 | `snap_job`             | Đọc / ghi đè `job.json` của một bài — sửa `els` khi phiên không có tool sửa file                                                                                                                                     |
 | `snap_view`            | **Nhìn** một ảnh trong `kb/` — thay cho `Read` khi phiên không đọc được file. `grid:true` phủ lưới toạ độ có nhãn: bắt buộc khi cần **đọc** một con số x/y                                                           |
-| `snap_learn`           | Append một LEARNING vào `PLACEMENT_PLAYBOOK.md`. Ngày và id (`L-<ngày>-<chữ>`) được đóng dấu sẵn. Không xoá/sửa được mục cũ; chứng minh được một mục là sai thì `supersedes: "<id>"` để nó thôi được nạp vào job sau |
+| `snap_learn`           | Append một LEARNING vào `PLACEMENT_PLAYBOOK.md` (`category:"placement"`, mặc định) hoặc `CONTENT_PLAYBOOK.md` (`category:"content"`) — sửa toạ độ/component thì placement, sửa câu chữ/cấu trúc thì content. Ngày và id (`L-<ngày>-<chữ>`) được đóng dấu sẵn. Không xoá/sửa được mục cũ; chứng minh được một mục là sai thì `supersedes: "<id>"` (cùng file) để nó thôi được nạp vào job sau |
 
 
 ## Nguyên tắc viết bài
 
 Nguyên tắc cho **nội dung/văn phong** của bài — khác trục với mục "Chú thích" (đặt annotation
 lên ảnh) ở dưới, không thay thế nó. Áp dụng từ lúc lên kế hoạch (mục 1) tới lúc ghi bài (mục 7).
+
+**Đọc `CONTENT_PLAYBOOK.md` cạnh file này** trước khi viết — em của `PLACEMENT_PLAYBOOK.md`,
+cùng cơ chế: một, hai nguyên tắc chưa nêu ở đây (khi nào cần sơ đồ khái niệm thay vì tả suông,
+liên kết chéo giữa các bài) cộng một log LEARNINGS riêng cho câu chữ/cấu trúc, đầy dần qua
+`snap_learn({..., category:"content"})` — không lặp lại nguyên tắc cố định dưới đây.
 
 - **Viết bằng tiếng Anh**, giọng văn chuyên nghiệp, rõ ràng, để merchant tự đọc và tự làm được nhiều nhất có thể.
 - **Giải thích ngắn gọn, không rườm rà**. Các option, setting không cần giải thích quá sâu, chi tiết, tránh gây confuse cho merchant.
@@ -112,7 +117,7 @@ Bài theo khung sau. Đây **không phải field mới** trong `job.json` — ch
 | Section trong bài                           | Field trong `job.json`                                                                                                                                                                             |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `# [Feature Name]`                          | `title`                                                                                                                                                                                            |
-| `## What it does` (1-2 câu)                 | đầu `intro`                                                                                                                                                                                        |
+| `## What it does` (1-2 câu)                 | đầu `intro`, có thể không cần title "What it does" nếu bài viết đang nói về 1 feature cụ thể                                                                                                       |
 | `## Requirements` — bỏ hẳn nếu không có     | cuối `intro`, sau "What it does"                                                                                                                                                                   |
 | `## How to set it up`                       | **không phải heading riêng** — chính là chuỗi `## N. heading` + ảnh mỗi bước đã có (`steps[]`, mục 5-6b); đừng thêm heading "How to set it up" bọc ngoài, nó trùng ý với các `## N.` ngay bên dưới |
 | `## Related articles` — bỏ hẳn nếu không có | cuối `outro`                                                                                                                                                                                       |
@@ -120,7 +125,12 @@ Bài theo khung sau. Đây **không phải field mới** trong `job.json` — ch
 
 Callout `> 💡 **Note:** …` / `> ⚠️ **Important:** …` (mục 7b cho icon): trong một bước dùng
 `notes[].kind: "Note"` hoặc `"Important"`; nằm trong `intro`/`outro` (ví dụ ngay dưới bảng
-Settings explained) thì gõ tay dòng `>` trực tiếp.
+Settings explained) thì gõ tay dòng `>` trực tiếp. `notes[]` luôn render thành blockquote
+**dưới** ảnh — nếu cái tip/cảnh báo nói về một chỗ cụ thể trên ảnh (một control mờ, một field
+bị khoá), dùng `textbox` (`mode:"note"`) neo tại đúng pixel đó thay cho `notes[]`, để ý "vì sao
+nó xám" nối được với đúng chỗ đang xám thay vì nằm cách đó vài trăm px (playbook mục `textbox`).
+
+
 
 Bỏ hẳn section nào không có nội dung thật, không để heading trống — Requirements và
 Troubleshooting là hai section hay bị bỏ nhất trong thực tế.
@@ -137,6 +147,12 @@ chắn nhất để lặp lại đúng lỗi người dùng vừa chỉ ra. Bài
 
 Một bước = một màn hình. Với mỗi bước: đường dẫn cần tới, tiêu đề ngắn, phần prose, và
 annotation dự kiến. Bước 1 **luôn** định vị trong menu (playbook #4).
+
+Bước đang giải thích một **rule/logic** (cách sắp xếp, tính điểm, điều kiện bật-tắt) chứ không
+phải "cái gì hiện trên màn hình" thì không có app nào để chụp — dùng
+`snap-bridge/kb-templates/concept.html` (mở qua `snap_new_tab` như một tab bình thường, sửa nội
+dung, `snap_capture_tab` y hệt một screen thật rồi `snap_add` lên trên như mọi bước khác) để dựng
+một card ví dụ A/B/C có số cụ thể — xem `CONTENT_PLAYBOOK.md` PRINCIPLE 1.
 
 ### 2. Điều hướng tới đúng màn hình, đúng state
 
@@ -186,7 +202,14 @@ element thật (chip tài khoản, v.v.) thay vì gõ tay `x/y/w/h` — sai mộ
 tới cuối bài mới thêm — thêm muộn nghĩa là các bước trước đó không còn được nhìn lại sau khi có
 blur, và lần đầu tiên có ai nhìn thấy nó trên toàn bộ N ảnh là ở stage review, tốn hẳn một fix
 round mới bắt được lỗi lẽ ra bắt ngay từ bước 1.
-- ≥1 `zoom` lên chi tiết quyết định — playbook #5.
+**Nhìn ảnh bước 1 thôi CHƯA ĐỦ** (playbook mục "RÀ SOÁT 2026-09-11" ở PRINCIPLE #6): chip tài
+khoản/tên cửa hàng trên topbar Shopify admin đổi vị trí/độ rộng giữa các bước dù W×H hai ảnh
+giống hệt nhau, nên một `globalEls` box đo đúng ở bước 1 vẫn có thể lộ PII ở ảnh giữa hoặc cuối
+bài — đã xảy ra ở 2 bài đã ship. Trước khi coi PII đã chặn xong: `snap_view` thêm ít nhất một
+ảnh **ở giữa** bài và ảnh **cuối** bài, không chỉ ảnh đầu.
+- ≥1 `zoom` lên chi tiết quyết định — playbook #5. Chỗ đặt bong bóng che mất phần cần xem xung
+quanh → dời nó (`sourceX/sourceY` giữ nguyên điểm lấy mẫu, `x/y` dời hiển thị đi chỗ trống, ghép
+một `arrow` trỏ về target — playbook mục `### zoom`), đừng chỉ đổi `x/y` một mình.
 - **Đọc khối `WARNING:`** trong kết quả `snap_add`/`snap_job`/`snap_render_job`: tràn mép, callout
 đè lên vùng nó trỏ tới, đầu mũi tên nằm trong khung, prop không tồn tại. Không chặn render — nên
 bỏ qua là tự chọn ship ảnh hỏng.
@@ -372,27 +395,44 @@ Hết 2 round mà còn finding mở thì bài **vẫn** hoàn tất và vẫn re
 
 ## Job "revise" — khi người dùng gõ prompt thẳng trong KB Studio
 
-Chọn một bài trong tab KB → gõ vào ô prompt dưới bài → snap-bridge spawn một phiên agent **không
-có browser** (`kb-job.js`, mode `revise`), nạp sẵn cho nó: markdown hiện tại của bài, các comment
-đang mở (đã quy đổi ra pixel), và câu người dùng vừa gõ.
+Chọn một bài trong tab KB → gõ vào ô prompt dưới bài → snap-bridge spawn một phiên agent
+(`kb-job.js`, mode `revise`), nạp sẵn cho nó: markdown hiện tại của bài, các comment đang mở (đã
+quy đổi ra pixel), câu người dùng vừa gõ, và — khác với trước — **0 hoặc nhiều session tab** người
+dùng đã gắn qua nút **"🔗 Tabs"** cạnh ô prompt (cùng danh sách whitelist với "+ New job", cùng cơ
+chế — xem mục *Cần có trước*).
 
-**Nếu bạn LÀ phiên đó**: mọi tool `mcp__chrome__*` và mọi `snap_*` cần `tabId` (`snap_capture_tab`,
-`snap_frame_*`, `snap_add` với `at`) đều bị từ chối — đó là ranh giới của job này, không phải lỗi
-cấu hình, đừng thử lại. Bạn làm việc trên file đã có trong `kb/`:
+**Trình đọc là `job.sessionTabs`, không phải "không có" cố định.** Không gắn tab nào → job xử sự
+đúng như trước: mọi `snap_*` cần `tabId` (`snap_capture_tab`, `snap_frame_*`, `snap_add` với `at`,
+`snap_navigate`, `snap_look`) đều bị từ chối, bạn chỉ làm việc trên file đã có trong `kb/`. **Có ít
+nhất một tab gắn** → những tool đó được mở, y hệt quyền của stage capture trong job "author", nhưng
+chỉ giới hạn đúng `tabId`/origin của (các) tab đã gắn cho **lượt này** — hệ thống prompt của mỗi
+lượt nói rõ đang ở trạng thái nào và liệt kê tab (nếu có). `mcp__chrome__*` vẫn luôn bị từ chối ở
+cả hai trạng thái — job này (như job "author") chỉ lái browser qua `mcp__snap__*`, không có server
+chrome riêng.
 
-`snap_comments` → `snap_job` → `snap_render_job` (hoặc `snap_open`/`snap_add` với toạ độ `props`
-tường minh + `snap_export` cho bài không có `job.json`) → `**snap_view**` → `snap_comment_resolve`
-→ `snap_learn`.
+**Nếu bạn LÀ phiên đó và có tab gắn**: chụp lại đúng theo mục "Quy trình" bước 2-4 của skill này
+(`snap_frame_find` xác minh target nằm trong khung trước khi `snap_capture_tab`), rồi vẫn đi tiếp
+vòng sửa bên dưới trên ảnh vừa chụp.
+
+Vòng làm việc, tab hay không:
+
+`snap_comments` → (nếu có tab: `snap_navigate`/`snap_frame_*`/`snap_capture_tab` để chụp lại) →
+`snap_job` → `snap_render_job` (hoặc `snap_open`/`snap_add` — `at` dùng được nếu có tab, còn không
+thì toạ độ `props` tường minh — + `snap_export` cho bài không có `job.json`) → `**snap_view**` →
+`snap_comment_resolve` → `snap_learn`.
 
 **Nhiều lượt là CÙNG một phiên.** Prompt thứ hai trở đi mở đầu bằng "Follow-up from the user in the
 same session" — bạn còn nguyên ngữ cảnh lượt trước, nên "vẫn lệch, dịch phải thêm chút" là câu có
-nghĩa. Phần trạng thái (comment đang mở + markdown) vẫn được đọc lại từ đĩa mỗi lượt và **tin nó
-hơn trí nhớ** khi hai bên khác nhau — người dùng có thể đã sửa tay giữa hai lượt. Người dùng bấm
-"⟲ New session" là cắt phiên; lúc đó bạn bắt đầu lại từ đầu, không có gì để nhớ.
+nghĩa. Phần trạng thái (comment đang mở + markdown + **tab đang gắn**) vẫn được đọc lại từ đĩa/UI
+mỗi lượt và **tin nó hơn trí nhớ** khi hai bên khác nhau — người dùng có thể đã sửa tay, hoặc
+gắn/gỡ tab, giữa hai lượt. Người dùng bấm "⟲ New session" là cắt phiên; lúc đó bạn bắt đầu lại từ
+đầu, không có gì để nhớ. Job này **không tự mở được tab mới** — nếu tab cần thiết đã đóng hoặc chưa
+từng được gắn, **dừng lại và nói rõ** cần gắn/mở lại tab nào.
 
-Cần ảnh mới — app đổi, target chưa bao giờ nằm trong khung, state trong ảnh sai (playbook #2) —
-thì **dừng lại và nói rõ bước nào cần chụp lại**. Người dùng sẽ chạy "+ New job" với tab mở sẵn.
-Tuyệt đối không dời annotation sang một target không có trong ảnh để trông như đã sửa.
+Cần ảnh mới nhưng **không có tab nào đang gắn cho lượt này** — app đổi, target chưa bao giờ nằm
+trong khung, state trong ảnh sai (playbook #2) — thì **dừng lại và nói rõ bước nào cần chụp lại**.
+Người dùng có thể gắn tab qua "🔗 Tabs" rồi gõ lại, hoặc chạy hẳn "+ New job" nếu cần sửa lớn hơn
+một khâu. Tuyệt đối không dời annotation sang một target không có trong ảnh để trông như đã sửa.
 
 ## Không làm
 
@@ -408,12 +448,18 @@ Save rồi chụp lại để xác minh, sao cho mỗi bước trong bài mô t�
 giới duy nhất là thao tác **không đảo ngược lại được bằng UI** — xem mục 8.
 - **Đừng** hard-code kích thước canvas — đọc từ response của `snap_capture_tab`.
 
-## Khi người dùng sửa lại chỗ đặt của bạn
+## Khi người dùng sửa lại chỗ đặt — hoặc câu chữ — của bạn
 
-`snap_learn`: đặt sai thế nào · vì sao sai · luật rút ra (ngày và id do tool đóng dấu).
+`snap_learn`: đặt sai thế nào (hay viết/tổ chức sai thế nào) · vì sao sai · luật rút ra (ngày và
+id do tool đóng dấu). Chọn đúng `category` — sửa toạ độ/component/target thì `"placement"`
+(mặc định, vào `PLACEMENT_PLAYBOOK.md`), sửa câu/đoạn/cấu trúc bài thì `"content"` (vào
+`CONTENT_PLAYBOOK.md`) — một comment về "callout đè lên nút Save" là placement, một comment về
+"câu này khó hiểu" hay "đoạn này nên ở Requirements, không phải Troubleshooting" là content.
+
 Playbook chỉ có giá trị nếu được cập nhật; không cập nhật thì 2 tuần nữa nó là tài liệu chết.
-Và nếu lần sửa này chứng minh một learning cũ là sai thì `supersedes` nó, đừng chỉ thêm
-một mục mới bên cạnh — hai luật trái nhau trong cùng một prompt thì job sau chọn bừa.
+Và nếu lần sửa này chứng minh một learning cũ là sai thì `supersedes` nó (cùng playbook với
+learning mới — không trỏ chéo giữa hai file), đừng chỉ thêm một mục mới bên cạnh — hai luật trái
+nhau trong cùng một prompt thì job sau chọn bừa.
 
 Áp dụng như nhau dù họ sửa bằng comment ghim (vòng review ở trên) hay chỉ nói trong chat — comment
 chỉ là kênh chính xác hơn, không phải một việc khác.

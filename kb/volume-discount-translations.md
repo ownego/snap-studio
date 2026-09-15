@@ -1,0 +1,47 @@
+# How to Translate the Volume Discount App's Storefront Text and Offers
+
+The Volume Discount app's **Translations** page lets you localize everything shoppers see in the storefront widget — both the wording shared across every offer (stock messages, button labels, countdown text) and the wording of each individual offer. The page has two modes, switched with a single button: **Default content mode** for editing the base wording in your store's primary language, and **Translation mode** for adding a translation into another language. Nothing on the page is actually labeled "mode" — the steps below point out exactly how to tell which one you're in.
+
+## 1. Open Translations
+
+![Open Translations](./img/01-nav-translations-annotated.png)
+
+In your Shopify admin's left-hand navigation, find **Qikify Volume Discount** under Apps and expand it. Click **Translations** — it sits between **Manage offers** and **Variant swatches**, and it's always there, with no plan or role restriction to unlock it.
+
+## 2. Check the Default content tab
+
+![Check the Default content tab](./img/02-default-content-tab-annotated.png)
+
+Translations opens straight onto the **Default content** tab — the tab that's always selected first. It lists roughly two dozen single-line fields for the wording your storefront widget shares across every offer: out-of-stock messages, button text, countdown labels, and similar. Every field is optional, and every edit here applies to your store's **primary language**, marked with the **Default** badge next to the language name at top left — that's the language this tab always edits.
+
+In the top right, a button reads **Translation to another language**. This is the page's only mode indicator, and it's the easiest thing to misread: it always names the mode you're about to *switch to*, never the one you're currently in. Right now you're in **Default content mode**, editing the base wording that ships to any shopper whose language has no translation yet.
+
+Look closely at the **Unavailable** field's value: it ships with a genuine misspelling, **Unvailable** — not the correctly spelled label just above it. It's a common one to fix here.
+
+## 3. Switch to Translation mode
+
+![Switch to Translation mode](./img/03-translation-mode-annotated.png)
+
+Click **Translation to another language** to switch into **Translation mode**. Three things change at once, all visible here: the same button now reads **Edit default text** — since it again names where you'd go *next*, seeing that label is your confirmation that you're now in Translation mode. Next to the language strip, a small arrow (→) appears, followed by a language dropdown labeled with nothing but a globe/translate icon and no visible text — it auto-selects the first available language for your store (here, **Japanese**). Both the arrow and the dropdown only appear once the store has a non-primary language to translate into, so seeing them at all is a second, easy-to-miss confirmation that you're in Translation mode. And a second tab, **Offer(s)**, appears next to Default content; it only shows up when the store has at least one offer and you're in Translation mode.
+
+Every field on this tab now splits into two columns: the default wording on the left, read-only, and a blank box on the right for your translation — the **Unavailable** row highlighted here still shows the same **Unvailable** default on the left. Right-hand fields start out blank until you translate them, and that's normal: a blank field just means the storefront falls back to the default text for that language, not that anything is broken.
+
+> **Warning:** ⚠️ Save before you switch the language dropdown, the mode button, or the tab. Unlike Discard, none of those ask for confirmation — they just reload the fields, and any unsaved typing is gone.
+
+## 4. Open the Offer(s) tab
+
+![Open the Offer(s) tab](./img/04-offers-tab-annotated.png)
+
+Select the **Offer(s)** tab to translate individual offers instead of the shared wording — notice the mode button from the previous steps is gone here, since it only shows on Default content. The list shows each offer by its **internal name** (the name used inside the app, not the title shoppers see on the storefront), with a **Translate** link on the right of every row. The search field above the list has no visible label — just a placeholder that reads "Search offers…". Click **Translate** on the offer you want to localize.
+
+## 5. Translate the offer in its dialog
+
+![Translate the offer in its dialog](./img/05-offer-dialog-annotated.png)
+
+Clicking Translate opens the offer's translation dialog, titled with the offer's own **internal name** (**Offer 7** here) — not the storefront title, and nothing in the dialog shows the offer's type. A warning banner reminds you to translate only the text outside curly-brace placeholders like `{quantity}` or `{discount}`; those are swapped for live values on the storefront, so translating or removing them breaks the wording.
+
+The dialog uses the same two-column layout as the Default content tab — the offer's current wording on the left, your translation on the right — for every field the offer uses, plus a per-tier section further down for offers that have tiers. Click **Save** to store the translation for this offer, in whatever language is selected at the top of the page, or **Cancel** to close without saving.
+
+> **Tip:** 💡 There's no separate control for removing a translation — clear the field and click Save, and the storefront falls back to the offer's default wording.
+
+Translations covers two layers: the shared wording your whole widget uses (Default content tab) and each offer's own wording (Offer(s) tab, available in Translation mode). Keep one habit: check which mode the top-right button names *before* you save. Since it always names where you're headed rather than where you are, saving while in Default content mode rewrites the base wording for every shopper who doesn't yet have a translation — not just the one language you may think you're editing.

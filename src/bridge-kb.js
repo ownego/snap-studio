@@ -49,6 +49,18 @@
     const sessionInList = $('#kbSessionInList');
     const sessionCandidateList = $('#kbSessionCandidateList');
     const sessionRefreshBtn = $('#kbSessionRefresh');
+    // Same underlying session — a revise job now reads the same sessionTabs
+    // this "+ New job" picker maintains (kb-job.js's startJob accepts them for
+    // either mode) — this is just a second popup to see/edit it without
+    // leaving the article panel. See renderSessionLists() below. The popup
+    // itself lives at the end of <body> in editor.html, not nested under
+    // this button — same reasoning as kb-surface.js's .kbs-modal.
+    const articleTabsToggleBtn = $('#kbArticleTabsToggle');
+    const articleSessionPanel = $('#kbArticleSessionPanel');
+    const articleSessionCloseBtn = $('#kbArticleSessionClose');
+    const articleSessionInList = $('#kbArticleSessionInList');
+    const articleSessionCandidateList = $('#kbArticleSessionCandidateList');
+    const articleSessionRefreshBtn = $('#kbArticleSessionRefresh');
     const startBtn = $('#kbStartBtn');
     const stopBtn = $('#kbStopBtn');
     const pauseBtn = $('#kbPauseBtn');
@@ -375,23 +387,32 @@
       li.append(label, btn);
       return li;
     }
-    function renderSessionLists() {
-      sessionInList.innerHTML = '';
+    function paintSessionInto(inList, candidateList) {
+      inList.innerHTML = '';
       if (!sessionTabs.length) {
-        sessionInList.innerHTML = '<li class="empty-hint">None yet — add a tab below.</li>';
+        inList.innerHTML = '<li class="empty-hint">None yet — add a tab below.</li>';
       } else {
-        sessionTabs.forEach((t) => sessionInList.appendChild(
+        sessionTabs.forEach((t) => inList.appendChild(
           sessionItem(t, '×', 'Remove from session', () => removeSessionTab(t.id))
         ));
       }
-      sessionCandidateList.innerHTML = '';
+      candidateList.innerHTML = '';
       if (!candidateTabs.length) {
-        sessionCandidateList.innerHTML = '<li class="empty-hint">No other open tabs — open one, then refresh.</li>';
+        candidateList.innerHTML = '<li class="empty-hint">No other open tabs — open one, then refresh.</li>';
       } else {
-        candidateTabs.forEach((t) => sessionCandidateList.appendChild(
+        candidateTabs.forEach((t) => candidateList.appendChild(
           sessionItem(t, '+', 'Add to session', () => addSessionTab(t.id))
         ));
       }
+    }
+    // One shared sessionTabs/candidateTabs pair (see the const comments above),
+    // painted into BOTH pickers — the "+ New job" form's and the article
+    // panel's collapsible one — so adding a tab in either place shows up in
+    // the other without a second fetch.
+    function renderSessionLists() {
+      paintSessionInto(sessionInList, sessionCandidateList);
+      paintSessionInto(articleSessionInList, articleSessionCandidateList);
+      articleTabsToggleBtn.textContent = sessionTabs.length ? `🔗 Tabs (${sessionTabs.length})` : '🔗 Tabs';
       updateControls();
     }
     async function refreshSession() {
@@ -424,10 +445,14 @@
     function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function inlineMd(s) {
       s = escapeHtml(s);
-      s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, src) => {
+      // ![alt](url "=WIDTHxHEIGHT") — the trailing "=WxH" (H may be "auto") is
+      // Crisp's image-resize syntax; width/height become an inline style on the
+      // <img> so max-width:100% in editor.css still caps it in a narrow pane.
+      s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"=(\d+)x(\d+|auto)")?\)/g, (m, alt, src, w, h) => {
         const escSrc = escapeHtml(src);
         const escAlt = escapeHtml(alt);
-        return `<figure class="kb-md-figure"><span class="kb-md-imgwrap" data-src="${escSrc}"><img class="kb-md-img" alt="${escAlt}"></span>`
+        const style = w ? ` style="width:${parseInt(w, 10)}px${h && h !== 'auto' ? `;height:${parseInt(h, 10)}px` : ''}"` : '';
+        return `<figure class="kb-md-figure"><span class="kb-md-imgwrap" data-src="${escSrc}"><img class="kb-md-img" alt="${escAlt}"${style}></span>`
           + `<figcaption>${escSrc}${alt ? ' — ' + escAlt : ''}</figcaption></figure>`;
       });
       s = s.replace(/\[([^\]]*)\]\(([^)]+)\)/g, (m, text, href) => `<a href="#" class="kb-md-link" title="${escapeHtml(href)}">${text}</a>`);
@@ -435,15 +460,33 @@
       s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       s = s.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
       s = s.replace(/~~([^~]+)~~/g, '<s>$1</s>');
-      // <u> is the one HTML tag this hand-rolled parser passes through — matched
-      // on its escaped form since escapeHtml() already ran above, same trick the
-      // markdown link syntax elsewhere in this file relies on being processed
-      // after escaping rather than before it.
-      s = s.replace(/&lt;u&gt;([\s\S]+?)&lt;\/u&gt;/g, '<u>$1</u>');
+      s = s.replace(/\+\+([^+]+)\+\+/g, '<mark>$1</mark>');
+      // __text__ is underline here (Crisp's syntax, which this whole format
+      // list is drawn from), not the CommonMark alt-bold reading of double
+      // underscore — this tool already has ** for bold, so __ was free to mean
+      // something else. A raw <u> tag used to be accepted too; dropped since it
+      // isn't part of Crisp's format list and no shipped article used it.
+      s = s.replace(/__([^_]+)__/g, '<u>$1</u>');
       return s;
     }
     function parseTableRow(line) {
       return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+    }
+    /** ${youtube|vimeo|dailymotion|frame}[label](id-or-url) — a block on its own
+     *  line, embedding a video or an arbitrary iframe. `frame`'s id is already a
+     *  full URL and is used as-is; the video providers' ids get URI-encoded since
+     *  they're meant to be bare ids, not URLs. */
+    function embedSrc(kind, raw) {
+      const id = raw.trim();
+      if (kind === 'youtube') return `https://www.youtube.com/embed/${encodeURIComponent(id)}`;
+      if (kind === 'vimeo') return `https://player.vimeo.com/video/${encodeURIComponent(id)}`;
+      if (kind === 'dailymotion') return `https://www.dailymotion.com/embed/video/${encodeURIComponent(id)}`;
+      return id;
+    }
+    function embedBlock(kind, label, raw, lineIdx) {
+      const escSrc = escapeHtml(embedSrc(kind, raw));
+      const escLabel = escapeHtml(label || kind);
+      return `<div class="kb-md-embed" data-ln="${lineIdx}-${lineIdx + 1}"><iframe src="${escSrc}" title="${escLabel}" loading="lazy" allowfullscreen></iframe></div>`;
     }
     function md2html(md) {
       const lines = String(md || '').replace(/\r\n/g, '\n').split('\n');
@@ -507,6 +550,21 @@
         } else if (/^(-{3,}|\*{3,})$/.test(line.trim())) {
           flushPara(); closeList();
           out.push('<hr>');
+        } else if ((m = /^\$\{(youtube|vimeo|dailymotion|frame)\}\[([^\]]*)\]\(([^)]+)\)\s*$/.exec(line))) {
+          flushPara(); closeList();
+          out.push(embedBlock(m[1], m[2], m[3], i));
+        } else if ((m = /^\|{3}\s?(.*)$/.exec(line))) {
+          flushPara(); closeList();
+          out.push(`<div class="kb-callout kb-callout--warning" data-ln="${i}-${i + 1}">${inlineMd(m[1])}</div>`);
+        } else if ((m = /^\|{2}\s?(.*)$/.exec(line))) {
+          flushPara(); closeList();
+          out.push(`<div class="kb-callout kb-callout--info" data-ln="${i}-${i + 1}">${inlineMd(m[1])}</div>`);
+        } else if (!/\|\s*$/.test(line) && (m = /^\|\s?(.*)$/.exec(line))) {
+          // The lone-pipe case is guarded against a trailing "|" — a stray
+          // one-row table missing its "---" separator line reads as literal
+          // text falling through to the paragraph branch below, not a Tip box.
+          flushPara(); closeList();
+          out.push(`<div class="kb-callout kb-callout--tip" data-ln="${i}-${i + 1}">${inlineMd(m[1])}</div>`);
         } else if ((m = /^[-*]\s+(.*)$/.exec(line))) {
           flushPara();
           if (list !== 'ul') { closeList(); out.push('<ul>'); list = 'ul'; } else { flushLi(); }
@@ -666,11 +724,29 @@
         // The rendered PNG above is still fetched and still what the `PNG` toggle
         // shows — it is what the published markdown links to. What goes on screen
         // by default is the live surface, when this image is a job step whose base
-        // capture is still on disk. Everything else (a flat article with no
-        // job.json, an image the agent pasted in by hand, a base capture that has
-        // been deleted) keeps the PNG, read-only, exactly as before.
+        // capture is still on disk. A base capture that has been deleted still
+        // keeps the PNG, read-only — there is nothing left to mount.
         if (ctx.live === false) return;
-        const step = stepFor(resolved, ctx.job);
+        let step = stepFor(resolved, ctx.job);
+        // A markdown image that is not any step's `out` — an agent pasted it
+        // straight into the prose, or a revise job merged its old step's body in
+        // and dropped the step entry with it (see PLACEMENT_PLAYBOOK.md on this
+        // article). Adopt it as a step on the spot rather than leaving it
+        // read-only: the image itself becomes its own base capture (nothing else
+        // is known about it), so editing starts from an empty overlay on top of
+        // whatever is already in the PNG, same as opening any other step fresh.
+        // Only in the editable article context (onChange exists) — the "New job"
+        // read-only preview must never mutate a job an agent still owns mid-run.
+        if (!step && ctx.job && Array.isArray(ctx.job.steps) && ctx.onChange) {
+          const img = wrap.querySelector('img');
+          const usedNs = ctx.job.steps.map((s, i) => (s && s.n != null) ? s.n : i + 1);
+          step = {
+            n: usedNs.length ? Math.max(...usedNs) + 1 : 1,
+            heading: (img && img.alt) || resolved.split('/').pop().replace(/\.[a-z0-9]+$/i, ''),
+            src: resolved, out: resolved, body: '', notes: [], els: [],
+          };
+          ctx.job.steps.push(step);
+        }
         if (!step || !step.src) return;
         const inst = await window.SnapKit.kbSurface.mount(wrap, {
           step,
@@ -742,6 +818,19 @@
       if (suppressPopoverAutoClose) { suppressPopoverAutoClose = false; return; }
       if (activePopover && !activePopover.contains(ev.target)) closePopover();
       if (commentAffordance && !commentAffordance.contains(ev.target)) removeCommentAffordance();
+    });
+    // Attach-a-tab popup — a full-viewport backdrop (see #kbArticleSessionPanel
+    // in editor.html), so it sits ABOVE #kbArticleTabsToggle while open and the
+    // document click handler above never sees a click "outside" it (every
+    // click, backdrop included, lands inside this element). Closed the same
+    // way kb-surface.js's .kbs-modal closes itself: a click that lands
+    // exactly on the backdrop (not bubbled up from the card), the close
+    // button, or Escape.
+    function closeArticleSessionPanel() { articleSessionPanel.hidden = true; }
+    articleSessionPanel.addEventListener('pointerdown', (ev) => { if (ev.target === articleSessionPanel) closeArticleSessionPanel(); });
+    articleSessionCloseBtn.addEventListener('click', closeArticleSessionPanel);
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && !articleSessionPanel.hidden) closeArticleSessionPanel();
     });
     function renderCommentPins() {
       articlePreview.querySelectorAll('.kb-comment-pin').forEach((p) => p.remove());
@@ -1557,19 +1646,46 @@
       const urlStart = start + text.length + 3; // '[' + text + ']('
       ta.setSelectionRange(urlStart, urlStart + url.length);
     }
+    /** ${youtube}[label](video-id) on its own line — same shape as insertLink():
+     *  the id, not the label, is what the user is about to type over, so that's
+     *  what ends up selected. Always YouTube; Vimeo/Dailymotion/an arbitrary
+     *  frame are one word-swap away and not common enough to earn their own
+     *  button (see md2html's embedBlock() for the full set this renders). */
+    function insertEmbed() {
+      const ta = articleEditor;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const prefix = '${youtube}[label](';
+      const id = 'video-id';
+      // A bare block, so it needs its own line — same reasoning prefixLines()
+      // works off, but this inserts a whole new line rather than editing existing ones.
+      const val = ta.value;
+      const needsNlBefore = start > 0 && val[start - 1] !== '\n';
+      const needsNlAfter = end < val.length && val[end] !== '\n';
+      const text = (needsNlBefore ? '\n' : '') + prefix + id + ')' + (needsNlAfter ? '\n' : '');
+      replaceRange(start, end, text);
+      const idStart = start + (needsNlBefore ? 1 : 0) + prefix.length;
+      ta.setSelectionRange(idStart, idStart + id.length);
+    }
     function applyMd(action) {
       if (articleEditor.disabled) return;
       switch (action) {
         case 'bold': wrapSelection('**', '**', 'bold text'); break;
         case 'italic': wrapSelection('*', '*', 'italic text'); break;
-        case 'underline': wrapSelection('<u>', '</u>', 'underlined text'); break;
+        // __text__ — Crisp's underline syntax (see inlineMd()'s comment on why
+        // that reading beats CommonMark's alt-bold one here).
+        case 'underline': wrapSelection('__', '__', 'underlined text'); break;
         case 'strike': wrapSelection('~~', '~~', 'strikethrough text'); break;
+        case 'highlight': wrapSelection('++', '++', 'highlighted text'); break;
         case 'link': insertLink(); break;
         case 'ol': prefixLines((i) => `${i}. `); break;
         case 'ul': prefixLines('- '); break;
         case 'quote': prefixLines('> '); break;
+        case 'tip': prefixLines('| '); break;
+        case 'info': prefixLines('|| '); break;
+        case 'warning': prefixLines('||| '); break;
         case 'code': wrapSelection('`', '`', 'code'); break;
         case 'codeblock': wrapSelection('```\n', '\n```', 'code'); break;
+        case 'embed': insertEmbed(); break;
       }
     }
     articleToolbar.addEventListener('click', (ev) => {
@@ -2108,6 +2224,12 @@
       reader.readAsText(f);
     });
     sessionRefreshBtn.addEventListener('click', refreshSession);
+    articleSessionRefreshBtn.addEventListener('click', refreshSession);
+    articleTabsToggleBtn.addEventListener('click', () => {
+      if (!articleSessionPanel.hidden) { closeArticleSessionPanel(); return; }
+      articleSessionPanel.hidden = false;
+      refreshSession();
+    });
     boardNewBtn.addEventListener('click', selectNewJob);
     boardRunBtn.addEventListener('click', () => selectRunningJob());
     articleRefreshBtn.addEventListener('click', () => { if (selectedSlug) selectArticle(selectedSlug, articleTitle.textContent); });
@@ -2160,8 +2282,10 @@
 
     // ---- prompt an agent at THIS article ----------------------------------
     // Same one-job-at-a-time machinery as "+ New job", pointed at an article
-    // that already exists: no session tabs, no browser (kb-job.js's revise
-    // mode), so the only inputs are this box and the files already in kb/.
+    // that already exists. Unlike "+ New job", session tabs are OPTIONAL here
+    // (kb-job.js's revise mode): with none attached it works from the files
+    // already in kb/ alone; with the collapsible "🔗 Tabs" picker above used,
+    // it also gets scoped browser access to re-shoot a wrong capture.
     /** Whether the next prompt continues the article's conversation or opens a
      *  new one. Worth showing, not just tracking: it decides what "it" and "a
      *  bit further right" mean in the sentence the user is about to type. */
@@ -2261,7 +2385,14 @@
       if (articleDirty && !confirm('This article has unsaved edits. The agent works from the saved file and may overwrite them. Send anyway?')) return;
       articleSendBtn.disabled = true;
       try {
-        const { id } = await callBg('start', { mode: 'revise', slug: selectedSlug, instruction });
+        const { id } = await callBg('start', {
+          mode: 'revise', slug: selectedSlug, instruction,
+          // Optional — an empty session is exactly the original revise
+          // behaviour (file-only). kb-job.js's runReviseJob scopes tool
+          // access to whichever tabs are attached at the moment each prompt
+          // is sent, so this is re-read fresh on every Send, not just the first.
+          sessionTabs: sessionTabs.map((t) => ({ id: t.id, title: t.title, url: t.url })),
+        });
         jobId = id;
         jobMode = 'revise';
         jobSlug = selectedSlug;

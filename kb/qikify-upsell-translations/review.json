@@ -1,0 +1,8 @@
+{
+  "slug": "qikify-upsell-translations",
+  "round": 2,
+  "verdict": "pass",
+  "summary": "All 5 round-1 findings (1 blocker, 4 nits) are correctly fixed with no regressions: Step 1's callout no longer overlaps the promo banner, Step 4 highlights only Save, Step 2's dropdown wording no longer points at the decorative arrow, the troubleshooting table now covers the silent tab-triggered language switch, and the intro has its \"What it does\" heading. Article is a clean, accurate 4-step guide matching the dev reference.",
+  "findings": [],
+  "updatedAt": 1788866368703
+}

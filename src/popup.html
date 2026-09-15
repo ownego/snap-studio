@@ -3,13 +3,16 @@
 <head>
 <meta charset="utf-8">
 <!-- The popup is a separate document from the editor, so it needs its own copy of the
-     cascade the editor builds in editor.html: tokens.css, then the accent override
-     right after it. Colours used to be hand-copied hex here on the theory that four
+     cascade the editor builds in editor.html: tokens.css, then tokens-extras.css (the
+     --surface/--ink/--accent aliases below read those, not the kit's own tokens
+     directly), then the accent override right after both. Colours used to be
+     hand-copied hex here on the theory that four
      values weren't worth a stylesheet — but that made the popup the one surface that
      stayed kit-default blue after someone re-toned the app, which is exactly the
      staleness CLAUDE.md's no-literals rule is about. tokens.css is a bundled local
      file; there is no request to save. -->
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens-extras.css">
 <!-- Filled in below from the same stored hex the editor's picker writes. -->
 <style id="accentVars"></style>
 <script src="accent-ramp.js"></script>

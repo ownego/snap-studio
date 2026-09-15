@@ -419,6 +419,7 @@ async function handleBridgeCommand(msg) {
     if (cmd === 'frame_scroll') { replyBridge(reqId, true, await cmdFrameScroll(args || {})); return; }
     if (cmd === 'frame_find') { replyBridge(reqId, true, await cmdFrameFind(args || {})); return; }
     if (cmd === 'frame_click') { replyBridge(reqId, true, await cmdFrameClick(args || {})); return; }
+    if (cmd === 'frame_hover') { replyBridge(reqId, true, await cmdFrameHover(args || {})); return; }
     if (cmd === 'frame_fill') { replyBridge(reqId, true, await cmdFrameFill(args || {})); return; }
     if (cmd === 'frame_press') { replyBridge(reqId, true, await cmdFramePress(args || {})); return; }
     if (cmd === 'frame_rect') { replyBridge(reqId, true, await cmdFrameRect(args || {})); return; }
@@ -951,6 +952,64 @@ function pageClick({ selector }) {
   }
 }
 
+/** pageHoverTarget — resolves a selector to the element pageClick would land
+ *  on (same isFormControl/findLabel/resolveClickTarget/pickVisibleTarget
+ *  chain, duplicated here because this runs standalone via
+ *  chrome.scripting.executeScript, no closures over pageClick's copy),
+ *  scrolls it into view, and hands back its rect. It does NOT dispatch any
+ *  hover events itself — cmdFrameHover below drives a REAL pointer move over
+ *  Chrome DevTools Protocol (Input.dispatchMouseEvent) at the rect this
+ *  returns. That distinction is the whole reason this exists: CSS `:hover`
+ *  is Blink's own hit-test state tracking the last real pointer position —
+ *  no `element.dispatchEvent(new MouseEvent('mouseover', ...))` from a
+ *  content script can set it (only actually moving the pointer can), even
+ *  though such a dispatch WOULD reach a JS mouseenter/onMouseOver listener.
+ *  Confirmed empirically on this repo's Shopify smart-menu test page: a
+ *  dispatchEvent-based hover produced no visible change and no new "Edit"
+ *  text became findable afterwards, because the row's hover-reveal turned
+ *  out to be exactly this — CSS-only, not JS-mounted. */
+function pageHoverTarget({ selector }) {
+  function isFormControl(node) {
+    return !!node && ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'].indexOf(node.tagName) !== -1;
+  }
+  function findLabel(node) {
+    return node.tagName === 'LABEL' ? node : (node.closest ? node.closest('label') : null);
+  }
+  function resolveClickTarget(node) {
+    if (isFormControl(node)) return node;
+    const label = findLabel(node);
+    if (label && label.control) return label.control;
+    const inner = node.querySelector && node.querySelector('input, button, select, textarea, [role="radio"], [role="checkbox"], [role="button"]');
+    if (inner) return inner;
+    return node;
+  }
+  function pickVisibleTarget(node) {
+    const r = node.getBoundingClientRect();
+    if (r.width > 2 && r.height > 2) return node;
+    const parent = node.parentElement;
+    if (!parent) return node;
+    let best = null, bestArea = 0;
+    for (const sib of parent.children) {
+      if (sib === node) continue;
+      const sr = sib.getBoundingClientRect();
+      const area = sr.width * sr.height;
+      if (area > bestArea) { bestArea = area; best = sib; }
+    }
+    return best || node;
+  }
+  try {
+    const el = document.querySelector(selector);
+    if (!el) return { ok: false, error: `no element matches "${selector}"` };
+    const label = isFormControl(el) ? null : findLabel(el);
+    const target = (label && label.control) ? label : pickVisibleTarget(resolveClickTarget(el));
+    target.scrollIntoView({ block: 'center' });
+    const r = target.getBoundingClientRect();
+    return { ok: true, x: r.x, y: r.y, w: r.width, h: r.height, tag: target.tagName.toLowerCase() };
+  } catch (e) {
+    return { ok: false, error: String((e && e.message) || e) };
+  }
+}
+
 /** pageFill — sets .value through the ELEMENT PROTOTYPE's own setter, same
  *  trick pageClick's checkbox fallback
  *  above uses: a framework that has patched an instance-level setter (React,
@@ -1030,12 +1089,54 @@ function pageRectOf({ selector }) {
   } catch (e) { return { ok: false, error: String((e && e.message) || e) }; }
 }
 
-function pageIframeBox({ originContains }) {
+/** `url`, when given, is the target frame's own full URL (from
+ *  chrome.webNavigation.getAllFrames, captured whenever that snapshot was
+ *  taken) — matched by QUERY-PARAM SUBSET, not string equality: an <iframe
+ *  src> is accepted when its origin+pathname match `url`'s and it carries
+ *  every query param `url` has, with the same value (it may carry MORE).
+ *  Exact-string matching doesn't survive this page: Shopify/App Bridge
+ *  reissues these iframes' tokens (hmac/id_token/session/timestamp) after
+ *  the initial load, so by the time this runs every candidate's live `src`
+ *  has outgrown whatever webNavigation captured — none is an exact match or
+ *  even a prefix of `url` any more, only a superset of its identifying
+ *  params. Among candidates whose origin+pathname match, the one matching
+ *  the MOST of `url`'s params wins (ties keep the first found), so the
+ *  frame's actually-distinguishing params (id=, modal_frame=, ...) settle
+ *  it. `originContains` is the older, coarser fallback (just the origin) —
+ *  kept for callers with no full url, but is ambiguous the moment a page
+ *  embeds more than one same-origin iframe: Shopify's smart-menu admin page
+ *  does exactly that (three `embedded.qikify.com` iframes at once — the app
+ *  itself, an App-Bridge helper frame, and a modal frame), and origin-only
+ *  matching silently grabbed whichever came first in DOM order, landing
+ *  coordinates on the wrong iframe entirely (confirmed empirically twice:
+ *  once with pure origin matching, then again with exact/prefix matching
+ *  after the first fix, both landing ~240px off the actual target). */
+function pageIframeBox({ url, originContains }) {
   try {
     const frames = Array.from(document.querySelectorAll('iframe'));
-    let match = frames.find((f) => f.src && f.src.indexOf(originContains) !== -1);
+    let match = null;
+    if (url) {
+      let target = null;
+      try { target = new URL(url); } catch (e) {}
+      if (target) {
+        let bestScore = -1;
+        for (const f of frames) {
+          if (!f.src) continue;
+          let cand;
+          try { cand = new URL(f.src); } catch (e) { continue; }
+          if (cand.origin !== target.origin || cand.pathname !== target.pathname) continue;
+          let subset = true, score = 0;
+          for (const [k, v] of target.searchParams) {
+            if (cand.searchParams.get(k) !== v) { subset = false; break; }
+            score++;
+          }
+          if (subset && score > bestScore) { bestScore = score; match = f; }
+        }
+      }
+    }
+    if (!match && originContains) match = frames.find((f) => f.src && f.src.indexOf(originContains) !== -1);
     if (!match && frames.length === 1) match = frames[0];
-    if (!match) return { ok: false, error: `no <iframe> on the top page matches "${originContains}"` };
+    if (!match) return { ok: false, error: `no <iframe> on the top page matches "${url || originContains}"` };
     const r = match.getBoundingClientRect();
     return { ok: true, x: r.x, y: r.y, w: r.width, h: r.height };
   } catch (e) { return { ok: false, error: String((e && e.message) || e) }; }
@@ -1064,7 +1165,7 @@ async function cmdFrameRect({ tabId, frameId, frameUrlContains, selector, captur
     if (info.parentFrameId !== 0) {
       throw new Error('only a frame that is a direct child of the top frame can be mapped to capture coordinates (this one is nested deeper).');
     }
-    const box = await execInFrame(tabId, 0, pageIframeBox, { originContains: new URL(info.url).origin });
+    const box = await execInFrame(tabId, 0, pageIframeBox, { url: info.url, originContains: new URL(info.url).origin });
     offX = box.x; offY = box.y;
   }
 
@@ -1102,6 +1203,46 @@ async function cmdFrameClick({ tabId, frameId, frameUrlContains, selector }) {
   if (tabId == null) throw new Error('tabId is required');
   const fid = await resolveFrameId(tabId, { frameId, frameUrlContains });
   return execInFrame(tabId, fid, pageClick, { selector });
+}
+
+/** Hovers a selector for real, over CDP, instead of dispatching DOM events —
+ *  see pageHoverTarget's doc comment for why a dispatchEvent-based hover
+ *  can't set CSS `:hover` at all. Same frame→page coordinate math as
+ *  cmdFrameRect above (only a frame that is a direct child of the top frame
+ *  can be mapped), but in CSS pixels throughout — Input.dispatchMouseEvent
+ *  takes CSS-pixel coordinates in the top frame's own viewport, not the
+ *  device-pixel/capture-image space cmdFrameRect's `scale` exists for. */
+async function cmdFrameHover({ tabId, frameId, frameUrlContains, selector }) {
+  if (tabId == null) throw new Error('tabId is required');
+  const fid = await resolveFrameId(tabId, { frameId, frameUrlContains });
+  const el = await execInFrame(tabId, fid, pageHoverTarget, { selector });
+
+  let offX = 0, offY = 0;
+  if (fid !== 0) {
+    const frames = await chrome.webNavigation.getAllFrames({ tabId });
+    const info = frames && frames.find((f) => f.frameId === fid);
+    if (!info) throw new Error(`frame ${fid} disappeared before its position could be read`);
+    if (info.parentFrameId !== 0) {
+      throw new Error('only a frame that is a direct child of the top frame can be hovered (this one is nested deeper).');
+    }
+    const box = await execInFrame(tabId, 0, pageIframeBox, { url: info.url, originContains: new URL(info.url).origin });
+    offX = box.x; offY = box.y;
+  }
+
+  const x = offX + el.x + el.w / 2;
+  const y = offY + el.y + el.h / 2;
+
+  const target = { tabId };
+  const reuseSession = debuggedSessionTabIds.has(tabId);
+  if (!reuseSession) await chrome.debugger.attach(target, '1.3');
+  try {
+    await chrome.debugger.sendCommand(target, 'Input.dispatchMouseEvent', {
+      type: 'mouseMoved', x, y, button: 'none', buttons: 0,
+    });
+  } finally {
+    if (!reuseSession) { try { await chrome.debugger.detach(target); } catch (e) {} }
+  }
+  return { hoveredTag: el.tag, x: Math.round(x), y: Math.round(y) };
 }
 
 async function cmdFrameFill({ tabId, frameId, frameUrlContains, selector, value }) {

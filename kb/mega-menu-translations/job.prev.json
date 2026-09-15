@@ -1,0 +1,357 @@
+{
+  "title": "Translate Your Menu with Mega Menu & Navigation",
+  "slug": "mega-menu-translations",
+  "md": "mega-menu-translations.md",
+  "intro": "Mega Menu & Navigation's **Translations** feature shows your store's menu in a different language, so shoppers browsing your store in that language see menu titles, links, and images translated instead of the original text.\n\n## Requirements\n\nTranslation is only available on the **Basic** ($9.99/month) and **Premium** ($19.99/month) plans — it isn't included on the Free plan.\n\n> 💡 **Note:** if you're building on a development store, the whole app — including Translation — is free to test before your store goes live.",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1750,
+        "y": 8,
+        "w": 165,
+        "h": 36
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 0,
+      "heading": "Translation is a paid-plan feature",
+      "src": "img/00-pricing.png",
+      "out": "img/00-pricing-annotated.png",
+      "body": "On the app's **Pricing** page, the Free plan's feature list doesn't include Translation — it only appears on the Basic and Premium plans, shown here.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 936,
+            "y": 741,
+            "w": 84,
+            "h": 36
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 910,
+            "y": 487,
+            "w": 80,
+            "h": 44
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1276,
+            "y": 487,
+            "w": 92,
+            "h": 44
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1075,
+            "y": 262,
+            "text": "Translation = paid plans only"
+          }
+        }
+      ]
+    },
+    {
+      "n": 1,
+      "heading": "Open Translations and pick a menu",
+      "src": "img/01-menus-list.png",
+      "out": "img/01-menus-list-annotated.png",
+      "body": "1. In your Shopify admin, go to **Apps > Qikify Mega Menu & Navigation > Translations**.\n2. Find the menu you want to translate in the list, then click **Translate** on that row.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "Translation is set up per menu. If your store has more than one menu, repeat this step for each menu you want translated."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 38,
+            "y": 509,
+            "w": 94,
+            "h": 32
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 466,
+            "y": 525,
+            "text": "Step 1: Open Translations"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 289,
+            "y1": 525,
+            "x2": 145,
+            "y2": 525
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1467,
+            "y": 294,
+            "w": 74,
+            "h": 36
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1504,
+            "y": 527,
+            "text": "Step 2: Click Translate"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1504,
+            "y1": 485,
+            "x2": 1504,
+            "y2": 341
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Choose the language to translate into",
+      "src": "img/02-choose-language.png",
+      "out": "img/02-choose-language-annotated.png",
+      "body": "Click the language dropdown next to **English Default**, and pick the language you want to translate this menu into.",
+      "notes": [
+        {
+          "kind": "Important",
+          "text": "This dropdown only lists languages you've already added to your store. Mega Menu & Navigation can't add a new language for you — if the language you need isn't listed, add it first in your Shopify admin under **Settings > Languages**, then come back here."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 738,
+            "y": 183,
+            "w": 119,
+            "h": 44
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1150,
+            "y": 205,
+            "text": "Pick the language"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1016,
+            "y1": 205,
+            "x2": 872,
+            "y2": 205
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Translate a field manually",
+      "src": "img/03-manual-translate.png",
+      "out": "img/03-manual-translate-annotated.png",
+      "body": "1. Click into the empty **Translation** box next to any field you want to translate.\n2. Type the translation for that field.\n3. Repeat for any other fields, then click **Save** in the bar at the top of the page.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "The original text on the left is read-only and shown exactly as it's stored (including any formatting code) — you're only ever editing the box on the right."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1087,
+            "y": 781,
+            "w": 453,
+            "h": 44
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1314,
+            "y": 580,
+            "text": "Type the translation here"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1314,
+            "y1": 622,
+            "x2": 1314,
+            "y2": 766
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1222,
+            "y": 8,
+            "w": 60,
+            "h": 40
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1564,
+            "y": 28,
+            "text": "Then click Save"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1441,
+            "y1": 28,
+            "x2": 1297,
+            "y2": 28
+          }
+        },
+        {
+          "type": "zoom",
+          "props": {
+            "x": 692,
+            "y": 815,
+            "w": 300,
+            "h": 64
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "heading": "Bulk-translate with AI — copy the built-in prompt",
+      "src": "img/04-ai-prompt.png",
+      "out": "img/04-ai-prompt-annotated.png",
+      "body": "Translating field by field works, but for a menu with a lot of text it's slow. On the **AI prompt** tab, the app can build a ready-made prompt for you instead:\n\n1. Click **Copy prompt for untranslated strings**.\n2. Paste it into any AI chat tool (ChatGPT, Claude, Gemini, or another) and copy the JSON it replies with.\n3. Click **Import**, paste in that JSON, review the rows, then **Save**.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "If your AI tool rejects the prompt for being too long, use the JSON file method in the next step instead."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 620,
+            "y": 388,
+            "w": 229,
+            "h": 32
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1205,
+            "y": 404,
+            "text": "1: Copy prompt, paste into AI"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1007,
+            "y1": 404,
+            "x2": 862,
+            "y2": 404
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1476,
+            "y": 255,
+            "w": 54,
+            "h": 32
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1121,
+            "y": 271,
+            "text": "3: Import the AI's JSON reply"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1320,
+            "y1": 271,
+            "x2": 1463,
+            "y2": 271
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "heading": "Bulk-translate with AI — or export/import a JSON file",
+      "src": "img/05-json-file.png",
+      "out": "img/05-json-file-annotated.png",
+      "body": "If the built-in prompt is too long for your AI tool, switch to the **JSON file** tab instead:\n\n1. Click **Step 1: Export JSON with untranslated strings** to download the untranslated text as a file.\n2. Click **Step 2: Copy instructions** to copy the instructions meant for the AI tool.\n3. In any AI chat tool, attach the downloaded file and paste the instructions, then download the JSON file it returns.\n4. Click **Import**, upload that JSON file, review the rows, then **Save**.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "You don't need an AI tool for this method either — you can hand the exported file to a human translator and have them fill in the file's \"translation\" field directly."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 620,
+            "y": 432,
+            "w": 277,
+            "h": 32
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 940,
+            "y": 432,
+            "w": 161,
+            "h": 32
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 857,
+            "y": 483,
+            "text": "Do Step 1, then Step 2"
+          }
+        }
+      ]
+    }
+  ],
+  "outro": "## Settings explained\n\n| Setting | What it does |\n|---|---|\n| Language dropdown | Chooses which of your store's existing languages you're translating this menu into. Only languages already added to your store (under Shopify admin **Settings > Languages**) show up here. |\n| AI prompt tab | Gives you a ready-made prompt to paste into any AI chat tool, covering all of this menu's untranslated text. |\n| JSON file tab | Lets you download the untranslated text as a JSON file and copy separate instructions, for an AI tool or a human translator to fill in. |\n| Import button | Brings translated text (from either method) back into the app so you can review every row before saving. |\n\n## Troubleshooting\n\n| Problem | Solution |\n|---|---|\n| The language I want isn't in the dropdown | Add it to your store first, in Shopify admin under **Settings > Languages**, then come back to Translations. The app can only translate into languages your store already supports — it can't add a new one for you. |\n| My AI tool says the prompt is too long | Switch to the **JSON file** tab and attach the exported file to your AI tool instead of pasting the prompt directly. |"
+}

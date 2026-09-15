@@ -1,0 +1,18 @@
+{
+  "slug": "qikify-upsell-translate-text",
+  "round": 2,
+  "verdict": "changes-requested",
+  "summary": "Two of the three round-1 fixes landed clean: the Refresh Data button is now correctly highlighted in step 3, and the destructive-action warning was added to step 2's notes with accurate content. The step-numbering fix (finding 1) was only half-applied — it removed the duplicate title text as asked, but left a new visible defect: the step-2 and step-3 callouts now render as an oversized, mostly-blank white card with a tiny numeral floating in the corner, on both images.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 2,
+      "img": "img/02-translate-mode-japanese-annotated.png",
+      "what": "The step-2 callout (textbox, mode:'step', customNumber:2, title:'', hideBody:true, compactBadge:true, w:90) now renders as a ~90x100px blank white rounded card with only a small green circled '2' sitting in its top-left corner — the rest of the card is empty white space. Same defect on step 3's '3' badge (img/03-offer-tab-addon-annotated.png). This reads as a broken/glitchy component, not a clean step marker, and doesn't match step 1's tight 'Step 1' pill the fix was supposed to align with.",
+      "why": "Quy trình mục 6 checklist: 'các component đã sử dụng hình dạng hợp lý chưa?' — a large blank card with a tiny numeral in the corner is not a reasonable shape and looks like a rendering failure to a reader. Root cause per snap_kit's text-box entry: title was set to an empty string but `hideTitle` (a separate real prop, default false) was never set — the title row still renders (just empty), which is what's reserving all that blank vertical space; hideBody alone only collapses the body row, not the title row.",
+      "fix": "On both callouts, add `hideTitle: true` alongside the existing `hideBody: true` (title prop can stay '' or be removed) so the title row fully collapses and only the compact numbered badge remains, then snap_render_job and snap_view both images to confirm the card shrinks to roughly badge-sized instead of the current ~90x100 blank box. If hideTitle:true still leaves noticeable blank padding around the badge, try an explicit smaller `h` (e.g. ~50-60) on top of that rather than shipping the current oversized card."
+    }
+  ],
+  "updatedAt": 1789101199152
+}

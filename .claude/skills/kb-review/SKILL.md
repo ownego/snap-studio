@@ -63,16 +63,25 @@ Cách làm:
    snap_view trên MỌI ảnh đã xuất — grid:true khi cần ĐỌC một toạ độ thay vì áng chừng.
 2. snap_comments({slug:"<slug>"}) — một pin người dùng đã ghim là một finding có sẵn người
    đứng sau nó. Đừng resolve, chỉ route nó vào finding.
-3. Kiểm tối thiểu theo .claude/skills/kb/PLACEMENT_PLAYBOOK.md — luật cứng #0 (không tràn
-   khung), #1 (callout không đè lên target), #2 (target có mặt/rõ/đúng trạng thái NGAY TRONG
-   ẢNH NÀY), #6 (không còn PII lộ), #4 (bước 1 định hướng đúng menu), #5 (có ít nhất một zoom
-   vào chi tiết quyết định) — rồi tới chữ đối chiếu ảnh (văn bản có tả đúng cái đang hiện
-   không?), đối chiếu tài liệu tham khảo nếu có, thứ tự heading, và độ phủ so với yêu cầu gốc
-   (một bước yêu cầu mà không ai chụp cũng là một finding).
+3. Kiểm tối thiểu theo .claude/skills/kb/PLACEMENT_PLAYBOOK.md — mọi luật đã gắn nhãn
+   `(hard rule)`: #-1 (đừng đoán toạ độ khi có element để neo), #0 (không tràn khung), #2 (target
+   có mặt/rõ/đúng trạng thái NGAY TRONG ẢNH NÀY), #6 (không còn PII lộ — nhìn cả một ảnh **ở
+   giữa** và ảnh **cuối** bài, không chỉ ảnh đầu, xem mục "RÀ SOÁT 2026-09-11" trong playbook),
+   #7 (đọc toạ độ bằng lưới `snap_view({grid:true})` khi cần một số cụ thể, đừng áng chừng bằng
+   mắt), và **#8 (callout đánh số bước phải là `step`, không phải `label` — đây là lỗi lặp lại
+   nhiều nhất trong lịch sử playbook, đã lộ ở cả 4 bài đã ship trước khi luật này được viết ra;
+   đừng bỏ qua khoản này chỉ vì nó không nằm trong 5 luật cũ).** Cộng thêm #1 (callout không đè
+   lên target), #4 (bước 1 định hướng đúng menu), #5 (có ít nhất một zoom vào chi tiết quyết
+   định) — không gắn nhãn hard rule trong playbook nhưng vẫn áp dụng cho mọi bài. Rồi tới chữ đối
+   chiếu ảnh (văn bản có tả đúng cái đang hiện không?), đối chiếu tài liệu tham khảo nếu có, thứ
+   tự heading, và độ phủ so với yêu cầu gốc (một bước yêu cầu mà không ai chụp cũng là một
+   finding).
 4. snap_findings MỘT LẦN, ở cuối. Route: owner "capture" cho mọi thứ hình ảnh (chụp lại, dời/
    đổi loại/xoá annotation), "write" cho văn xuôi. severity "blocker" chỉ khi sai/gây hiểu nhầm
    thật; gu thẩm mỹ là "nit". verdict "pass" chỉ khi không còn blocker nào.
-5. snap_learn khi finding là một luật đặt annotation mà bài sau không nên phải học lại.
+5. snap_learn khi finding là một luật mà bài sau không nên phải học lại — `category:"placement"`
+cho lỗi hình ảnh/vị trí (owner "capture"), `category:"content"` cho lỗi câu chữ/cấu trúc (owner
+"write").
 
 Cụ thể đủ để hành động: gọi tên element, bước, đoạn chữ. "Callout nhìn hơi lệch" không route
 được cho ai.

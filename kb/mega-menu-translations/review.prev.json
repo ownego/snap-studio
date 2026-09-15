@@ -1,0 +1,36 @@
+{
+  "slug": "mega-menu-translations",
+  "round": 1,
+  "verdict": "changes-requested",
+  "summary": "Content coverage matches the requested outline well (plan requirement, pick-menu, pick-language with the \"app can't add languages\" caveat, manual translate, and both AI bulk-translate paths) and every image is geometrically clean — no overflow, no callout-over-target, consistent ~144px arrow lengths. But the Shopify admin account chip (\"Huy Test All / dev\", top-right) is left unblurred and identically exposed on all 6 images, which is a hard-rule PII violation, so this round cannot pass.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": null,
+      "img": "img/00-pricing-annotated.png",
+      "what": "The Shopify admin account chip in the top-right corner — avatar initials \"HTA\", name \"Huy Test All\", and \"dev\" store badge — is fully readable and unblurred. It sits in the exact same screen position on every one of the 6 exported images (img/00 through img/05) because it's fixed admin chrome, so it's exposed 6 times, not once.",
+      "why": "Playbook Principle #6 (hard rule for public articles): PII — including a real account/user name — must be blurred before export. It's not in job.globalEls at all right now (globalEls is []), and this is exactly the class of bug the playbook flags as worst when it slips through: a global chip missed once is missed on every image at once (see the 2026-08-28 and 2026-09-01 learnings already in the playbook about this same account name leaking).",
+      "fix": "Add one blur element to job.globalEls so it renders under every step's own els, e.g. { \"type\": \"blur\", \"props\": { \"x\": 1750, \"y\": 8, \"w\": 165, \"h\": 36 } } — measured in this capture's real 1920x889 pixel space, covering the avatar circle + \"Huy Test All\" + \"dev\" badge with a small margin. Anchor it with `at:{selector}` on the account-menu button if a stable selector can be found (more robust than the hand-typed box), otherwise use the box above. After adding, re-render and snap_view EVERY image (00 through 05), not just the first — this is the failure mode the existing playbook learnings already warn about."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": null,
+      "img": "img/04-ai-prompt-annotated.png",
+      "what": "The on-screen numbered instructions (legible in the screenshot itself) list this flow as \"1. Press below button to Copy prompt...\", \"2. Paste it into any AI chat tool...\", \"3. Import that JSON code...\". The two callouts added on top instead read \"1: Copy prompt, paste into AI\" and \"2: Import the AI's JSON reply\" — so the callout calls the Import action \"2\" while the app's own visible text calls it \"3\".",
+      "why": "A reader comparing the callout numbers to the plainly-visible on-screen list will hit a numbering mismatch on the same image, which is a small but real source of confusion — this is the kind of prose-vs-picture consistency check the review pass exists for.",
+      "fix": "Either renumber the second callout to \"3: Import the AI's JSON reply\" to match the on-screen list, or drop numeric prefixes from these two callouts entirely (e.g. \"Copy prompt\" / \"Import the reply\") so they don't compete with the app's own step numbers."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": null,
+      "img": "img/02-choose-language-annotated.png",
+      "what": "No step in the whole article uses a `zoom` annotation on a decisive detail — every step uses only highlight/label/arrow.",
+      "why": "Playbook Principle #5: every KB article should carry at least one zoom on a small but decisive detail (a value, a badge, a dropdown state) instead of describing it in prose alone.",
+      "fix": "Add one `zoom` anchored (via `at`) on a small decisive control — good candidates are the language dropdown value in step 2 (img/02) or the translation input box in step 3 (img/03) — sized so the source crop is legible (magnification default 2.2x, crop width ≈ 2.2x the target's own width)."
+    }
+  ],
+  "updatedAt": 1789029210484
+}

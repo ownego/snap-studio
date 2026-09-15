@@ -1,0 +1,24 @@
+{
+  "slug": "variant-swatches-volume",
+  "id": "f27f2e93-eb3c-482f-ba49-9506caac51ef",
+  "mode": "revise",
+  "status": "done",
+  "instruction": "dịch toàn bộ bài viết sang tiếng Anh",
+  "error": null,
+  "startedAt": 1788419289792,
+  "endedAt": 1788419409837,
+  "lines": [
+    "Revising \"variant-swatches-volume\" — no browser, kb/ files only.",
+    "New session on \"variant-swatches-volume\".",
+    "→ Reading the pinned comments on variant-swatches-volume",
+    "→ Looking at 01-menu-annotated.png",
+    "→ Looking at 02-table-annotated.png",
+    "→ Looking at 03-setting-annotated.png",
+    "→ Looking at 04-color-annotated.png",
+    "→ Looking at 05-preview-annotated.png",
+    "→ Looking at 06-image-annotated.png",
+    "→ Writing the article → variant-swatches-volume.md",
+    "I translated the full article from Vietnamese to English and wrote it to `kb/variant-swatches-volume.md` (overwriting the previous version).\n\nWhat I checked first: this is a flat single-file article with no `job.json`, so the only way to fix images would be `snap_open`/`snap_add`/`snap_export`. I looked at all six annotated images (`01-menu` through `06-image`) with `snap_view` before touching anything, and every baked-in annotation is already in English — \"Step 1\", the numbered \"Variant options / Connected products / Swatch type / Customize\" column labels, \"Swatch type\" callout, and the highlight/arrow boxes carry no Vietnamese text. So no re-capture or re-annotation was needed; translating the markdown was sufficient to fully translate the article.\n\nWhat changed in the markdown:\n- Front-matter title, H1, and all 6 step headings translated\n- Body prose, bullet lists, and the two `> **note:**` callouts translated\n- Image alt text translated to match the new headings\n- Preserved all image paths, the external Shopify metafields link, bold UI term formatting, and the closing support blurb (kept the emoji)\n\nNo comments were open on this article, so there was nothing to resolve, and since no annotation placement changed, there's no `snap_learn` entry to add.",
+    "Job finished — revision done."
+  ]
+}

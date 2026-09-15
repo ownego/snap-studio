@@ -169,8 +169,8 @@
     const inset = Math.max(5, SnapKit.components.zoom.radiusPx(el));
     h.style.left = inset + 'px'; h.style.top = inset + 'px';
   }
-  /** `.el.selected::after`'s border-radius is a plain CSS default (see tokens.css
-   *  EXTRAS) that can't track a per-element radius on its own — a custom property
+  /** `.el.selected::after`'s border-radius is a plain CSS default (see
+   *  tokens-extras.css) that can't track a per-element radius on its own — a custom property
    *  inherits into the pseudo-element instead, so the dashed outline keeps matching
    *  whatever shape/radius this instance is actually drawn with, including circle. */
   function setZoomSelRadius(node, el) {
@@ -572,6 +572,11 @@
 
     // ---- drag / resize ---------------------------------------------------
     function onElPointerDown(e, el) {
+      // Gated the same way the keyboard listener below is: a read-only surface
+      // (kb-surface.js's article preview, before the modal editor is open) draws
+      // these elements live but isn't the one holding input right now, so a drag
+      // here must not move anything the article hasn't opened yet.
+      if (!isActive()) return;
       // A locked element is drawn on this surface but owned somewhere else — a
       // job's globalEls, which every step shares (see kb-surface.js's mount()).
       // Letting it be dragged here would move it on ONE step and then quietly
@@ -613,6 +618,7 @@
     }
 
     canvas.addEventListener('pointerdown', (e) => {
+      if (!isActive()) return;   // see onElPointerDown's own isActive() gate above
       const handle = e.target.closest('.handle');
       const aend = e.target.closest('.arrow-end');
       if (!handle && !aend) { if (e.target === canvas) select(null); return; }
@@ -635,7 +641,7 @@
       let move;
       if (handle && handle.dataset.h === 'radius') {
         // Only ever reachable while shape is 'rect' — the handle is hidden in circle
-        // shape (tokens.css EXTRAS), where dragging it would have nothing to change.
+        // shape (tokens-extras.css), where dragging it would have nothing to change.
         const maxR = Math.min(orig.w, orig.h) / 2, base = orig.radius != null ? orig.radius : 22;
         move = (ev) => { const dx = (ev.clientX - startX) / zoom, dy = (ev.clientY - startY) / zoom;
           el.radius = Math.max(0, Math.min(maxR, Math.round(base + (dx + dy) / 2)));

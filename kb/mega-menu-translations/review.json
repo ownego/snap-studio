@@ -1,0 +1,8 @@
+{
+  "slug": "mega-menu-translations",
+  "round": 2,
+  "verdict": "pass",
+  "summary": "All three round-1 findings are fixed and verified on every affected image, with no regressions introduced: the account chip is now blurred via job.globalEls (checked on all 6 images — 00 through 05 — not just the one it was originally flagged on), the img/04 callout now reads \"3: Import the AI's JSON reply\" matching the on-screen numbered list, and step 3 now carries a zoom on the read-only field's placeholder text that renders legibly and doesn't collide with any other element. Nothing new is broken.",
+  "findings": [],
+  "updatedAt": 1789029900409
+}

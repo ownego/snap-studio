@@ -1,0 +1,20 @@
+{
+  "slug": "column-width-adjust-menu-items",
+  "id": "060f828b-8f19-4b8e-b4cc-d0afd2dcccf5",
+  "mode": "revise",
+  "status": "done",
+  "instruction": "Bold tất cả text \"Column Width\"",
+  "error": null,
+  "startedAt": 1789450024139,
+  "endedAt": 1789450155153,
+  "lines": [
+    "Revising \"column-width-adjust-menu-items\" — no browser tab attached, kb/ files only.",
+    "New session on \"column-width-adjust-menu-items\".",
+    "→ Reading the article outline",
+    "→ Saving the article outline — 5 step(s) so far",
+    "→ Re-rendering every image and the article text",
+    "→ Reading the article outline",
+    "Confirmed and rendered. Summary of what I checked and changed:\n\n**Audit result**: nearly every mention of \"Column Width\" / \"Column width\" in the article's prose (intro, all 5 steps' body text, and both notes in step 3) was **already bolded**. The only place it wasn't was the **H1 title** — `Column Width — Adjust the Width of Menu Items`.\n\n**Change made**: bolded the phrase in `job.title` → `**Column Width** — Adjust the Width of Menu Items`, then re-ran `snap_render_job` to regenerate `column-width-adjust-menu-items.md`. Verified via `snap_job` read that the title persisted correctly. No step images changed content (title-only edit), so there was nothing new to `snap_view`.\n\n**One thing I deliberately did NOT change**, and want to flag rather than silently decide: step headings \"Find Column width in the item editor\" and \"Set a fixed column width\" still contain the phrase unbolded. In this job format the step `heading` string is reused verbatim as both the `## N. heading` line *and* the image's `alt` text (`![heading](img)`). Adding `**` there would render fine in the heading but would leak literal asterisk characters into the alt attribute (visible to screen readers / on broken image load) — a real defect, not a style choice. If you do want those two headings bolded too, let me know and I'll take that trade-off (or you can rename the headings to avoid the phrase and add a bolded mention in the adjoining body sentence instead, which is already the case for both steps).",
+    "Job finished — revision done."
+  ]
+}

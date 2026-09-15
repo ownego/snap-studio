@@ -1,0 +1,36 @@
+{
+  "slug": "qikify-upsell-translate-text",
+  "round": 1,
+  "verdict": "changes-requested",
+  "summary": "Solid, accurate article — matches the reference doc closely, step 1 correctly orients in the menu, PII (huynq-vl account chip) is correctly blurred via globalEls on all three images, and there's a working zoom on a decisive detail. No blockers. Three polish items: step 2/3 callouts duplicate prose text that's redundant given full body copy, step 3's \"Refresh Data\" instruction has no visual anchor, and two destructive-action warnings the reference doc explicitly calls out are missing from the prose.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 2,
+      "img": "img/02-translate-mode-japanese-annotated.png",
+      "what": "The step-2 callout is a textbox (mode:'step', customNumber:2, hideBody:true) that still shows a title, 'Pick a language', next to the Step 2 badge. Same pattern in step 3 with title 'Open an offer tab'. This is the necessary way to get 'Step 2'/'Step 3' text (plain `step` markers reset to 'Step 1' per image per Principle #8's ĐÍNH CHÍNH), but the title text duplicates what the step's own body list already spells out in full sentences, and it visually diverges from step 1's bare pill.",
+      "why": "Playbook Principle #8's quick-pick table: 'Đánh số một bước trong chuỗi thao tác, bài có prose kèm theo → step... Đừng dùng label, textbox' — every step here already has a full numbered body list, so the callout should carry only the number, not a restated caption.",
+      "fix": "In job.json, remove/blank the `title` prop (or set hideTitle:true) on the step-2 and step-3 textbox callouts, keeping mode:'step', customNumber and hideBody:true so only the plain 'Step 2'/'Step 3' badge shows — matching step 1's bare `step` pill — then snap_render_job and snap_view to confirm."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 3,
+      "img": "img/03-offer-tab-addon-annotated.png",
+      "what": "Body item 4 tells the reader to click 'Refresh Data' in the top right, but nothing on the image points at it. In the 1920x889 base capture the button sits at roughly x=1449-1552, y=136-171 (same row as the language dropdown / Step 3 callout, right-aligned).",
+      "why": "Every other action named in this step's body (open the offer tab, fill the Title field) has a highlight on the image; leaving the one Refresh Data instruction with no visual anchor breaks that pattern and makes the reader hunt for the button.",
+      "fix": "Add a `highlight` el in step 3's els array around the 'Refresh Data' button (x≈1449,y≈136,w≈103,h≈35 on the 1920x889 base — verify exact box with snap_frame_find/snap_view before hardcoding), same border style as the other two highlights in this step, then re-render and snap_view."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": 2,
+      "img": "img/02-translate-mode-japanese-annotated.png",
+      "what": "The reference doc's §6 explicitly flags two destructive/hard-to-reverse behaviours as 'worth a warning in the article': (1) clearing a translation field and saving deletes that translation with no undo — the storefront falls back to the default text; (2) saving replaces the WHOLE set of translations for the current offer type and language, not just the edited field, so an offer that hadn't finished loading into the page can have its translations dropped. Neither is mentioned anywhere in the article, even though steps 2-3 walk the reader through exactly these actions (typing translations, then Refresh Data + Save).",
+      "why": "The reference doc calls these out by name as things the article should warn about, and step 3's own 'Refresh Data' note already gestures at the loading concern without explaining why it matters — add a short Important note (e.g. in step 2, near the Save instruction) covering both: clearing+saving deletes the translation, and saving drops translations for any offer that hasn't fully loaded, so let the page finish loading (or hit Refresh Data) before saving.",
+      "fix": "Add a second notes[] entry to step 2 (kind: 'Important') stating: clearing a translation field and saving removes that translation with no undo (falls back to the default text), and saving replaces all translations for the current offer type/language at once, so make sure the page (and any offers) has fully loaded — or click Refresh Data — before saving."
+    }
+  ],
+  "updatedAt": 1789100691741
+}

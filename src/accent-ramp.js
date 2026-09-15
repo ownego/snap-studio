@@ -5,7 +5,7 @@
    default blue while the rest of the app is re-toned. They share the stored
    hex, the tint/shade fractions and the generated :root text from here, so a
    second hand-maintained copy of the ramp can't quietly go stale — the same
-   reason tokens.css EXTRAS is the only place the app-shell aliases resolve.
+   reason tokens-extras.css is the only place the app-shell aliases resolve.
 
    Load this before accent.js / popup.js; it only defines window.SnapKit.accent. */
 (() => {

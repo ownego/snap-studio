@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens-extras.css">
 <!-- The whole kit's re-theme, one property group: a :root rule that overrides just
      --color-primary-50..900 (+ the three -rgb triplets the kit itself defines). Every
      component, every editor-chrome button, reads those vars rather than a literal hex,
@@ -64,7 +65,7 @@
     <div class="tb-actions" data-for="lab">
       <span class="tb-note">Components you make live only in this browser profile</span>
       <button id="labNew" class="btn sm">+ New component</button>
-      <button id="labCopyCss" class="btn primary" title="Copy the CSS of every custom component, ready to paste into tokens.css">⧉ Copy CSS</button>
+      <button id="labCopyCss" class="btn primary" title="Copy the CSS of every custom component, ready to paste into tokens-extras.css">⧉ Copy CSS</button>
     </div>
     <div class="tb-actions" data-for="kb">
       <span class="tb-note" id="kbStatusNote">No job running</span>
@@ -174,7 +175,7 @@
       <h3>Yours <span id="customCount" class="kbd"></span></h3>
       <div class="cmp-list" id="customList"></div>
       <button class="btn sm block" id="labNewRail">+ New component</button>
-      <p class="empty-hint">Custom components are stored in <code>chrome.storage</code> on this machine. To get one into the real design kit, hit <b>Copy CSS</b> and paste it into <code>tokens.css</code>.</p>
+      <p class="empty-hint">Custom components are stored in <code>chrome.storage</code> on this machine. To get one into the real design kit, hit <b>Copy CSS</b> and paste it into <code>tokens-extras.css</code>.</p>
     </aside>
 
     <div class="lab-stage-wrap">
@@ -370,26 +371,40 @@
           <button type="button" class="kb-tb-btn kb-tb-italic" data-md="italic" title="Italic (Ctrl+I)">I</button>
           <button type="button" class="kb-tb-btn kb-tb-underline" data-md="underline" title="Underline (Ctrl+U)">U</button>
           <button type="button" class="kb-tb-btn kb-tb-strike" data-md="strike" title="Strikethrough">S</button>
+          <button type="button" class="kb-tb-btn kb-tb-mark" data-md="highlight" title="Highlight">H</button>
           <span class="kb-tb-sep"></span>
           <button type="button" class="kb-tb-btn" data-md="link" title="Link (Ctrl+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
           <button type="button" class="kb-tb-btn" data-md="ol" title="Numbered list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-1.5 2-2.5S5 14 4 14.5"/></svg></button>
           <button type="button" class="kb-tb-btn" data-md="ul" title="Bullet list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
           <span class="kb-tb-sep"></span>
           <button type="button" class="kb-tb-btn" data-md="quote" title="Blockquote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16"/><path d="M12 8h8"/><path d="M12 14h8"/><path d="M12 20h8"/></svg></button>
+          <button type="button" class="kb-tb-btn kb-tb-tip" data-md="tip" title="Tip callout">T</button>
+          <button type="button" class="kb-tb-btn kb-tb-info" data-md="info" title="Information callout">i</button>
+          <button type="button" class="kb-tb-btn kb-tb-warning" data-md="warning" title="Warning callout">!</button>
+          <span class="kb-tb-sep"></span>
           <button type="button" class="kb-tb-btn" data-md="code" title="Inline code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
           <button type="button" class="kb-tb-btn" data-md="codeblock" title="Code block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h13a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v5"/><polyline points="14 2 14 8 20 8"/><path d="m9 18-2-2 2-2"/><path d="m5 18 2-2-2-2"/></svg></button>
+          <button type="button" class="kb-tb-btn" data-md="embed" title="Embed a video (YouTube/Vimeo/Dailymotion)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 9v6l5-3-5-3z" fill="currentColor" stroke="none"/></svg></button>
         </div>
         <div class="kb-article-split">
           <textarea class="kb-article-editor" id="kbArticleEditor" spellcheck="false"></textarea>
           <div class="kb-article-preview" id="kbArticlePreview"></div>
         </div>
-        <!-- Prompt an agent at THIS article. No session tabs and no browser:
-             a revise job works from the captures already in kb/ (kb-job.js). -->
+        <!-- Prompt an agent at THIS article. No browser tab by default: a
+             revise job works from the captures already in kb/ (kb-job.js).
+             Attaching a tab via the "🔗 Tabs" popup (same whitelist
+             "+ New job" uses) unlocks navigate/scroll/re-capture on that tab,
+             same as an authoring job's capture stage. The popup itself lives
+             at the end of <body> (#kbArticleSessionPanel below) — same
+             reason .kbs-modal does (see kb-surface.js): a fixed overlay
+             nested this deep would risk being clipped/mispositioned by an
+             ancestor's own stacking context. -->
         <div class="kb-article-prompt">
           <div class="kb-article-prompt-row">
-            <textarea id="kbArticlePrompt" class="kb-textarea" rows="2" placeholder="Ask the agent to fix this article — e.g. &quot;fix the open comments&quot;. It works from the captures already on disk: no browser, no new screenshots."></textarea>
+            <textarea id="kbArticlePrompt" class="kb-textarea" rows="2" placeholder="Ask the agent to fix this article — e.g. &quot;fix the open comments&quot;. Attach a tab via 🔗 Tabs if the fix needs a new screenshot."></textarea>
             <div class="kb-article-prompt-actions">
               <span class="kb-article-session" id="kbArticleSession"></span>
+              <button id="kbArticleTabsToggle" class="btn sm" type="button" title="Attach a browser tab so this revision can navigate/re-capture, like &quot;+ New job&quot;">🔗 Tabs</button>
               <button id="kbArticleNewSession" class="btn sm" type="button" disabled title="Forget the conversation so far — the next prompt starts a fresh agent session">⟲ New session</button>
               <button id="kbArticleSend" class="btn primary" type="button" disabled>▶ Send</button>
             </div>
@@ -405,6 +420,30 @@
       </div>
     </div>
   </main>
+</div>
+<!-- Attach-a-tab popup for a revise job (kb-job.js) — opened by
+     #kbArticleTabsToggle in the article prompt row above. Same underlying
+     session-tab whitelist as "+ New job"'s own picker (bridge-worker.js's
+     kbSessionTabIds) and the exact same two <ul>s, just reachable from the
+     article panel without leaving it. Lives at the end of <body>, same
+     placement reasoning as .kbs-modal (kb-surface.js) — see the comment
+     above #kbArticleTabsToggle. -->
+<div class="kb-article-tabs-modal" id="kbArticleSessionPanel" hidden>
+  <div class="kb-article-tabs-card">
+    <div class="kb-article-tabs-card-head">
+      <h3 class="kb-article-tabs-card-title">Session tabs</h3>
+      <button id="kbArticleSessionClose" class="kb-article-tabs-card-close" type="button" title="Close">✕</button>
+    </div>
+    <p class="empty-hint">Attach the tab this fix needs — already logged in, right screen. Leave empty to work from the existing captures only.</p>
+    <div class="kb-session-group">
+      <p class="kb-session-label">In session</p>
+      <ul class="kb-session-list" id="kbArticleSessionInList"><li class="empty-hint">None yet — add a tab below.</li></ul>
+    </div>
+    <div class="kb-session-group">
+      <p class="kb-session-label">Open tabs <button id="kbArticleSessionRefresh" class="kb-session-refresh" type="button" title="Refresh open tabs">↻ refresh</button></p>
+      <ul class="kb-session-list" id="kbArticleSessionCandidateList"><li class="empty-hint">Click refresh to list open tabs.</li></ul>
+    </div>
+  </div>
 </div>
 <input type="file" id="fileInput" accept="image/*" hidden />
 <input type="file" id="mdInput" accept=".md,.markdown,text/markdown" hidden />

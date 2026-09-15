@@ -1,0 +1,18 @@
+{
+  "slug": "column-width-adjust-menu-items",
+  "round": 2,
+  "verdict": "pass",
+  "summary": "",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 5,
+      "img": "img/05-column-width-popup-annotated.png",
+      "what": "A faint thin horizontal mark is visible right at the seam between the tab row and the zoom bubble's top edge (~y170-176, above 'Simple Mega'), not present in the un-annotated base capture at that spot. Much subtler than round 1's detached grey block — the crop no longer slices into the tab row's text — but it's a residual seam artifact.",
+      "why": "Worth a closer look next time this image is touched, but too subtle to read as a glitch to a reader and not worth spending the article's remaining fix budget on.",
+      "fix": "If revisited: nudge the zoom's y up by ~5-10px or add a couple px more top margin so the display box's top edge clears the seam with visible whitespace instead of sitting right against it."
+    }
+  ],
+  "updatedAt": 1789384979458
+}

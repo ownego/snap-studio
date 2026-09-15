@@ -1,16 +1,17 @@
 /* ACCENT — re-tone the whole kit from one hex.
 
    Every component and every piece of editor chrome reads --color-primary-*
-   (via the --accent* aliases in tokens.css EXTRAS) rather than a literal hex,
+   (via the --accent* aliases in tokens-extras.css) rather than a literal hex,
    so overriding just the primary ramp on :root re-tones the entire app with
    no re-render: CSS custom properties are late-bound, so elements already
    sitting on the canvas pick up the change the instant the stylesheet does.
 
-   #accentVars is an empty <style> tag placed right after the tokens.css
-   <link> in editor.html specifically so it always wins that cascade, however
-   tokens.css itself gets re-vendored later — same trick #labCss uses to sit
-   after editor.css. The popup does the same thing with the same ramp; the
-   maths and the stored hex both live in accent-ramp.js so the two agree.
+   #accentVars is an empty <style> tag placed right after the tokens.css /
+   tokens-extras.css <link>s in editor.html specifically so it always wins
+   that cascade, however tokens.css itself gets re-vendored later — same
+   trick #labCss uses to sit after editor.css. The popup does the same thing
+   with the same ramp; the maths and the stored hex both live in
+   accent-ramp.js so the two agree.
 
    This file is the picker UI on top of that: swatches, custom colour input,
    reset, and the debounce in front of storage. */

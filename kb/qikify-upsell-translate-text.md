@@ -1,0 +1,48 @@
+---
+title: "Qikify Upsell Translations"
+slug: qikify-upsell-translate-text
+status: draft
+---
+
+# Qikify Upsell Translations
+
+Qikify Upsell's **Translations** page lets you edit the wording your upsell offers show shoppers, and translate that wording into every language your store supports — all from one screen.
+
+## Requirements
+
+- Translating into another language needs a paid Qikify Upsell plan. On a free plan, only editing your store's default text works — see Step 1.
+- Your store needs more than one language added in Shopify (**Settings > Languages**). With just one language, the language picker described in Step 2 isn't shown.
+
+## 1. Edit your store's default text
+
+![Edit your store's default text](./img/01-general-settings-default-text-annotated.png)
+
+1. In your Shopify admin, open the **Qikify Upsell** app and click **Translations** in the left menu.
+2. The page opens on the **General settings** tab with your store's default language already selected — this is where it starts by default, no extra setup needed.
+3. Each field here holds a piece of text your store already uses, grouped under headings like **General text**. Edit any field — for example the **Remove button** field shown — to change the wording your customers see.
+
+> **Important:** Editing text here changes the original wording shown to every customer who doesn't have a saved translation — it isn't a translation, it's the source text. This tab still works on a free plan; only translating into other languages requires a paid plan.
+
+## 2. Translate the default text into another language
+
+![Translate the default text into another language](./img/02-translate-mode-japanese-annotated.png)
+
+1. On the **General settings** tab, click **Translate to another language**, near the top right of the card.
+2. Use the language dropdown (Step 2) to choose which language to translate into. The page switches to a two-column layout, and the button you clicked now reads **Edit default text** so you can switch back to your source text at any time.
+3. For each row, the grey field on the left shows the original text and can't be edited. Type your translation into the field on the right — it starts empty, which just means no translation is saved yet; customers will see the default text until you add one.
+4. Save your changes when you're done — a save bar appears at the top of the page as soon as you edit a field.
+
+> **Note:** Only translate the text outside the curly brackets, e.g. {product_name} — this rule applies on every tab, even on the ones where the warning banner shown here doesn't appear.
+
+> **Important:** Clearing a translation field and saving deletes that translation — there's no undo, so the storefront falls back to the default text until you retype it. Saving also replaces the whole set of translations for the current offer type and language at once, not just the field you edited, so make sure the page (and every offer on it) has fully loaded — use Refresh Data if you're not sure — before you save.
+
+## 3. Translate an offer's content
+
+![Translate an offer's content](./img/03-offer-tab-addon-annotated.png)
+
+1. Click any offer tab — here, **Add-on (Cross-sell)** (Step 3) — to translate the text used by that type of offer instead of the app's general wording.
+2. The language you picked in the previous step carries over; change it again from the dropdown if you need a different one.
+3. Each of your offers appears as its own block, named after the offer itself (for example "Add-ons #1"), with rows such as **Title**, **Sub-title**, and **Badge label**. Fill in the right-hand field for each row the same way as before.
+4. If an offer you just created doesn't show up yet, click **Refresh Data** in the top right to reload the list.
+
+> **Note:** The offer tabs you see depend on your Qikify Upsell app version, so the tab names and offer types in your store may differ from this screenshot.

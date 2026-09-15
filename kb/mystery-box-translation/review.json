@@ -1,0 +1,8 @@
+{
+  "slug": "mystery-box-translation",
+  "round": 2,
+  "verdict": "pass",
+  "summary": "All four round-1 findings are fixed and verified in the re-rendered images: the \"Box items title\" zoom (steps 2 and 4) now shows a clean crop of just the input with no garbled label fragment; step 5's Save callout (renumbered Step 4) sits clear of the Warning banner in the topbar; and step 5 now has a Step 1 callout on the Translation tab toggle so the four callouts match the body's action order (tab → language → field → Save). No new defects found on a full re-check of all 5 images (overflow, PII blur consistency, target-in-frame, menu orientation on step 1). Shipping.",
+  "findings": [],
+  "updatedAt": 1789365217323
+}

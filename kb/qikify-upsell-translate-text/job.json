@@ -1,0 +1,184 @@
+{
+  "title": "Qikify Upsell Translations",
+  "slug": "qikify-upsell-translate-text",
+  "md": "qikify-upsell-translate-text.md",
+  "intro": "Qikify Upsell's **Translations** page lets you edit the wording your upsell offers show shoppers, and translate that wording into every language your store supports — all from one screen.\n\n## Requirements\n\n- Translating into another language needs a paid Qikify Upsell plan. On a free plan, only editing your store's default text works — see Step 1.\n- Your store needs more than one language added in Shopify (**Settings > Languages**). With just one language, the language picker described in Step 2 isn't shown.",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1810,
+        "y": 8,
+        "w": 108,
+        "h": 32
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "heading": "Edit your store's default text",
+      "src": "img/01-general-settings-default-text.png",
+      "out": "img/01-general-settings-default-text-annotated.png",
+      "body": "1. In your Shopify admin, open the **Qikify Upsell** app and click **Translations** in the left menu.\n2. The page opens on the **General settings** tab with your store's default language already selected — this is where it starts by default, no extra setup needed.\n3. Each field here holds a piece of text your store already uses, grouped under headings like **General text**. Edit any field — for example the **Remove button** field shown — to change the wording your customers see.",
+      "notes": [
+        {
+          "kind": "Important",
+          "text": "Editing text here changes the original wording shown to every customer who doesn't have a saved translation — it isn't a translation, it's the source text. This tab still works on a free plan; only translating into other languages requires a paid plan."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 6,
+            "y": 620,
+            "w": 226,
+            "h": 36
+          }
+        },
+        {
+          "type": "step",
+          "props": {
+            "x": 482,
+            "y": 638
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 394,
+            "y1": 638,
+            "x2": 249,
+            "y2": 638
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 610,
+            "y": 355,
+            "w": 930,
+            "h": 44
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Translate the default text into another language",
+      "src": "img/02-translate-mode-japanese.png",
+      "out": "img/02-translate-mode-japanese-annotated.png",
+      "body": "1. On the **General settings** tab, click **Translate to another language**, near the top right of the card.\n2. Use the language dropdown (Step 2) to choose which language to translate into. The page switches to a two-column layout, and the button you clicked now reads **Edit default text** so you can switch back to your source text at any time.\n3. For each row, the grey field on the left shows the original text and can't be edited. Type your translation into the field on the right — it starts empty, which just means no translation is saved yet; customers will see the default text until you add one.\n4. Save your changes when you're done — a save bar appears at the top of the page as soon as you edit a field.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "Only translate the text outside the curly brackets, e.g. {product_name} — this rule applies on every tab, even on the ones where the warning banner shown here doesn't appear."
+        },
+        {
+          "kind": "Important",
+          "text": "Clearing a translation field and saving deletes that translation — there's no undo, so the storefront falls back to the default text until you retype it. Saving also replaces the whole set of translations for the current offer type and language at once, not just the field you edited, so make sure the page (and every offer on it) has fully loaded — use Refresh Data if you're not sure — before you save."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 737,
+            "y": 127,
+            "w": 136,
+            "h": 44
+          }
+        },
+        {
+          "type": "textbox",
+          "props": {
+            "x": 915,
+            "y": 97,
+            "mode": "step",
+            "customNumber": 2,
+            "title": "",
+            "compactBadge": true,
+            "hideBody": true,
+            "w": 90
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1087,
+            "y": 393,
+            "w": 453,
+            "h": 44
+          }
+        },
+        {
+          "type": "zoom",
+          "props": {
+            "x": 1472,
+            "y": 256,
+            "w": 220,
+            "h": 64,
+            "zoom": 1.8
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Translate an offer's content",
+      "src": "img/03-offer-tab-addon.png",
+      "out": "img/03-offer-tab-addon-annotated.png",
+      "body": "1. Click any offer tab — here, **Add-on (Cross-sell)** (Step 3) — to translate the text used by that type of offer instead of the app's general wording.\n2. The language you picked in the previous step carries over; change it again from the dropdown if you need a different one.\n3. Each of your offers appears as its own block, named after the offer itself (for example \"Add-ons #1\"), with rows such as **Title**, **Sub-title**, and **Badge label**. Fill in the right-hand field for each row the same way as before.\n4. If an offer you just created doesn't show up yet, click **Refresh Data** in the top right to reload the list.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "The offer tabs you see depend on your Qikify Upsell app version, so the tab names and offer types in your store may differ from this screenshot."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 736,
+            "y": 190,
+            "w": 135,
+            "h": 36
+          }
+        },
+        {
+          "type": "textbox",
+          "props": {
+            "x": 900,
+            "y": 95,
+            "mode": "step",
+            "customNumber": 3,
+            "title": "",
+            "compactBadge": true,
+            "hideBody": true,
+            "w": 90
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1087,
+            "y": 652,
+            "w": 453,
+            "h": 44
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1444,
+            "y": 130,
+            "w": 114,
+            "h": 45
+          }
+        }
+      ]
+    }
+  ],
+  "outro": ""
+}

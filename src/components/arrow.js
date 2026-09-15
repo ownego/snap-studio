@@ -86,7 +86,7 @@
   }
   function svg(el) {
     // .hit is the only part of this element that accepts pointer events — see the
-    // comment on .el[data-type="arrow"] in tokens.css EXTRAS. It traces the real path,
+    // comment on .el[data-type="arrow"] in tokens-extras.css. It traces the real path,
     // so a curved arrow is grabbable along its curve, not its chord.
     const g = arrowGeom(el);
     const scale = el.scale != null ? el.scale : 1;

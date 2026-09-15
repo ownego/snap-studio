@@ -1,0 +1,286 @@
+{
+  "title": "**Column Width** — Adjust the Width of Menu Items",
+  "slug": "column-width-adjust-menu-items",
+  "md": "",
+  "intro": "## What it does\n**Column Width** lets you set how much space a header item takes up in its menu row, instead of letting every item in that row share the space evenly. Use it to make one column of a mega menu wider or narrower than the others.",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1748,
+        "y": 6,
+        "w": 172,
+        "h": 44
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "heading": "Open a header item's toolbar",
+      "src": "img/01-hover-edit-icon.png",
+      "out": "img/01-hover-edit-icon-annotated.png",
+      "body": "In your Shopify admin, open the **Smart Menu** app and stay on the **Step 1: Create Menu** tab on the left — this is where you select and edit the menu itself, not Step 2. Pick the mega menu you want to edit from the tabs above the preview (here, **Simple Mega**); **Column Width** applies to menus that use multiple header/submenu columns like this one.\n\nHover over a header item in the preview and a small toolbar appears above it: a drag handle, then three icons — **Column width**, **Edit** (pencil), and **Delete**. These icons are hidden until you hover over the item, so don't worry if you don't see them right away. Click the pencil icon to open that item's settings.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 743.5416133162612,
+            "y": 187.5416133162612,
+            "w": 31.68758002560819,
+            "h": 31.37516005121639,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3
+          }
+        },
+        {
+          "type": "textbox",
+          "props": {
+            "x": 640,
+            "y": 460,
+            "w": 420,
+            "mode": "note",
+            "title": "Open Settings",
+            "body": "Hover over a header item to reveal its toolbar — a drag handle, then Column width, Edit (pencil), and Delete icons. They're hidden until you hover.",
+            "label": "Note",
+            "compactBadge": false,
+            "hideTitle": true,
+            "hideBody": false,
+            "customNumber": null,
+            "border": true,
+            "borderWidth": 3,
+            "fontSize": null
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 848.7708066581306,
+            "y1": 447.6043533930858,
+            "x2": 774.7503201024327,
+            "y2": 216.24967989756723,
+            "shape": "curved",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Find Column width in the item editor",
+      "src": "img/02-item-editor-column-width.png",
+      "out": "img/02-item-editor-column-width-annotated.png",
+      "body": "Clicking the pencil icon replaces the **Step 1 / Step 2** tabs on the left with that item's own settings — you'll see its title at the top with a back arrow to return to the item list. Scroll down to the **Column width** field, shown here set to its default, **Automatic**.\n\nEach submenu row is divided into 12 columns, and **Column width** sets how many of those 12 columns this item takes up — the item's width becomes exactly that fraction of the row, no more and no less. A couple of rules for how the 12 columns get shared out:\n\n- **All items left on Automatic** — the row splits its 12 columns evenly between them. For example, 3 items in a row would each get 4/12.\n- **One item set to a fixed width, the rest Automatic** — the fixed item keeps exactly the width you set, and the Automatic items share whatever columns are left over. For example, with 2 items where the first is set to 8/12, the second automatically becomes 4/12.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 11.083226632522408,
+            "y": 765.416133162612,
+            "w": 385.0627400768246,
+            "h": 73.50064020486555,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 704.3277848911652,
+            "y1": 780.5377720870678,
+            "x2": 413.86299615877084,
+            "y2": 802.8924455825863,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Set a fixed column width",
+      "src": "img/03-fixed-column-width-preview.png",
+      "out": "img/03-fixed-column-width-preview-annotated.png",
+      "body": "Change **Column width** from Automatic to a fixed value — here, **6/12** (highlighted, bottom left). The preview updates right away (highlighted, top): the item's column becomes exactly half the menu's width, while the other items — still set to Automatic — automatically share whatever width is left between them.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "If the **column widths** in a row add up to more than 12, the item that overflows moves down and starts a new row."
+        },
+        {
+          "kind": "Important",
+          "text": "**Column width** has no effect if the Masonry layout feature is turned on for this menu. For an item using the Image layout, its Image width also can't be set wider than the item's own **column width**."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 9.85403329065301,
+            "y": 698.9577464788732,
+            "w": 387.52112676056333,
+            "h": 80.87580025608194,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 433,
+            "y": 178,
+            "w": 733,
+            "h": 211,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 800,
+            "y": 590,
+            "text": "This column is now 6/12 wide",
+            "accent": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 800,
+            "y1": 548,
+            "x2": 800,
+            "y2": 404,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 618.2842509603073,
+            "y1": 596.1587708066581,
+            "x2": 409.3213828425096,
+            "y2": 738.7451984635082,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "heading": "Or use the shortcut icon on the item",
+      "src": "img/04-hover-column-width-icon.png",
+      "out": "img/04-hover-column-width-icon-annotated.png",
+      "body": "There's a faster way to reach the same setting, still from the **Step 1: Create Menu** tab. Go back to the item list (back arrow), hover the item in the preview to bring its toolbar back, then click the **leftmost** icon — its tooltip reads **Column width** (highlighted). This opens a small picker right on the item, without opening the full item editor from the previous two steps.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1082.3124199743918,
+            "y": 185.0832266325224,
+            "w": 35.37516005121639,
+            "h": 35.06274007682459,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3
+          }
+        },
+        {
+          "type": "textbox",
+          "props": {
+            "x": 1126.2868117797696,
+            "y": 405.3777208706786,
+            "w": 420,
+            "mode": "note",
+            "title": "Open Settings",
+            "body": "You can also click the Column width icon on the item itself — it opens the same picker without leaving the preview.",
+            "label": "Note",
+            "compactBadge": false,
+            "hideTitle": true,
+            "hideBody": false,
+            "customNumber": null,
+            "border": true,
+            "borderWidth": 3,
+            "fontSize": null
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1329,
+            "y1": 393,
+            "x2": 1131,
+            "y2": 202,
+            "shape": "curved",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "heading": "Pick a column number",
+      "src": "img/05-column-width-popup.png",
+      "out": "img/05-column-width-popup-annotated.png",
+      "body": "The picker lists **Auto**, then the numbers **1** through **12**. Click a number to set the item to that many of the row's 12 columns — the same result as typing it into the **Column width** field. Click **Auto** to go back to sharing space evenly with the other items.",
+      "notes": [],
+      "els": [
+        {
+          "type": "zoom",
+          "props": {
+            "x": 989.145966709347,
+            "y": 215.7708066581306,
+            "w": 363.12419974391815,
+            "h": 77.95134443021767,
+            "zoom": 1.4,
+            "dark": false,
+            "shape": "rect",
+            "radius": 33,
+            "border": true,
+            "borderWidth": 3
+          }
+        }
+      ]
+    }
+  ],
+  "outro": ""
+}

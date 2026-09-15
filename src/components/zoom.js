@@ -8,7 +8,32 @@
    layered on via inline style so the vendored .cmp-zoom-magnify rule in
    tokens.css is never touched. `w`/`h` are the on-screen window size; the
    source region cropped out of the screenshot is that divided by `zoom`, so
-   dragging the window and dialing the magnification are independent. */
+   dragging the window and dialing the magnification are independent.
+
+   sourceX/sourceY — Snap Studio's own extension, the "relocate" fallback
+   kit-catalog.js's own zoom-magnify entry documents ("Only relocate to a
+   bubble + connector... when in-place genuinely isn't possible") but the
+   kit never actually wired up: x/y used to be BOTH the on-screen position
+   AND the sampled-pixel center, so moving the glass away from its target
+   just re-sampled empty space (PLACEMENT_PLAYBOOK L-2026-09-01-c). Null
+   means "sample from the same spot it's shown" — today's in-place
+   behaviour, unchanged. Set them (typically via `at`, then relocating with
+   an explicit `props.x/y` — see kit-geometry.js's "zoom" case) to sample
+   the real target while the glass displays somewhere else.
+
+   The vendored kit ships CSS for its own relocate line, .cmp-zoom-magnify__
+   connector in tokens.css — a plain absolute-positioned div (left/top/width
+   + a rotate transform), never wired to any JS here. This file draws one
+   instead: an ordinary `arrow` (its `origin` dot is the same "anchor-dot
+   convention" the vendored comment on __connector cites), composed as a
+   second element the same way a relocated textbox already gets one — not
+   the vendored __connector div. Two reasons, not just one: (1) this
+   element's own wrapper is `translate(-50%,-50%)`-centred (style() below),
+   so a connector drawn INSIDE it would need to undo that transform to reach
+   an arbitrary canvas point, where `arrow`'s wrapper already spans the
+   whole canvas untransformed; (2) `arrow` already has real geometry (at.
+   toSelector, auto length/gap, elbow/curve choice) that a from-scratch
+   __connector div would have to reinvent. */
 (() => {
   window.SnapKit = window.SnapKit || {};
   window.SnapKit.components = window.SnapKit.components || {};
@@ -50,13 +75,18 @@
    *  boundary is absolute, only the rectangle BEHIND the content is glass. */
   function content(el, capture) {
     const bw = Math.round(capture.img.w * el.zoom), bh = Math.round(capture.img.h * el.zoom);
-    // Clamped into [0, bw-w]/[0, bh-h] rather than centered exactly on (el.x, el.y):
+    // sourceX/sourceY decouple WHERE THE PIXELS COME FROM from WHERE THE GLASS SITS
+    // (el.x/el.y, used by style() below) — null falls back to el.x/el.y, the
+    // original in-place behaviour. See the file header on why this exists.
+    const sx = el.sourceX != null ? el.sourceX : el.x;
+    const sy = el.sourceY != null ? el.sourceY : el.y;
+    // Clamped into [0, bw-w]/[0, bh-h] rather than centered exactly on (sx, sy):
     // near an edge or corner of the shot, an unclamped crop samples past the scaled
     // image's own bounds, and with no background-repeat set that default paints the
     // image's opposite edge stitched back onto itself. Sliding the window to stay
     // in-bounds keeps every pixel shown a real part of the screenshot.
-    const bx = Math.max(0, Math.min(Math.round(el.x * el.zoom - el.w / 2), bw - el.w));
-    const by = Math.max(0, Math.min(Math.round(el.y * el.zoom - el.h / 2), bh - el.h));
+    const bx = Math.max(0, Math.min(Math.round(sx * el.zoom - el.w / 2), bw - el.w));
+    const by = Math.max(0, Math.min(Math.round(sy * el.zoom - el.h / 2), bh - el.h));
     return `<div class="cmp-zoom-magnify__content" style="width:${el.w}px;height:${el.h}px;border-radius:${radiusCss(el)};`
       + `background-image:url(${capture.img.dataUrl});background-repeat:no-repeat;background-size:${bw}px ${bh}px;background-position:${-bx}px ${-by}px"></div>`;
   }
@@ -72,7 +102,7 @@
     defaults(c) {
       const k = scaleOf(c);
       return { x: c.x, y: c.y, w: 198 * k, h: 198 * k, zoom: DEFAULT_MAGNIFICATION, dark: false,
-        shape: 'rect', radius: 22 * k, border: false, borderWidth: 2 * k };
+        shape: 'rect', radius: 22 * k, border: false, borderWidth: 2 * k, sourceX: null, sourceY: null };
     },
 
     inner(el, ctx) {
@@ -103,7 +133,11 @@
       if (el.border) {
         html += `<div class="prop-row"><label id="pBorderWLabel">Border width — ${borderW}px</label><input type="range" id="pBorderW" min="1" max="6" step="1" value="${borderW}" style="width:100%"></div>`;
       }
-      html += ctx.note('Drag the bottom-right corner to resize — in rounded-rectangle form it resizes freely on both axes, in circle form it keeps its aspect ratio so it stays a circle. Drag the round handle at the top-left corner to set the corner radius directly (hidden once Circle is picked). Circle and the accent border are two Snap Studio variants of their own — the kit original only has the rounded rectangle, with no border.');
+      const sx = el.sourceX != null ? el.sourceX : '', sy = el.sourceY != null ? el.sourceY : '';
+      html += `<div class="prop-row"><label>Sample from — blank means the same spot it's shown</label>`
+        + `<div style="display:flex;gap:8px"><input type="number" id="pSourceX" placeholder="x" value="${sx}" style="width:50%">`
+        + `<input type="number" id="pSourceY" placeholder="y" value="${sy}" style="width:50%"></div></div>`;
+      html += ctx.note('Drag the bottom-right corner to resize — in rounded-rectangle form it resizes freely on both axes, in circle form it keeps its aspect ratio so it stays a circle. Drag the round handle at the top-left corner to set the corner radius directly (hidden once Circle is picked). Circle and the accent border are two Snap Studio variants of their own — the kit original only has the rounded rectangle, with no border. Relocating this bubble away from its target (drag it, or type new x/y) keeps magnifying whatever "Sample from" points at instead of the empty spot underneath — add a separate arrow (origin dot on) back to the real target, same as pointing one at a relocated text box.');
       return html;
     },
 
@@ -112,6 +146,8 @@
       ctx.flag('#pBorder', 'border', true);
       ctx.on('#pZoom', 'input', (e) => { el.zoom = +e.target.value; ctx.syncNode(el); ctx.$('#pZoomLabel').textContent = `Magnification — ${el.zoom.toFixed(1)}×`; });
       ctx.on('#pRadius', 'input', (e) => { el.radius = +e.target.value; ctx.syncNode(el); ctx.$('#pRadiusLabel').textContent = `Corner radius — ${el.radius}px`; });
+      ctx.on('#pSourceX', 'input', (e) => { const v = e.target.value.trim(); el.sourceX = v === '' ? null : Math.round(+v); ctx.syncNode(el); });
+      ctx.on('#pSourceY', 'input', (e) => { const v = e.target.value.trim(); el.sourceY = v === '' ? null : Math.round(+v); ctx.syncNode(el); });
       ctx.on('#pBorderW', 'input', (e) => { el.borderWidth = +e.target.value; ctx.syncNode(el); ctx.$('#pBorderWLabel').textContent = `Border width — ${el.borderWidth}px`; });
       // Not the generic seg() other components use: switching into circle shape also
       // has to square up w/h (shrinking to the smaller side) or border-radius:50% on a

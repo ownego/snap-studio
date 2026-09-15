@@ -512,7 +512,12 @@ async function saveKbJob(slug, job, rerenderSteps) {
   const steps = job.steps
     .map((s, i) => ({ s, n: s.n == null ? i + 1 : s.n }))
     .filter(({ s, n }) => s && s.src && s.out && (!wanted || wanted.has(n)))
-    .map(({ s }) => ({ srcAbs: resolveOut(s.src), outAbs: resolveOut(s.out), els: s.els || [] }));
+    // globalEls first, same as snap_render_job — otherwise a step re-rendered
+    // from here (any edit-and-Save in KB Studio) silently loses the job's PII
+    // redaction, even though the Live surface beside it keeps showing it (that
+    // half is drawn as a separate locked layer client-side, see bridge-kb.js's
+    // hydrateImages()/kb-surface.js's mount()).
+    .map(({ s }) => ({ srcAbs: resolveOut(s.src), outAbs: resolveOut(s.out), els: [...(job.globalEls || []), ...(s.els || [])] }));
 
   let rendered = [];
   let warn = null;
@@ -891,6 +896,19 @@ async function accentForRender() {
  *  editor's own open capture is not — it survives between calls, and this has to
  *  track it. Mirrors that singleton exactly: one open capture, one lastOpened. */
 let lastOpened = null;
+
+/** slug -> mtimeMs of job.json as of the last snap_job read (or write) this
+ *  agent did. Module-level for the same reason as lastOpened above. This is
+ *  what stops an agent from clobbering a hand-edit: KB Studio's own Save
+ *  writes job.json straight to disk with no coordination with a running
+ *  revise session, and snap_job's write replaces the WHOLE object — so an
+ *  agent working from a copy it read (or remembers from an earlier turn of
+ *  the same resumed session) BEFORE the user's save would silently discard
+ *  every change the user just made. The write handler below refuses when
+ *  disk is newer than what this agent last saw, instead of trusting "the
+ *  state is re-read from disk just now" in the prompt to hold under an LLM
+ *  that skips the re-read. */
+const jobReadMtime = new Map();
 
 // "image" is deliberately excluded: it has no defaults() (only
 // newImageElement(capture, src, natW, natH), used solely by the
@@ -1355,12 +1373,26 @@ function buildMcpServer() {
         }
         throw new Error(`nothing has been written for "${slug}" yet — neither ${toKbRel(abs)} nor kb/${slug}.md exists. This says nothing about what shape the article should be, only that it is early. If you are BUILDING it (you have captures on disk and annotations on them), call snap_job again with the complete job object to create the file — one step is enough, and write it again after each captured step. Only reach for snap_write_kb instead if this article is deliberately a single flat kb/${slug}.md with no per-step annotations, which also means its images can never be edited by hand in KB Studio.`);
       }
+      jobReadMtime.set(slug, statSync(abs).mtimeMs);
       return text(readFileSync(abs, "utf8"));
     }
     if (!Array.isArray(job.steps) || !job.steps.length) {
       throw new Error("job.steps[] is required and must not be empty — writing a job with no steps would throw away every annotation in the article.");
     }
     assertElShapes(job);
+    // job.json changed on disk since this session last read it — almost
+    // always the user's own Save in KB Studio, which writes straight to disk
+    // with no coordination with a running revise session. Since this write
+    // replaces the WHOLE object, going ahead would silently throw away
+    // whatever the user just changed by hand. Force a fresh read instead of
+    // trusting the system prompt's "trust disk over memory" to hold.
+    if (existsSync(abs)) {
+      const diskMtime = statSync(abs).mtimeMs;
+      const readMtime = jobReadMtime.get(slug);
+      if (readMtime != null && diskMtime > readMtime) {
+        throw new Error(`job.json for "${slug}" changed on disk since you last read it — most likely the user edited and saved it by hand in KB Studio. Call snap_job with just slug to re-read the CURRENT version, reapply your change on top of that, then write again. Writing the object you have now would silently discard their edit.`);
+      }
+    }
     // One level of undo, kept beside the file it undoes. Overwriting job.json
     // discards hand-tuned coordinates that took a browser session to produce;
     // the .md has snapshotKbHistory() for exactly this reason, and the file
@@ -1372,6 +1404,7 @@ function buildMcpServer() {
     }
     ensureDirFor(abs);
     writeFileSync(abs, JSON.stringify(job, null, 2), "utf8");
+    jobReadMtime.set(slug, statSync(abs).mtimeMs);
     // The live surfaces in KB Studio draw straight from this file, so the user
     // sees the element move the moment it is written — no render needed for that.
     pushKbArticleChanged(slug, "snap_job");
@@ -1435,19 +1468,22 @@ function buildMcpServer() {
   // size-capped, two edit shapes: it can add to the log and retire an entry,
   // it cannot rewrite the rules above it.
   mcp.registerTool("snap_learn", {
-    description: "Append one dated LEARNING to .claude/skills/kb/PLACEMENT_PLAYBOOK.md — the shared memory of how to place annotations in this repo. Call it when a human correction (usually a pinned comment) taught something a future article should not have to relearn: what was placed wrong, why it was wrong, and the rule that follows. One or two sentences of substance, not \"fixed the arrow\". The date AND the learning's id are stamped for you — do not type a date into the text. The log is append-only for history: nothing you send can delete or reword a bullet that is already there. What you CAN do is retire one you have proved wrong — see supersedes.",
+    description: "Append one dated LEARNING to .claude/skills/kb/PLACEMENT_PLAYBOOK.md (category: \"placement\", the default) or CONTENT_PLAYBOOK.md (category: \"content\") — the shared memory of how to place annotations, and separately how to word/structure an article, in this repo. Call it when a human correction (usually a pinned comment, or a note on prose/structure) taught something a future article should not have to relearn: what was wrong, why, and the rule that follows. One or two sentences of substance, not \"fixed the arrow\". The date AND the learning's id are stamped for you — do not type a date into the text. The log is append-only for history: nothing you send can delete or reword a bullet that is already there. What you CAN do is retire one you have proved wrong — see supersedes.",
     inputSchema: {
-      text: z.string().describe("The learning: what was placed wrong — why — the rule it implies. Written for whoever places the next annotation, not as a changelog entry."),
-      supersedes: z.string().optional().describe("Id of a learning this one proves WRONG, e.g. \"L-2026-08-30-a\" — every bullet prints its id next to its date. The old bullet keeps its text and gets a SUPERSEDED marker, and stops being sent to future jobs. Use it when you have actually disproved the claim (snap_kit shows the prop it called impossible; the fix it prescribed made things worse), not when you are merely adding detail — a learning that refines another one is just a new learning."),
+      text: z.string().describe("The learning: what was wrong — why — the rule it implies. Written for whoever writes/places the next annotation or paragraph, not as a changelog entry."),
+      category: z.enum(["placement", "content"]).optional().describe("Which playbook this belongs to: \"placement\" (default) for where/how an annotation was placed wrong (coordinates, anchor, component choice); \"content\" for wording, structure, or a content decision (missing worked example, wrong section, invented behaviour) that was corrected. A comment about a callout's position is placement; a comment about a sentence or which section something belongs in is content."),
+      supersedes: z.string().optional().describe("Id of a learning this one proves WRONG, e.g. \"L-2026-08-30-a\" — every bullet prints its id next to its date. Must be in the SAME playbook as category (an id from PLACEMENT_PLAYBOOK.md cannot supersede one in CONTENT_PLAYBOOK.md). The old bullet keeps its text and gets a SUPERSEDED marker, and stops being sent to future jobs. Use it when you have actually disproved the claim (snap_kit shows the prop it called impossible; the fix it prescribed made things worse), not when you are merely adding detail — a learning that refines another one is just a new learning."),
     },
-  }, async ({ text: learning, supersedes }) => {
+  }, async ({ text: learning, category, supersedes }) => {
     const body = String(learning || "").trim();
     if (body.length < 20) throw new Error("a learning that short teaches nothing — say what was wrong, why, and the rule it implies.");
     if (body.length > 1200) throw new Error(`${body.length} characters is too long for one learning (max 1200) — keep it to the rule, not the whole session.`);
-    const abs = playbookPath(REPO_ROOT);
+    const kind = category || "placement";
+    const abs = playbookPath(REPO_ROOT, kind);
     if (!existsSync(abs)) throw new Error(`${abs} does not exist — nothing to append to.`);
     const { id, date, retiredId } = appendLearning(abs, { text: body, supersedes });
-    return text(`Appended LEARNING ${id} (${date}) to PLACEMENT_PLAYBOOK.md${retiredId
+    const file = kind === "content" ? "CONTENT_PLAYBOOK.md" : "PLACEMENT_PLAYBOOK.md";
+    return text(`Appended LEARNING ${id} (${date}) to ${file}${retiredId
       ? `, and retired ${retiredId}: it keeps its text in the file but is no longer sent to future jobs.`
       : "."}`);
   });
@@ -1489,6 +1525,19 @@ function buildMcpServer() {
   }, async ({ tabId, frameId, frameUrlContains, query, maxResults }) => {
     const data = await callExtension("frame_find", { tabId, frameId, frameUrlContains, query, maxResults }, 15000);
     return text(JSON.stringify(data));
+  });
+
+  mcp.registerTool("snap_frame_hover", {
+    description: "Hover an element inside a specific frame (cross-origin iframe included) by CSS selector — moves the REAL pointer there over Chrome DevTools Protocol (not a dispatchEvent simulation), so it sets actual CSS `:hover` state as well as firing mouseenter/mouseover listeners. Use this BEFORE snap_frame_find/snap_frame_click when a UI only reveals an action (e.g. an \"Edit\" icon on a row) on real hover — plain snap_frame_click never moves the pointer, so hover-only elements won't appear until this runs first. Only works on a frame that is a direct child of the top frame. Get the selector from snap_frame_find first (find the always-visible row/container, hover that, then re-run snap_frame_find for the now-revealed action).",
+    inputSchema: {
+      tabId: z.number().int().describe("Chrome tab id."),
+      frameId: z.number().int().optional().describe("Exact frame id from snap_frame_list. Preferred over frameUrlContains."),
+      frameUrlContains: z.string().optional().describe("Fallback: substring to match a frame's URL."),
+      selector: z.string().describe("CSS selector of the element to hover."),
+    },
+  }, async ({ tabId, frameId, frameUrlContains, selector }) => {
+    const data = await callExtension("frame_hover", { tabId, frameId, frameUrlContains, selector }, 15000);
+    return text(`Hovered "${selector}" (resolved to <${data.hoveredTag}>) at page coordinates (${data.x}, ${data.y}).`);
   });
 
   mcp.registerTool("snap_frame_click", {

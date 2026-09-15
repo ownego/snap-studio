@@ -16,9 +16,10 @@
    export screenshot exactly like the kit components (see components/custom.js
    for how an instance of one renders on the canvas). They live in
    chrome.storage for this browser profile only — "Copy CSS" is the door out,
-   into src/tokens.css. Note that pasting there FORKS this repo's vendored
-   copy of the design kit rather than syncing it; see
-   .claude/skills/editorial-glass/SKILL.md, "Adding a component".
+   into src/tokens-extras.css (NOT tokens.css, which is vendored-only). Note
+   that pasting there FORKS this repo's vendored copy of the design kit
+   rather than syncing it; see .claude/skills/editorial-glass/SKILL.md,
+   "Adding a component".
 
    Wired up once editor.js has built its own state/DOM refs — see init() below
    and the call to it at the bottom of editor.js. customDef() is the one piece
@@ -70,7 +71,7 @@
      description of what they want, then upload whatever .md Claude hands
      back (see parseComponentMd() below for the exact contract this prompt
      commits to). The token vocabulary below is transcribed from tokens.css
-     by hand — keep it in sync if that file's EXTRAS-adjacent scales change. */
+     by hand — keep it in sync if that file's scales change on a re-vendor. */
   const COMPONENT_PROMPT = [
     "You're creating a new annotation component for Snap Studio — a screenshot",
     'capture & annotation tool whose entire look comes from one shared set of',
@@ -574,9 +575,9 @@
       if (!customs.length) { toast('No custom components to copy yet.'); return; }
       const header = [
         `/* Snap Studio — ${customs.length} custom component(s).`,
-        '   Paste at the end of src/tokens.css to make them part of this design kit for good.',
-        '   Note: tokens.css here is a vendored copy of Editorial Glass, and the repo has no',
-        '   sync command left — pasting here is a FORK, not a sync. See',
+        '   Paste at the end of src/tokens-extras.css to make them part of this design kit for',
+        '   good — NOT src/tokens.css, which is vendored-only (its own banner explains why).',
+        '   The repo has no sync command left — pasting here is a FORK, not a sync. See',
         '   .claude/skills/editorial-glass/SKILL.md, section "Adding a component". */',
         '', '',
       ].join('\n');

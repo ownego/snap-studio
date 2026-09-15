@@ -1,0 +1,310 @@
+{
+  "title": "Tùy chỉnh Variant Swatches trong Qikify Volume Discount",
+  "slug": "variant-swatches-volume",
+  "md": "variant-swatches-volume.md",
+  "intro": "Mặc định, các option biến thể (variant) trong offer của Qikify Volume Discount chỉ hiển thị dạng dropdown với chữ thuần tuý — khách phải đọc \"Red\", \"Blue\" thay vì nhìn thấy màu thật. Tính năng **Variant swatches** cho phép bạn gắn thêm swatch màu hoặc ảnh cạnh tên biến thể, giúp khách chọn nhanh và trực quan hơn. Bài viết này hướng dẫn bạn từ việc mở đúng mục cấu hình, hiểu bảng danh sách option, cho tới chọn kiểu hiển thị (swatch type) và lưu lại thay đổi.",
+  "outro": "Vậy là xong — giờ bạn đã biết cách bật swatch màu hoặc ảnh cho từng option biến thể trong offer, và cách lưu lại để áp dụng lên storefront. Ứng dụng thay đổi liên tục, nên nếu gặp vướng mắc trong lúc cấu hình, đừng ngại liên hệ đội ngũ hỗ trợ qua live chat ngay trong app — chúng tôi luôn sẵn sàng hỗ trợ 🤩",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1798,
+        "y": 6,
+        "w": 112,
+        "h": 40
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "heading": "Mở mục Variant swatches",
+      "src": "variant-swatches-volume/img/01-menu.png",
+      "out": "variant-swatches-volume/img/01-menu-annotated.png",
+      "body": "Trong Shopify admin, mở app **Qikify Volume Discount** ở sidebar bên trái, rồi bấm **Variant swatches** (nằm ngay dưới **Manage offers** và **Translations**). Đây là nơi quản lý style hiển thị cho tất cả các option biến thể đang được dùng trong offer của bạn.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 37,
+            "y": 565,
+            "w": 124,
+            "h": 34
+          }
+        },
+        {
+          "type": "step",
+          "props": {
+            "x": 406,
+            "y": 582
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 318,
+            "y1": 582,
+            "x2": 173,
+            "y2": 582
+          }
+        },
+        {
+          "type": "blur",
+          "props": {
+            "x": 595,
+            "y": 130,
+            "w": 151,
+            "h": 42
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Bảng danh sách Variant swatches",
+      "src": "variant-swatches-volume/img/02-table.png",
+      "out": "variant-swatches-volume/img/02-table-annotated.png",
+      "body": "Trang mở ra hiển thị một bảng liệt kê từng option biến thể trong store, với 4 cột:\n\n1. **Variant options** — tên option đúng như bạn đã đặt trên sản phẩm Shopify (ví dụ **Color**, **Size**). Các sản phẩm khác nhau nhưng dùng chung tên option sẽ dùng chung một style hiển thị.\n2. **Connected Products** — số sản phẩm đã đồng bộ đang có option tương ứng (bấm vào số để xem danh sách sản phẩm).\n3. **Swatch type** — kiểu hiển thị hiện tại của option đó trên offer.\n4. **Customize** — bấm biểu tượng bút chì để mở trang chỉnh style cho option đó.\n\nTrong ví dụ trên, option **Color** đang dùng kiểu **Variant color dropdown**, còn **Size** và **Available Product** vẫn ở kiểu **Default dropdown**.",
+      "notes": [
+        {
+          "kind": "note",
+          "text": "Nếu store của bạn chưa từng đồng bộ dữ liệu biến thể, bảng này sẽ trống và bạn cần bấm nút **Sync variants** ở góc trên bên phải trước. Nút này vẫn dùng được bất cứ lúc nào để đồng bộ lại khi bạn thêm option mới trên Shopify."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 624,
+            "y": 206,
+            "w": 106,
+            "h": 33
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 852,
+            "y": 206,
+            "w": 137,
+            "h": 33
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1095,
+            "y": 206,
+            "w": 91,
+            "h": 33
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1387,
+            "y": 206,
+            "w": 80,
+            "h": 33
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "text": "1",
+            "x": 677,
+            "y": 178
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "text": "2",
+            "x": 921,
+            "y": 178
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "text": "3",
+            "x": 1141,
+            "y": 178
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "text": "4",
+            "x": 1427,
+            "y": 178
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Mở style editor cho option",
+      "src": "variant-swatches-volume/img/03-setting.png",
+      "out": "variant-swatches-volume/img/03-setting-annotated.png",
+      "body": "Bấm biểu tượng bút chì ở cột **Customize** của option **Color** để mở trang **Setting Variant Option**. Bên trái là dropdown **Swatch type** — control chính bạn dùng để đổi kiểu hiển thị; bên phải là **Preview section**, bản xem trước hiển thị đúng offer thật sẽ trông như thế nào, và nó **cập nhật ngay lập tức** mỗi khi bạn đổi giá trị dropdown.\n\nDropdown Swatch type có 5 lựa chọn:\n\n- **Default dropdown** — kiểu mặc định, chỉ hiện chữ.\n- **Custom color dropdown** — bạn tự gán màu cho từng biến thể.\n- **Custom image dropdown** — bạn tự upload ảnh cho từng biến thể.\n- **Variant color dropdown** — app tự lấy màu biến thể có sẵn từ Shopify.\n- **Variant image dropdown** — app tự lấy ảnh biến thể có sẵn từ Shopify.",
+      "notes": [
+        {
+          "kind": "note",
+          "text": "Hai kiểu **Variant color dropdown** và **Variant image dropdown** chỉ hoạt động nếu bạn đã thiết lập màu/ảnh biến thể trên Shopify qua category metafield. Xem hướng dẫn của Shopify về [category metafields](https://help.shopify.com/en/manual/custom-data/metafields/category-metafields/using-category-metafields) nếu chưa từng cấu hình."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 618,
+            "y": 278,
+            "w": 441,
+            "h": 50,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1087.4788732394366,
+            "y": 185.854033290653,
+            "w": 470.27144686299613,
+            "h": 229.93854033290654,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 838,
+            "y": 550,
+            "text": "Swatch type",
+            "accent": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 839,
+            "y1": 508,
+            "x2": 839,
+            "y2": 340,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "heading": "Đặt màu tùy chỉnh cho từng biến thể",
+      "src": "variant-swatches-volume/img/04-color.png",
+      "out": "variant-swatches-volume/img/04-color-annotated.png",
+      "body": "Chọn **Custom color dropdown** trong dropdown Swatch type. Một danh sách 2 cột xuất hiện bên dưới: **Variant option** (tên biến thể, chỉ đọc) và **Color** (màu bạn gán, chỉnh được). Với mỗi dòng, bấm vào ô vuông màu để mở bảng chọn màu (color picker), hoặc gõ trực tiếp mã hex (ví dụ `#FFFFFF`) hay tên màu (ví dụ `SandyBrown`) vào ô văn bản bên cạnh — app đã tự điền sẵn một tên màu gợi ý dựa trên tên biến thể, bạn có thể giữ nguyên hoặc đổi lại theo ý muốn.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 615,
+            "y": 330,
+            "w": 436,
+            "h": 600,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "zoom",
+          "props": {
+            "x": 935.3751600512164,
+            "y": 590.5236875800256,
+            "w": 395.6466069142126,
+            "h": 82.22791293213828,
+            "zoom": 1.7,
+            "dark": false,
+            "shape": "rect",
+            "radius": 33,
+            "border": false,
+            "borderWidth": 3
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "heading": "Xem trước trải nghiệm khách mua hàng",
+      "src": "variant-swatches-volume/img/05-preview.png",
+      "out": "variant-swatches-volume/img/05-preview-annotated.png",
+      "body": "Bấm vào control biến thể (ở đây là **White**) trong **Preview section** để mở dropdown y như khách sẽ thấy trên storefront. Mỗi lựa chọn giờ có thêm một vòng tròn màu cạnh tên, đúng với màu bạn vừa đặt ở bước trước — xác nhận phần xem trước này phản ánh **đúng thời gian thực** những gì khách hàng sẽ nhìn thấy, chứ không phải bản mô phỏng tĩnh.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1139.4788732394366,
+            "y": 319.4788732394366,
+            "w": 199.3341869398207,
+            "h": 550.8130601792573,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "heading": "Hoặc dùng ảnh, rồi lưu lại",
+      "src": "variant-swatches-volume/img/06-image.png",
+      "out": "variant-swatches-volume/img/06-image-annotated.png",
+      "body": "Nếu chọn **Custom image dropdown** thay vì màu, danh sách bên dưới đổi thành **Variant option** và **Image**: mỗi dòng có một ô xem trước ảnh cùng nút **Add image** để mở trình chọn file của Shopify, upload một ảnh riêng cho từng biến thể.\n\nDù bạn chọn kiểu màu, ảnh hay bất kỳ swatch type nào, **luôn bấm Save** ở thanh **Unsaved changes** trên đầu trang để lưu lại. Style mới sẽ tự động cập nhật trên storefront ngay sau khi lưu.",
+      "notes": [
+        {
+          "kind": "note",
+          "text": "Muốn huỷ các thay đổi chưa lưu? Bấm **Discard** ngay cạnh nút Save để quay về style đã lưu gần nhất."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 827.3956466069143,
+            "y": 346.62483994878363,
+            "w": 155.43790012804098,
+            "h": 48.29193341869398,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1219,
+            "y": 5,
+            "w": 66,
+            "h": 46,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        }
+      ]
+    }
+  ]
+}

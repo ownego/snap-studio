@@ -400,6 +400,29 @@
       + '<button data-v="png" type="button" title="The PNG on disk — what the exported article actually links to">PNG</button>';
     bar.appendChild(mode);
 
+    // Copies the exported PNG straight to the clipboard — the on-disk file this
+    // wrapper's plain <img> already holds as a data: URL (kept current by
+    // bridge-kb.js's paintPng/repaintPngs), same bytes the published article
+    // links to. For pasting into an external editor (Crisp, a ticket, a doc)
+    // that has no idea what a job.json step is.
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'btn sm kbs-copybtn';
+    copyBtn.title = 'Copy the exported PNG to the clipboard — paste it into Crisp or anywhere else';
+    copyBtn.textContent = '⧉ Copy';
+    copyBtn.addEventListener('click', async () => {
+      const png = wrap.querySelector('img.kb-md-img');
+      if (!png || !png.src || !png.src.startsWith('data:')) { deps.toast('Image not loaded yet — try again in a moment.'); return; }
+      try {
+        const blob = await (await fetch(png.src)).blob();
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type || 'image/png']: blob })]);
+        deps.toast('Image copied — paste it into Crisp.');
+      } catch (err) {
+        deps.toast('Could not copy: ' + err.message);
+      }
+    });
+    bar.appendChild(copyBtn);
+
     wrap.appendChild(built.frame);
     // After the wrapper, before the <figcaption>, so the caption keeps reading as
     // the caption of the picture rather than of the toolbar.

@@ -1,0 +1,188 @@
+{
+  "title": "How to Translate Your Qikify Upsell Text Into Another Language",
+  "slug": "qikify-upsell-translations",
+  "md": "qikify-upsell-translations.md",
+  "intro": "Qikify Upsell's **Translations** page lets you translate every piece of customer-facing text in your offers — buttons, titles, messages, and more — into any language you've added to your store, so shoppers see your offers in their own language.\n\n## Requirements\n\n- **A paid Qikify Upsell plan.** On a free plan you can still edit your store's original (default-language) text, but translating into any other language is locked.\n- **At least one extra language added to your store.** Add one in Shopify admin under **Settings > Languages** — without it, there's nothing to translate into.",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1782,
+        "y": 14,
+        "w": 87,
+        "h": 28
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "heading": "Open Translations",
+      "src": "img/01-nav-translations.png",
+      "out": "img/01-nav-translations-annotated.png",
+      "body": "In your Shopify admin, open the **Qikify Upsell** app from the left-hand menu, then click **Translations** in its app menu.\n\nThis menu item is available on every plan — nothing about it hints that translating itself is locked further in, so don't worry if you're not sure yet whether your plan supports it.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 4,
+            "y": 646,
+            "w": 230,
+            "h": 40
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 420,
+            "y": 666,
+            "text": "Step 1: Open Translations"
+          }
+        },
+        {
+          "type": "blur",
+          "props": {
+            "x": 594,
+            "y": 127,
+            "w": 123,
+            "h": 36
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Pick the language you want to translate into",
+      "src": "img/02-translations-page.png",
+      "out": "img/02-translations-page-annotated.png",
+      "body": "At the top of the Translations page, click the language dropdown — the icon next to your store's default language (marked **Default**) — and choose the language you want to add text for. This list shows every language you've added to your store in Shopify.\n\nBelow, you'll see a tab for **General settings** plus one tab for each type of offer you use in your store — click through them the same way once you've picked a language.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "Don't see this dropdown? If your store only has one language, add another one in Shopify admin under **Settings > Languages** first — the dropdown (and the arrow next to it) only appears once there's a second language to translate into."
+        },
+        {
+          "kind": "Important",
+          "text": "If the dropdown is greyed out and won't open, translating into another language needs a paid Qikify Upsell plan. You can still edit your store's default text on the **General settings** tab while on a free plan."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 737,
+            "y": 127,
+            "w": 121,
+            "h": 44
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1194,
+            "y": 149,
+            "text": "Step 2: Select a language"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1017,
+            "y1": 149,
+            "x2": 873,
+            "y2": 149
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Type your translation",
+      "src": "img/03-translate-mode.png",
+      "out": "img/03-translate-mode-annotated.png",
+      "body": "Once you've picked a language, each row splits into two fields: the original text on the left (greyed out — you can't edit it) and an empty field on the right. Type your translation into the right-hand field, like the **Remove button** row highlighted below.\n\nThe right-hand field starts empty even though the row already exists — it isn't pre-filled with the original text, so a blank field simply means no translation has been saved yet for that string.",
+      "notes": [
+        {
+          "kind": "Important",
+          "text": "Leave anything inside curly braces exactly as it is, and only translate the text around it. For example, a field with default text `{selected_items} selected items` should keep `{selected_items}` untouched and only have the surrounding words translated — that placeholder gets swapped for a real value on your storefront, and changing it will break the text. This rule applies on every tab, even where the yellow warning banner shown below isn't displayed."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1087,
+            "y": 393,
+            "w": 453,
+            "h": 44
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1765,
+            "y": 415,
+            "text": "Step 3: Translate here"
+          }
+        },
+        {
+          "type": "zoom",
+          "props": {
+            "x": 802,
+            "y": 313,
+            "w": 560,
+            "h": 74,
+            "zoom": 1.8
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "heading": "Save your changes",
+      "src": "img/03-translate-mode.png",
+      "out": "img/04-save-changes-annotated.png",
+      "body": "As soon as you edit any field, Shopify's save bar appears at the top of the page with **Discard** and **Save** buttons. Click **Save** to store your translation — a confirmation message appears once it's saved. If you click **Discard** instead, you'll be asked to confirm before your edits are thrown away.",
+      "notes": [
+        {
+          "kind": "Important",
+          "text": "Saving updates the entire set of translations for the tab and language you currently have open, not just the field you changed. If anything on the page looked like it hadn't finished loading, use **Refresh Data** (on offer tabs) before you save, not after."
+        },
+        {
+          "kind": "Note",
+          "text": "Clearing a field and saving removes that translation — the storefront falls back to showing the default-language text instead, and there's no undo, so you'll need to retype it if you change your mind."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1223,
+            "y": 9,
+            "w": 58,
+            "h": 38
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1548,
+            "y": 28,
+            "text": "Step 4: Save"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1441,
+            "y1": 28,
+            "x2": 1297,
+            "y2": 28
+          }
+        }
+      ]
+    }
+  ],
+  "outro": "## Settings explained\n\n| Control | What it does |\n|---|---|\n| **Language dropdown** | Chooses which language you're translating into. Lists every language you've added to your store in Shopify, plus your default language when you're on the General settings tab. |\n| **Edit default text / Translate to another language** | A toggle link above the field list. It switches between editing your store's original text and translating it — the label just changes depending on which one you're currently doing. |\n| **Warning banner** | Shown on some tabs as a reminder not to translate text inside curly braces. The rule applies on every tab regardless of whether this banner is shown. |\n| **Refresh Data** | Reloads the languages and offers on the current tab from scratch. Use it if a list looks incomplete before you start translating. |\n\n## Verify it's working\n\nAfter you click **Save**, look for the **Saved successfully** message at the top of the page. To double-check, reopen the language dropdown, pick the same language again, and confirm your translated text now shows in the right-hand field instead of being empty.\n\n## Troubleshooting\n\n| Problem | What's happening |\n|---|---|\n| The language dropdown is missing | Your store only has one language. Add another one in Shopify admin under **Settings > Languages**, then come back to this page. |\n| The language dropdown is greyed out | Translating into another language needs a paid Qikify Upsell plan. You can still edit your default text on the **General settings** tab while on a free plan. |\n| An offer tab shows a locked screen | Same as above — that tab needs a paid plan before you can translate it. |\n| The language you had selected switched back on its own after clicking a tab | You had unsaved changes. Shopify blocks the switch and asks you to save or discard first — check for the save bar at the top of the page. |"
+}

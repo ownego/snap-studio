@@ -1,0 +1,27 @@
+{
+  "slug": "variant-swatches-volume",
+  "round": 1,
+  "verdict": "pass",
+  "summary": "Article delivers what was asked (merchant walkthrough for using/configuring Volume's variant swatches): step 1 orients in the menu, the table overview, style editor, custom color config with a zoom on the decisive detail, live preview check, and image-config-plus-save are all present, each screenshot matches its state in the prose, and the store PII (huynq-vl / avatar) is consistently blurred via globalEls across all six images with no overflow anywhere. Two non-blocking nits found, no blockers — shipping as-is.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 3,
+      "img": "img/03-setting-annotated.png",
+      "what": "The vertical arrow from the 'Swatch type' label pill up to the highlighted dropdown runs straight through the live helper caption 'Automatically assigns the existing variant colors.' beneath the dropdown — the shaft crosses directly over 'existing'/'variant', partially obscuring real UI text.",
+      "why": "Arrow path was left to cross actual on-screen text instead of blank canvas on its way up through the only open space below the target (Playbook #1b: an arrow's path is a consequence of where its callout sits, so it needs checking once placed, not just accepting whatever gap is left).",
+      "fix": "Shift the 'Swatch type' label + arrow sideways so the shaft's x no longer lines up with the caption (caption spans roughly x=627-925 in the 1920-wide capture) — e.g. move the callout to around x=950-1000, still landing just below the highlighted dropdown box — then re-render and snap_view to confirm the shaft only crosses empty canvas."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": 5,
+      "img": "img/05-preview-annotated.png",
+      "what": "Step 5's body claims the Preview section 'phản ánh đúng thời gian thực những gì khách hàng sẽ nhìn thấy, chứ không phải bản mô phỏng tĩnh' — asserting 1:1 fidelity with the live storefront.",
+      "why": "The screenshot only shows Qikify's own in-app 'Preview section' widget (explicitly labelled as a preview), not the merchant's actual theme/storefront. What's visually confirmed (step 4→5) is that it updates live as settings change — that's not the same as guaranteeing it matches the real theme's rendering, and the current wording could lead a merchant to skip checking the real storefront after saving.",
+      "fix": "Soften the claim to something like 'bản xem trước trong app cập nhật ngay khi bạn đổi cài đặt — vẫn nên kiểm tra lại trên storefront thật sau khi lưu để chắc chắn giao diện khớp với theme của bạn', matching what the image actually substantiates (a live in-app preview) rather than asserting equivalence with the live storefront."
+    }
+  ],
+  "updatedAt": 1788415777805
+}

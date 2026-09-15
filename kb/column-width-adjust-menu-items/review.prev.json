@@ -1,0 +1,36 @@
+{
+  "slug": "column-width-adjust-menu-items",
+  "round": 1,
+  "verdict": "changes-requested",
+  "summary": "Strong, well-matched article overall (prose tracks the screenshots accurately, arrows/highlights are correctly placed and sized, step 1 orients in the menu, hover-only Edit icon is called out as the instruction asked). Two capture-side issues need a fix round: a glitchy zoom crop in step 5 and a PII blur box that's cut uncomfortably close to the real account-chip edge on every image.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 5,
+      "img": "img/05-column-width-popup-annotated.png",
+      "what": "The zoom (props x:984,y:220,w:460,h:140,zoom:2.2, hand-typed not `at`-anchored) has its display top edge at y=150, which lands in the middle of the tab-bar row above the Column width popup (that row runs roughly y133-166, confirmed via the step-1 highlight at x944,y133,w164,h33). The result: a thin, blank grey rectangle sits detached just above the rounded zoom bubble, not connected to anything, reading as a rendering glitch rather than part of the popup.",
+      "why": "Playbook hard rule #0 (nothing should render like a broken artifact) and learning L-2026-09-11-a describe exactly this failure: a hand-typed zoom whose crop boundary lands mid-element grazes the row above and looks like a bug, not a magnifier.",
+      "fix": "Anchor the zoom to the popup element itself with `at:{selector,tabId}` instead of hand-typed x/y/w/h so the crop bounds are derived from the element's real box, or manually raise the center/shrink the height so the top edge starts below the tab row (~y175+) with no overlap into it. Re-render and snap_view step 5 to confirm the stray strip is gone before resolving."
+    },
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 1,
+      "img": "img/01-hover-edit-icon-annotated.png",
+      "what": "job.globalEls blur `{x:1754,y:6,w:146,h:40}` was hand-typed, not anchored via `at`. Measured on the un-annotated base capture (img/05-column-width-popup.png, which shows the chip unblurred) the real account chip — avatar \"HTA\" + \"Huy Test All\" + the \"dev\" tag — runs from about x≈1760 to x≈1905-1910. The blur box's right edge is only x=1900 (1754+146), i.e. at or past the true edge of the \"dev\" tag with little to no margin, and this same box is reused on all 5 images per the 2026-09-11 playbook audit's documented failure mode (one hand-measured globalEls box drifting off the real chip).",
+      "why": "PLACEMENT_PLAYBOOK principle #6 is a hard rule for public articles, and the file's own 2026-09-11 audit already logged this precise mistake (globalEls box measured on one image, tight/wrong on others) — a margin this thin on the account-name chip risks a real name leaking on every image in the article at once, not just one.",
+      "fix": "Re-anchor the blur with `at:{selector,tabId}` on the account-chip element with a generous pad (10px+), or at minimum widen the hand-typed box (e.g. x:1748,w:172,h:44) to clear the \"dev\" tag's real right/bottom edge with visible margin. Re-render, then snap_view the first, one middle, and the last image (not just the first) to confirm full coverage everywhere before resolving."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 4,
+      "img": "img/04-hover-column-width-icon-annotated.png",
+      "what": "The highlight boxes in step 1 (x726,y193,w68,h20) and step 4 (x1088,y193,w68,h20) both frame the entire 3-icon toolbar cluster, even though the body text calls out one specific icon each time (\"the pencil icon\" / \"the leftmost icon\"). It still reads correctly today only because the hover tooltip (\"Edit\" / \"Column width\") happens to be visible in the same capture and disambiguates which icon is meant.",
+      "why": "A highlight is supposed to bound the thing the text is pointing to; relying on the tooltip alone to disambiguate among 3 boxed icons is a secondary signal, not the primary one.",
+      "fix": "Tighten each highlight to just the single icon referenced in that step's body (pencil in step 1, leftmost/column-width icon in step 4) instead of the full 3-icon toolbar, so the box and the tooltip agree on the same target."
+    }
+  ],
+  "updatedAt": 1789384077385
+}

@@ -153,9 +153,17 @@ Mục tiêu: *ảnh chụp có chỗ sống và có đường ra.*
 - [ ] **Link chia sẻ.** Hạng mục V1 duy nhất bị bỏ lại. Cần server → xem "Quyết định còn treo" #2.
 - [ ] **Chụp cuộn trang dài (full-page).** `captureVisibleTab` chỉ lấy phần đang hiển thị;
       cần cuộn-và-ghép nhiều lần chụp.
-- [ ] **Nối phần `__connector` (relocate mode) của `text-box` / `zoom-magnify`.**
-      CSS đã có sẵn trong `tokens.css` (kit mới); việc còn lại là neo start point vào
-      component, tính lại đường + chấm neo khi kéo — xem mục "Đổi design kit" ở trên.
+- [x] **`zoom-magnify` relocate — xong một phần (2026-09).** `sourceX`/`sourceY` mới
+      trong `src/components/zoom.js` tách điểm LẤY MẪU khỏi điểm HIỂN THỊ, nên `at` +
+      `props.x/y` dời được bong bóng ra chỗ trống mà vẫn phóng đúng target
+      (`kit-geometry.js`'s "zoom" case). Đường nối vẽ bằng một `arrow` riêng (dot
+      `origin`) — KHÔNG phải wiring cái div `.cmp-zoom-magnify__connector` sẵn có trong
+      `tokens.css`, vì wrapper của zoom bị `translate(-50%,-50%)`, tính toạ độ trong đó
+      phiền hơn hẳn so với dùng `arrow` đã có sẵn hình học thật. **Còn thiếu**: không tự
+      tính lại khi kéo trong editor — cùng hạn chế mọi cặp callout+arrow khác trong repo
+      này đã có sẵn (kéo một cái không tự dịch cái kia theo). `text-box`'s `__connector`
+      vẫn chưa nối, nhưng hoá ra không cần: textbox không có ràng buộc "lấy mẫu từ đâu"
+      như zoom, nên trỏ một `arrow` riêng vào nó (đã là quy trình chuẩn) đã đủ.
 - [ ] **Preset blur cho vùng nghi chứa PII.** Đề xuất nêu đây là khác biệt cốt lõi so với
       Monosnap: blur *được gợi ý sẵn*, không phải việc phải nhớ làm.
 
@@ -181,8 +189,8 @@ Một lát cắt của Forge, làm được mà không cần MCP server hay repo
   thả lên ảnh được, và sống sót qua ảnh export vì CSS nằm cùng document với stage.
 - **Lint CSS ngay lúc gõ**: chặn transform 3D (Chrome âm thầm bỏ `backdrop-filter`), cảnh
   báo màu hex cứng (rào chắn "không hardcode accent") và thiếu `-webkit-` prefix.
-- Nút **Copy CSS** xuất rule để dán vào `tokens.css`, kèm cảnh báo rằng dán vào đây là
-  *fork* bản vendored chứ không phải sync.
+- Nút **Copy CSS** xuất rule để dán vào `tokens-extras.css` (không phải `tokens.css`, giờ
+  chỉ-vendored), kèm cảnh báo rằng dán vào đây là *fork* bản vendored chứ không phải sync.
 
 Còn thiếu so với Forge đầy đủ (vẫn phụ thuộc quyết định #1 và #4):
 

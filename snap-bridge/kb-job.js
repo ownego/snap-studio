@@ -51,6 +51,7 @@ import { fileURLToPath } from "node:url";
 import { readReview, findingsFor, summarizeReview } from "./kb-review.js";
 import { writeJobLog } from "./kb-log.js";
 import { promptText } from "./kb-playbook.js";
+const PROMPT_FILTERED_FILES = new Set(["PLACEMENT_PLAYBOOK.md", "CONTENT_PLAYBOOK.md"]);
 
 // Same computation as server.js — not process.cwd(), which depends on how
 // this process happened to be launched and is not guaranteed to be the repo
@@ -86,7 +87,7 @@ const SKILL_DIR = path.join(REPO_ROOT, ".claude", "skills", "kb");
 
 function readSkillFiles() {
   const parts = [];
-  for (const [label, file] of [["SKILL.md", "SKILL.md"], ["PLACEMENT_PLAYBOOK.md", "PLACEMENT_PLAYBOOK.md"]]) {
+  for (const file of ["SKILL.md", "PLACEMENT_PLAYBOOK.md", "CONTENT_PLAYBOOK.md"]) {
     try {
       // Strip YAML frontmatter — it addresses the skill loader, not the model.
       // The \r? in there is not decoration: on a Windows checkout with
@@ -97,11 +98,13 @@ function readSkillFiles() {
       // whoever reads back through the history, but it must not keep being
       // taught: promptText collapses every retired bullet to a one-line stub.
       // The correction itself lives in the ĐÍNH CHÍNH section above the log,
-      // is prose, and stays — that is the part worth the tokens.
-      const usable = file === "PLACEMENT_PLAYBOOK.md" ? promptText(raw) : raw;
-      parts.push(`--- BEGIN ${label} ---\n${usable.trim()}\n--- END ${label} ---`);
+      // is prose, and stays — that is the part worth the tokens. Applies to
+      // BOTH playbooks — promptText only understands the shared "## LEARNINGS"
+      // format, not which file it came from.
+      const usable = PROMPT_FILTERED_FILES.has(file) ? promptText(raw) : raw;
+      parts.push(`--- BEGIN ${file} ---\n${usable.trim()}\n--- END ${file} ---`);
     } catch (e) {
-      parts.push(`(${label} could not be read: ${e.message} — proceed on the instructions above alone.)`);
+      parts.push(`(${file} could not be read: ${e.message} — proceed on the instructions above alone.)`);
     }
   }
   return parts.join("\n\n");
@@ -229,12 +232,18 @@ export function startJob({ mode, slug, context, instruction, markdown, mdFilenam
   if (!instruction || !instruction.trim()) throw new Error("instruction is empty.");
 
   // Two job kinds, and the checks differ because the JOBS differ, not for
-  // convenience: a revise job never opens a browser, so requiring session
-  // tabs would block the one kind of job that does not need any. See the
-  // revise-mode block at the bottom of this file.
+  // convenience: an authoring job cannot do anything without a browser, so it
+  // requires at least one session tab up front. A revise job can still do the
+  // whole file-only fix loop with none attached, so its tabs are OPTIONAL —
+  // zero or more, validated the same way when given. See the revise-mode
+  // block at the bottom of this file for what an attached tab unlocks there.
   const revise = mode === "revise";
   if (revise) {
     if (!slug || typeof slug !== "string") throw new Error("a revise job needs the slug of the article it is revising.");
+    if (sessionTabs != null && !Array.isArray(sessionTabs)) throw new Error("sessionTabs, if given, must be an array.");
+    for (const t of (sessionTabs || [])) {
+      if (t == null || typeof t.id !== "number") throw new Error("each session tab needs a numeric id.");
+    }
   } else {
     if (!Array.isArray(sessionTabs) || !sessionTabs.length) throw new Error("at least one session tab is required — add one before starting.");
     for (const t of sessionTabs) {
@@ -248,7 +257,7 @@ export function startJob({ mode, slug, context, instruction, markdown, mdFilenam
   const job = {
     id, mode: revise ? "revise" : "author", slug: slug || null, context: context || null,
     status: "running", stage: null, round: 0, startedAt: Date.now(), endedAt: null,
-    mdFilename: mdFilename || null, instruction, sessionTabs: revise ? [] : sessionTabs,
+    mdFilename: mdFilename || null, instruction, sessionTabs: revise ? (sessionTabs || []) : sessionTabs,
     log: [], resultPath: null, error: null,
     // One resumable conversation per STAGE, so a fix round argues with the agent
     // that made the thing rather than with a stranger holding the same files.
@@ -263,7 +272,7 @@ export function startJob({ mode, slug, context, instruction, markdown, mdFilenam
   };
 
   push(revise
-    ? `Revising "${slug}" — no browser, kb/ files only.`
+    ? `Revising "${slug}"${job.sessionTabs.length ? ` — ${job.sessionTabs.length} session tab(s) attached` : " — no browser tab attached, kb/ files only"}.`
     : `Starting KB job — ${sessionTabs.length} session tab(s), spec ${mdFilename || "(none)"}.`);
 
   const run = revise
@@ -468,7 +477,7 @@ const REVIEW_ROLE = [
   "3. Go through the WHOLE playbook, principle by principle, against EVERY image — not a subset, and not just the ones that seem likely to be wrong: #−1/#7 coordinates measured not guessed (a hand-typed x/y with no `at` is itself worth a second look, especially in `globalEls`, where one bad box is wrong on every image at once), #0 nothing overflows the frame, #1/#1b no callout over its own target and arrows read as measured rather than typed, #2 the target is present, visible and in the right state IN THIS IMAGE, #4 step 1 orients in the menu, #5 at least one zoom on a decisive detail and it isn't a blank/garbled crop, #6 no PII left showing on ANY image (check every one — a `globalEls` blur that's wrong is wrong everywhere, and \"the first image looked fine\" is not evidence about the rest). Then prose against picture (does the text describe what is actually shown?), prose against the reference document if one was attached (a control's real name, what it actually does — the article contradicting the dev team's own doc is a write finding, not a nit), heading order, and coverage against the user's instruction — a step the instruction asked for and nobody shot is a finding too.",
   "4. Before filing, scan every image ONE MORE TIME specifically hunting for anything the pass above didn't have a numbered rule for — a typo, a mismatched heading, an annotation that's technically fine but points at the wrong thing. The checklist catches known failure modes; this second look is for the one that isn't on the list yet.",
   "5. snap_findings once, at the end. Route each one: owner \"capture\" for anything visual (a re-shoot, or an annotation to move, retype or remove), owner \"write\" for prose. severity \"blocker\" only for something wrong or misleading as it stands; taste is a nit. verdict \"pass\" only when no blocker remains — it ends the loop and ships the article. Because there is only one fix round, make each finding precise enough that the fix stage can resolve it correctly on its first attempt: exact coordinates or element to compare against (not \"looks off\"), and for a `globalEls` PII miss, the correct box or the selector to anchor it to instead of the wrong one.",
-  "6. snap_learn when a finding is a placement rule the next article should not have to relearn. It is the only part of this job that outlives the article.",
+  "6. snap_learn when a finding is a rule the next article should not have to relearn — category:\"placement\" for a visual/coordinate rule, category:\"content\" for a wording/structure one. It is the only part of this job that outlives the article.",
   "",
   "Be specific enough to act on: name the element, the step, the text. \"The callout looks off\" routes to nobody.",
 ].join("\n");
@@ -1100,7 +1109,7 @@ export function describeToolUse(name, input) {
       const n = Array.isArray(i.findings) ? i.findings.length : 0;
       return `Filing the review — ${i.verdict === "pass" ? "nothing blocking" : `${n} thing(s) to fix`}`;
     }
-    case "mcp__snap__snap_learn":          return "Adding a learning to the placement playbook";
+    case "mcp__snap__snap_learn":          return `Adding a learning to the ${i.category === "content" ? "content" : "placement"} playbook`;
 
     // --- snap: reaching into the page, iframes included ---
     case "mcp__snap__snap_frame_list":     return "Listing the frames on the page";
@@ -1126,44 +1135,70 @@ export function describeToolUse(name, input) {
    is deliberately a SMALLER job than authoring rather than the same one with
    a different prompt:
 
-     - no browser at all. The chrome MCP server is not attached and every
-       non-snap tool is denied, so a job started from a text box can never
-       navigate the user's logged-in session or click around the live app.
-       That also means it needs no session tabs and no Chrome Bridge, and it
-       runs when the browser side is not set up at all.
+     - the browser is OPTIONAL, not absent. The user can attach zero or more
+       session tabs to the article panel (same "Session tabs" picker the
+       "+ New job" form uses, same underlying whitelist — see bridge-worker.js's
+       kbSessionTabIds). With none attached, this job behaves exactly as it
+       always did: mcp__snap__* tools that need a live tab are denied and it
+       works only off files already in kb/. With tabs attached, it gets the
+       SAME scoped access runCaptureStage() gives an authoring job's capture
+       stage — snap_navigate, the snap_frame_ family, snap_capture_tab,
+       snap_look, and snap_add's "at" mode — gated to those exact tabIds and
+       their origins, so it can re-shoot a wrong capture without a whole
+       "+ New job" run.
      - success is not "wrote an article". A revise job that reads the pins and
        answers "step 3's target was never in frame, re-shoot it" did exactly
        its job while writing nothing — so no required-output tool.
 
-   What it CAN do is the whole fix loop, all of it off files already on disk:
-   snap_comments -> snap_job -> snap_render_job (or snap_open/snap_add/
-   snap_export for an article with no job.json) -> snap_view ->
-   snap_comment_resolve -> snap_learn.
+   What it CAN do off files already on disk, tabs or not: snap_comments ->
+   snap_job -> snap_render_job (or snap_open/snap_add/snap_export for an
+   article with no job.json) -> snap_view -> snap_comment_resolve ->
+   snap_learn. With a tab attached it can also re-navigate/re-scroll/re-shoot
+   that tab before doing any of the above.
    --------------------------------------------------------------------- */
-function buildReviseSystemPrompt() {
+function buildReviseSystemPrompt(sessionTabs, allowedOrigins) {
+  const hasTabs = sessionTabs.length > 0;
   return [
     "You are revising ONE Knowledge Base article that already exists in this repo. The user typed the instruction below into KB Studio while looking at that article.",
     "",
-    "HARD CONSTRAINT — this job has NO browser. You cannot navigate, click, scroll, or take a new screenshot: those tools are not attached and every call to one is denied. You work from the captures already on disk under kb/.",
-    "",
-    "If the fix genuinely needs a new screenshot — the app changed, the target was never in frame, the state in the image is wrong (PLACEMENT_PLAYBOOK #2) — STOP and say so plainly, naming the step and what has to be captured. The user then starts a capture job from \"+ New job\" with the right tabs open. Do NOT paper over it by moving an annotation onto something that is not in the image.",
+    hasTabs
+      ? [
+          `A browser tab IS attached to this revision — you can navigate, scroll, click and re-shoot it, exactly like an authoring job's capture stage, but scoped to ONLY the tab(s) below and their origin(s).`,
+          "",
+          "The tab(s) attached to this revision (tab id — title — url) — already open, already logged in, still on the screen the user left them on:",
+          formatSessionTabs(sessionTabs),
+          "",
+          `snap_navigate({tabId, url}) is scoped to these origin(s) only — anywhere else is denied: ${[...allowedOrigins].join(", ") || "(none)"}. If the task needs a page outside them, STOP and say which origin to attach instead.`,
+          "",
+          "This job has NO way to open a new browser tab and no way to attach one mid-turn — if the tab you need was closed or was never attached, STOP and say plainly which tab the user should attach (or reopen) before sending the next prompt.",
+        ].join("\n")
+      : [
+          "No browser tab is attached to this revision, so you work from the captures already on disk under kb/ — no navigate, no click, no scroll, no new screenshot.",
+          "",
+          "If the fix genuinely needs a new screenshot — the app changed, the target was never in frame, the state in the image is wrong (PLACEMENT_PLAYBOOK #2) — STOP and say so plainly, naming the step and what has to be captured. The user can either attach a tab to this article's Session tabs and send another prompt, or start a full capture job from \"+ New job\". Do NOT paper over it by moving an annotation onto something that is not in the image.",
+        ].join("\n"),
     "",
     "Your tools, and the loop they make:",
     "- snap_comments — what the user pinned, each with a \"kind\". \"image\" pins are already resolved to real pixels in the base capture's coordinate space, with the owning step and the nearest elements. \"text\" pins carry a `quote` instead (plus a little prefix/suffix context) — that is feedback on the article's PROSE, not on a drawn element: fix the wording at that quote (job.json/the step heading if this is a job-kind article, since its markdown is generated — see snap_write_kb below — otherwise the markdown directly) rather than touching els.",
+    hasTabs
+      ? "- snap_navigate / snap_frame_list / snap_frame_scroll / snap_frame_find / snap_frame_click / snap_frame_fill / snap_frame_press / snap_look / snap_capture_tab — drive the attached tab(s) to re-shoot a step that is wrong, exactly as the skill's capture flow describes (sections 2-4). Verify the target is actually in frame (snap_frame_find's rect) before capturing."
+      : null,
     "- snap_job — read the article's job.json, change a step's els, write the whole object back.",
     "- snap_render_job — re-render every image AND the markdown from job.json. Seconds, no browser.",
-    "- snap_open / snap_kit / snap_add / snap_export — annotate a capture directly, for an article with no job.json. snap_add's \"at\" mode reads a live tab and is denied here: pass explicit x/y props instead, which is exactly what snap_comments hands you.",
+    hasTabs
+      ? "- snap_open / snap_kit / snap_add / snap_export — annotate a capture (freshly re-shot or existing) for an article with no job.json. snap_add's \"at\" mode reads the attached tab's live DOM and IS available here, same as an authoring job."
+      : "- snap_open / snap_kit / snap_add / snap_export — annotate a capture directly, for an article with no job.json. snap_add's \"at\" mode reads a live tab and is denied here: pass explicit x/y props instead, which is exactly what snap_comments hands you.",
     "  The editor these four drive is SHARED and it is not yours: it still holds whatever the last session (or the user's own hands) left in it. ALWAYS snap_open first — exporting without it renders someone else's leftover elements onto your file, and each session starts with no memory of what the previous one staged.",
     "- snap_view — LOOK at a PNG. Mandatory before you claim anything is fixed.",
     "- snap_write_kb with overwrite:true — rewrite the article markdown. For a job.json article the markdown is GENERATED: edit job.json and re-render instead, or your text is overwritten on the next render.",
     "- snap_comment_resolve — close a pin with a note saying what you changed. Only the ones you actually fixed; say out loud which ones you left open and why.",
-    "- snap_learn — append a LEARNING to the placement playbook when a correction taught something the next article should not have to relearn.",
+    "- snap_learn — append a LEARNING (category:\"placement\" or \"content\") when a correction taught something the next article should not have to relearn.",
     "",
     readSkillFiles(),
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
-function buildRevisePrompt(instruction, ctx, isFollowUp) {
+function buildRevisePrompt(instruction, ctx, isFollowUp, sessionTabs) {
   const parts = isFollowUp
     // Resumed session: it already has the whole previous turn, so re-stating
     // the task would only compete with what it remembers. What it CANNOT know
@@ -1172,6 +1207,12 @@ function buildRevisePrompt(instruction, ctx, isFollowUp) {
     ? ["Follow-up from the user in the same session:", "", instruction, "",
        "The state below is re-read from disk just now — trust it over your memory of it where they disagree.", ""]
     : ["Instruction from the user:", "", instruction, ""];
+  // Tabs are re-stated every turn, not just the first — the user can attach or
+  // remove one between prompts within the SAME session (system prompt above
+  // already reflects whichever set this turn was started with).
+  parts.push(sessionTabs.length
+    ? `Browser tab(s) attached to THIS turn (tab id — title — url):\n${formatSessionTabs(sessionTabs)}`
+    : "No browser tab is attached to this turn.", "");
   if (ctx) {
     parts.push(
       `Article: "${ctx.slug}" — ${ctx.kind === "job"
@@ -1220,24 +1261,52 @@ export function resetReviseSession(slug) {
 }
 
 async function runReviseJob(job, instruction, snapSelf, push) {
+  // Optional, unlike an authoring job's sessionTabs — this loop works with
+  // zero attached (file-only, as revise always used to) just as well as with
+  // some (the same scoped browser access runCaptureStage() gives an authoring
+  // job). startJob() already validated shape; empty is a legitimate value here.
+  const sessionTabs = job.sessionTabs || [];
+  const allowedOrigins = originsOf(sessionTabs);
+  const sessionTabIds = new Set(sessionTabs.map((t) => t.id));
+  function originAllowed(url) {
+    try { return allowedOrigins.has(new URL(url).origin); } catch { return false; }
+  }
+
   async function canUseTool(toolName, input) {
     if (!toolName.startsWith("mcp__snap__")) {
-      push(`Denied — ${doing(toolName, input)}: a revision has no browser and no filesystem.`);
+      push(`Denied — ${doing(toolName, input)}: not something this job may do.`);
       return {
         behavior: "deny",
-        message: `"${toolName}" is not available in a revise job: no browser, no filesystem. Work from what is already in kb/ with the mcp__snap__* tools, or stop and report that a fresh capture is needed.`,
+        message: `"${toolName}" is not permitted for this job. Work from what is already in kb/ with the mcp__snap__* tools.`,
       };
     }
-    // Anything that reads a LIVE tab is meaningless here — there is no tab.
-    // Spelling out the alternative matters more than usual: the skill files
-    // in the system prompt teach the "at" selector flow, which is the right
-    // answer in an authoring job and impossible in this one.
-    if (SNAP_TAB_TOOLS.has(toolName) || (toolName === "mcp__snap__snap_add" && input && input.at)) {
-      push(`Denied — ${doing(toolName, input)}: it needs a live browser tab, which this job has none of.`);
+    if (toolName === "mcp__snap__snap_navigate" && input && typeof input.url === "string" && input.url && !originAllowed(input.url)) {
+      push(`Denied — going to ${shortUrl(input.url)}, which is outside the tab(s) attached to this revision.`);
       return {
         behavior: "deny",
-        message: `${toolName} reads a live browser tab and this job has none. For snap_add, pass explicit x/y props instead of "at" — snap_comments gives you the pin's coordinates in exactly that space. If the article really does need a fresh capture, stop and say so.`,
+        message: `Navigating to "${input.url}" is not allowed — this revision is scoped to: ${[...allowedOrigins].join(", ") || "(no tab attached)"}. Attach the right tab in the article panel's Session tabs, or stop and report which origin is needed.`,
       };
+    }
+    const tabId = toolName === "mcp__snap__snap_add" ? (input && input.at && input.at.tabId) : (input && input.tabId);
+    if (SNAP_TAB_TOOLS.has(toolName) || (toolName === "mcp__snap__snap_add" && tabId != null)) {
+      // No tab attached at all is the ORIGINAL revise behaviour — deny with the
+      // file-only alternative spelled out, same message shape as before this
+      // job could ever get a tab.
+      if (!sessionTabs.length) {
+        push(`Denied — ${doing(toolName, input)}: no browser tab is attached to this revision.`);
+        return {
+          behavior: "deny",
+          message: `${toolName} needs a live browser tab and none is attached. Attach one in the article panel's Session tabs and send another prompt, or, for snap_add, pass explicit x/y props instead of "at" — snap_comments gives you the pin's coordinates in exactly that space. If a fresh capture is really needed, say so.`,
+        };
+      }
+      if (tabId == null) {
+        push(`Denied — ${doing(toolName, input)}: no browser tab was named.`);
+        return { behavior: "deny", message: `This tool requires an explicit tabId — one of the tab ids attached to this revision: ${[...sessionTabIds].join(", ")}.` };
+      }
+      if (!sessionTabIds.has(tabId)) {
+        push(`Denied — ${doing(toolName, input)}: browser tab ${tabId} is not attached to this revision.`);
+        return { behavior: "deny", message: `tabId ${tabId} is not attached to this revision. Attached: ${[...sessionTabIds].join(", ")}.` };
+      }
     }
     return { behavior: "allow" };
   }
@@ -1245,16 +1314,16 @@ async function runReviseJob(job, instruction, snapSelf, push) {
   const prior = reviseSessions.get(job.slug);
   const resume = prior ? prior.id : null;
   push(resume
-    ? `Continuing the session on "${job.slug}" — turn ${prior.turns + 1}.`
-    : `New session on "${job.slug}".`);
+    ? `Continuing the session on "${job.slug}" — turn ${prior.turns + 1}${sessionTabs.length ? `, ${sessionTabs.length} tab(s) attached` : ""}.`
+    : `New session on "${job.slug}"${sessionTabs.length ? ` — ${sessionTabs.length} tab(s) attached` : ""}.`);
 
   const q = query({
-    prompt: singleUserMessage(buildRevisePrompt(instruction, job.context, !!resume)),
+    prompt: singleUserMessage(buildRevisePrompt(instruction, job.context, !!resume, sessionTabs)),
     options: {
       model: "claude-sonnet-5",
       cwd: REPO_ROOT,
       tools: [],
-      systemPrompt: buildReviseSystemPrompt(),
+      systemPrompt: buildReviseSystemPrompt(sessionTabs, allowedOrigins),
       mcpServers: {
         snap: { type: "http", url: snapSelf.url, headers: { Authorization: `Bearer ${snapSelf.token}` } },
       },

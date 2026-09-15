@@ -1,0 +1,456 @@
+{
+  "title": "How to Translate the Volume Discount App's Storefront Text and Offers",
+  "slug": "volume-discount-translations",
+  "md": "volume-discount-translations.md",
+  "intro": "The Volume Discount app's **Translations** page lets you localize everything shoppers see in the storefront widget — both the wording shared across every offer (stock messages, button labels, countdown text) and the wording of each individual offer. The page has two modes, switched with a single button: **Default content mode** for editing the base wording in your store's primary language, and **Translation mode** for adding a translation into another language. Nothing on the page is actually labeled \"mode\" — the steps below point out exactly how to tell which one you're in.",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1798,
+        "y": 10,
+        "w": 112,
+        "h": 38
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "heading": "Open Translations",
+      "src": "img/01-nav-translations.png",
+      "out": "img/01-nav-translations-annotated.png",
+      "body": "In your Shopify admin's left-hand navigation, find **Qikify Volume Discount** under Apps and expand it. Click **Translations** — it sits between **Manage offers** and **Variant swatches**, and it's always there, with no plan or role restriction to unlock it.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1,
+            "y": 531,
+            "w": 236,
+            "h": 46
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 570,
+            "y": 554,
+            "text": "Step 1: Open Translations"
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 393,
+            "y1": 554,
+            "x2": 249,
+            "y2": 554
+          }
+        },
+        {
+          "type": "blur",
+          "props": {
+            "x": 595,
+            "y": 130,
+            "w": 151,
+            "h": 42
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Check the Default content tab",
+      "src": "img/02-default-content-tab.png",
+      "out": "img/02-default-content-tab-annotated.png",
+      "body": "Translations opens straight onto the **Default content** tab — the tab that's always selected first. It lists roughly two dozen single-line fields for the wording your storefront widget shares across every offer: out-of-stock messages, button text, countdown labels, and similar. Every field is optional, and every edit here applies to your store's **primary language**, marked with the **Default** badge next to the language name at top left — that's the language this tab always edits.\n\nIn the top right, a button reads **Translation to another language**. This is the page's only mode indicator, and it's the easiest thing to misread: it always names the mode you're about to *switch to*, never the one you're currently in. Right now you're in **Default content mode**, editing the base wording that ships to any shopper whose language has no translation yet.\n\nLook closely at the **Unavailable** field's value: it ships with a genuine misspelling, **Unvailable** — not the correctly spelled label just above it. It's a common one to fix here.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 591,
+            "y": 180,
+            "w": 130,
+            "h": 38,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1015,
+            "y": 199,
+            "text": "Primary language",
+            "accent": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 887,
+            "y1": 199,
+            "x2": 742,
+            "y2": 199,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1332,
+            "y": 128,
+            "w": 227,
+            "h": 46,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 967,
+            "y": 151,
+            "text": "Names the mode you'll switch TO",
+            "accent": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1177,
+            "y1": 151,
+            "x2": 1320,
+            "y2": 151,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "zoom",
+          "props": {
+            "x": 680.3329065300895,
+            "y": 689.1037131882202,
+            "w": 220.33290653008962,
+            "h": 93.9180537772087,
+            "zoom": 1.6,
+            "dark": false,
+            "shape": "rect",
+            "radius": 33,
+            "border": false,
+            "borderWidth": 3
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Switch to Translation mode",
+      "src": "img/03-translation-mode.png",
+      "out": "img/03-translation-mode-annotated.png",
+      "body": "Click **Translation to another language** to switch into **Translation mode**. Three things change at once, all visible here: the same button now reads **Edit default text** — since it again names where you'd go *next*, seeing that label is your confirmation that you're now in Translation mode. Next to the language strip, a small arrow (→) appears, followed by a language dropdown labeled with nothing but a globe/translate icon and no visible text — it auto-selects the first available language for your store (here, **Japanese**). Both the arrow and the dropdown only appear once the store has a non-primary language to translate into, so seeing them at all is a second, easy-to-miss confirmation that you're in Translation mode. And a second tab, **Offer(s)**, appears next to Default content; it only shows up when the store has at least one offer and you're in Translation mode.\n\nEvery field on this tab now splits into two columns: the default wording on the left, read-only, and a blank box on the right for your translation — the **Unavailable** row highlighted here still shows the same **Unvailable** default on the left. Right-hand fields start out blank until you translate them, and that's normal: a blank field just means the storefront falls back to the default text for that language, not that anything is broken.",
+      "notes": [
+        {
+          "kind": "Warning",
+          "text": "⚠️ Save before you switch the language dropdown, the mode button, or the tab. Unlike Discard, none of those ask for confirmation — they just reload the fields, and any unsaved typing is gone."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1425,
+            "y": 128,
+            "w": 134,
+            "h": 46,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 737,
+            "y": 253,
+            "w": 88,
+            "h": 46,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 755,
+            "y": 186,
+            "w": 126,
+            "h": 38,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 614.4788732394367,
+            "y": 670.8745198463508,
+            "w": 917.3546734955186,
+            "h": 73.18822023047375,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1103,
+            "y": 151,
+            "text": "Now in Translation mode",
+            "accent": false
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1226.8117797695263,
+            "y": 205,
+            "text": "Choose the language",
+            "accent": false
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 1095.268886043534,
+            "y": 277.2291933418694,
+            "text": "Translate offer",
+            "accent": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1269,
+            "y1": 151,
+            "x2": 1413,
+            "y2": 151,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1089,
+            "y1": 205,
+            "x2": 895,
+            "y2": 205,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 981,
+            "y1": 276,
+            "x2": 837,
+            "y2": 276,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "heading": "Open the Offer(s) tab",
+      "src": "img/04-offers-tab.png",
+      "out": "img/04-offers-tab-annotated.png",
+      "body": "Select the **Offer(s)** tab to translate individual offers instead of the shared wording — notice the mode button from the previous steps is gone here, since it only shows on Default content. The list shows each offer by its **internal name** (the name used inside the app, not the title shoppers see on the storefront), with a **Translate** link on the right of every row. The search field above the list has no visible label — just a placeholder that reads \"Search offers…\". Click **Translate** on the offer you want to localize.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 636,
+            "y": 256,
+            "w": 888,
+            "h": 50,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 636,
+            "y": 320,
+            "w": 65,
+            "h": 38,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1448,
+            "y": 320,
+            "w": 76,
+            "h": 38,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 345,
+            "y": 339,
+            "text": "Offer name",
+            "accent": false
+          }
+        },
+        {
+          "type": "label",
+          "props": {
+            "x": 330,
+            "y": 281,
+            "text": "Search offer",
+            "accent": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 457,
+            "y1": 339,
+            "x2": 624,
+            "y2": 339,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 421,
+            "y1": 281,
+            "x2": 624,
+            "y2": 281,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "heading": "Translate the offer in its dialog",
+      "src": "img/05-offer-dialog.png",
+      "out": "img/05-offer-dialog-annotated.png",
+      "body": "Clicking Translate opens the offer's translation dialog, titled with the offer's own **internal name** (**Offer 7** here) — not the storefront title, and nothing in the dialog shows the offer's type. A warning banner reminds you to translate only the text outside curly-brace placeholders like `{quantity}` or `{discount}`; those are swapped for live values on the storefront, so translating or removing them breaks the wording.\n\nThe dialog uses the same two-column layout as the Default content tab — the offer's current wording on the left, your translation on the right — for every field the offer uses, plus a per-tier section further down for offers that have tiers. Click **Save** to store the translation for this offer, in whatever language is selected at the top of the page, or **Cancel** to close without saving.",
+      "notes": [
+        {
+          "kind": "Tip",
+          "text": "💡 There's no separate control for removing a translation — clear the field and click Save, and the storefront falls back to the offer's default wording."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 597,
+            "y": 150,
+            "w": 65,
+            "h": 38,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1490.2496798975671,
+            "y": 865.5416133162612,
+            "w": 76.72983354673495,
+            "h": 40.14596670934699,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 596.0832266325224,
+            "y": 265.1869398207426,
+            "w": 956.5211267605634,
+            "h": 75.18822023047375,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        }
+      ]
+    }
+  ],
+  "outro": "Translations covers two layers: the shared wording your whole widget uses (Default content tab) and each offer's own wording (Offer(s) tab, available in Translation mode). Keep one habit: check which mode the top-right button names *before* you save. Since it always names where you're headed rather than where you are, saving while in Default content mode rewrites the base wording for every shopper who doesn't yet have a translation — not just the one language you may think you're editing."
+}

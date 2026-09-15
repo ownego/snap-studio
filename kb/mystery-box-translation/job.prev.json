@@ -1,0 +1,363 @@
+{
+  "title": "Setting Up Translations in Mystery Box Builder",
+  "slug": "mystery-box-translation",
+  "md": "",
+  "intro": "## What it does\nMystery Box Builder keeps all of its on-screen text — button labels, titles, messages — in one place. From **Content & Translation** you can edit that text for your store's default language and translate it into every other language your store supports.",
+  "globalEls": [
+    {
+      "type": "blur",
+      "props": {
+        "x": 1740,
+        "y": 6,
+        "w": 165,
+        "h": 34
+      }
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "heading": "Open Content & Translation",
+      "src": "img/01-dashboard-menu.png",
+      "out": "img/01-dashboard-menu-annotated.png",
+      "body": "From the Mystery Box Builder dashboard, open **Content & Translation** in the left-hand menu. This page is where you edit the app's text and manage translations.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 37,
+            "y": 593,
+            "w": 151,
+            "h": 36,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 345,
+            "y1": 610,
+            "x2": 200,
+            "y2": 610,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "heading": "Edit the default text (English)",
+      "src": "img/02-default-text-english.png",
+      "out": "img/02-default-text-english-annotated.png",
+      "body": "The **Default Text** tab (selected by default) holds the app's original copy, shown here in **English**. Pick a section — General, Product page, Unboxing, and so on — then edit any field. The **Box items title** field below, for example, currently reads \"Box items\". Click **Save** when you're done.\n\n> **Important:** Only edit the text outside the curly braces `{ }`. Text inside them controls dynamic values, like item counts, and must stay unchanged.\n\n**Optional: prefill the default text with ready-made Japanese copy**\n\nMystery Box Builder can prefill the Default Text tab with ready-made Japanese copy instead of typing every field by hand.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1359.9372599231754,
+            "y": 312.0832266325224,
+            "w": 110.89628681177976,
+            "h": 47.06274007682458,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1416,
+            "y1": 162,
+            "x2": 1416,
+            "y2": 306,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 604.7631241997439,
+            "y": 425.30089628681174,
+            "w": 143.81562099871962,
+            "h": 71.29321382842511,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "heading": "Optional: switch the app's language to Japanese",
+      "src": "img/03-dashboard-language-english.png",
+      "out": "img/03-dashboard-language-english-annotated.png",
+      "body": "1. On the **Dashboard**, scroll down and change the **Language** dropdown to **日本語**. This only changes the app's own admin language, not your store's customer-facing default language.",
+      "notes": [],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1387.5416133162612,
+            "y": 825.7708066581306,
+            "w": 169.68758002560818,
+            "h": 48.60435339308579,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1184.1395646606913,
+            "y1": 847.4622279129321,
+            "x2": 1374.664532650448,
+            "y2": 846.4174135723431,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "heading": "Optional: default text prefilled in Japanese",
+      "src": "img/04-default-text-japanese-prefill.png",
+      "out": "img/04-default-text-japanese-prefill-annotated.png",
+      "body": "2. Open **Content & Translation** again — every field on the Default Text tab is now filled in with Japanese copy automatically; the **Box items title** field, for example, now reads **景品一覧** instead of \"Box items\". Edit any one field slightly (for example, add a space) and click **Save** to keep this Japanese text.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "Switch the Language dropdown back to English afterwards if you don't want the app's admin menu to stay in Japanese — your saved default text won't change either way."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1358.2496798975671,
+            "y": 309.62483994878363,
+            "w": 158.39692701664532,
+            "h": 50.75032010243278,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 597.3879641485275,
+            "y": 419.15492957746477,
+            "w": 231.08834827144676,
+            "h": 82.35595390524969,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "heading": "Translate into your store's other languages",
+      "src": "img/05-translation-french.png",
+      "out": "img/03-translation-french-annotated.png",
+      "body": "Switch to the **Translation** tab. Pick a language from the dropdown — **French** is shown here. The left column is the read-only default text; type your translation into the matching field on the right, like **Unbox button text**. Click **Save** in the bar at the top to publish it.",
+      "notes": [
+        {
+          "kind": "Note",
+          "text": "Repeat this for every language your store supports, and for the other tabs (Product page, Unboxing, Customer account, etc.) to fully translate the widget."
+        }
+      ],
+      "els": [
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1453.2496798975671,
+            "y": 313.1664532650448,
+            "w": 104.27144686299616,
+            "h": 46.43790012804097,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 730.5416133162612,
+            "y": 312.5416133162612,
+            "w": 125.43790012804098,
+            "h": 47.97951344430217,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1079.6248399487836,
+            "y": 502.10371318822024,
+            "w": 466.8130601792573,
+            "h": 73.79257362355953,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "highlight",
+          "props": {
+            "x": 1220.7708066581306,
+            "y": 5.541613316261204,
+            "w": 61.52112676056338,
+            "h": 46.43790012804097,
+            "shaded": false,
+            "shape": "rect",
+            "borderWidth": 3.75
+          }
+        },
+        {
+          "type": "step",
+          "props": {
+            "x": 1506,
+            "y": 122,
+            "compact": false,
+            "video": false,
+            "w": 135,
+            "h": 42
+          }
+        },
+        {
+          "type": "step",
+          "props": {
+            "x": 486,
+            "y": 337,
+            "compact": false,
+            "video": false,
+            "w": 135,
+            "h": 42
+          }
+        },
+        {
+          "type": "step",
+          "props": {
+            "x": 1788,
+            "y": 545,
+            "compact": false,
+            "video": false,
+            "w": 135,
+            "h": 42
+          }
+        },
+        {
+          "type": "step",
+          "props": {
+            "x": 1530,
+            "y": 28,
+            "compact": false,
+            "video": false,
+            "w": 135,
+            "h": 42
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1506,
+            "y1": 164,
+            "x2": 1506,
+            "y2": 308,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 575,
+            "y1": 337,
+            "x2": 718,
+            "y2": 337,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1700,
+            "y1": 545,
+            "x2": 1555,
+            "y2": 545,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        },
+        {
+          "type": "arrow",
+          "props": {
+            "x1": 1442,
+            "y1": 28,
+            "x2": 1297,
+            "y2": 28,
+            "shape": "straight",
+            "elbow": "h-then-v",
+            "curvature": 0.22,
+            "curveShift": 0,
+            "scale": 2.25,
+            "secondary": false,
+            "origin": false,
+            "hideHead": false
+          }
+        }
+      ]
+    }
+  ],
+  "outro": ""
+}

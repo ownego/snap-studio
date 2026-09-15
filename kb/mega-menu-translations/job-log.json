@@ -1,0 +1,17 @@
+{
+  "slug": "mega-menu-translations",
+  "id": "f8d97534-9740-4c96-9f28-55366f508288",
+  "mode": "revise",
+  "status": "done",
+  "instruction": "Step 4 với 5 gộp làm 1 nhưng chia ra thành 2 cách, chứ không chia thành 2 step",
+  "error": null,
+  "startedAt": 1789033156921,
+  "endedAt": 1789033186370,
+  "lines": [
+    "Revising \"mega-menu-translations\" — no browser, kb/ files only.",
+    "Continuing the session on \"mega-menu-translations\" — turn 2.",
+    "→ Writing the article → mega-menu-translations.md",
+    "Done. Merged the old Step 4 and Step 5 into one step — **`## 4. Bulk-translate with AI`** — with two sub-methods under it as `### Option A: Copy the built-in prompt` and `### Option B: Export/import a JSON file`, each keeping its own image and numbered sub-instructions/note. There's no longer a separate `## 5.` heading.\n\nNo image files were touched (same two screenshots, just re-grouped under one step heading with sub-headings), so there was nothing new to render/view — this was a pure structure/prose edit, consistent with this being a flat markdown article (no `job.json`). No open pinned comments existed, so nothing to resolve.",
+    "Job finished — revision done."
+  ]
+}

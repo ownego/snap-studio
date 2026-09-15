@@ -1,0 +1,67 @@
+# Translate Your Menu with Mega Menu & Navigation
+
+Mega Menu & Navigation's **Translations** feature shows your store's menu in a different language, so shoppers browsing your store in that language see menu titles, links, and images translated instead of the original text.
+
+## Requirements
+
+Translation is only available on the **Basic** ($9.99/month) and **Premium** ($19.99/month) plans — it isn't included on the Free plan.
+
+> 💡 **Note:** if you're building on a development store, the whole app — including Translation — is free to test before your store goes live.
+
+> ℹ️ **Info:** On the app's **Pricing** page, the Free plan's feature list doesn't include Translation — it only appears on the Basic and Premium plans.
+
+## 1. Open Translations and pick a menu
+
+![Open Translations and pick a menu](./img/01-menus-list-annotated.png)
+
+1. In your Shopify admin, go to **Apps > Qikify Mega Menu & Navigation > Translations**.
+2. Find the menu you want to translate in the list, then click **Translate** on that row.
+
+> **Note:** Translation is set up per menu. If your store has more than one menu, repeat this step for each menu you want translated.
+
+## 2. Choose the language to translate into
+
+![Choose the language to translate into](./img/02-choose-language-annotated.png)
+
+Click the language dropdown next to **English Default**, and pick the language you want to translate this menu into.
+
+> **Important:** This dropdown only lists languages you've already added to your store. Mega Menu & Navigation can't add a new language for you — if the language you need isn't listed, add it first in your Shopify admin under **Settings > Languages**, then come back here.
+
+## 3. Translate a field manually
+
+![Translate a field manually](./img/03-manual-translate-annotated.png)
+
+1. Click into the empty **Translation** box next to any field you want to translate.
+2. Type the translation for that field.
+3. Repeat for any other fields, then click **Save** in the bar at the top of the page.
+
+> **Note:** The original text on the left is read-only and shown exactly as it's stored (including any formatting code) — you're only ever editing the box on the right.
+
+## 4. Bulk-translate with AI
+
+Translating field by field works, but for a menu with a lot of text it's slow. The app can help you translate everything at once — choose whichever of the two ways below fits your AI tool.
+
+### Option A: Copy the built-in prompt
+
+![Bulk-translate with AI — copy the built-in prompt](./img/04-ai-prompt-annotated.png)
+
+On the **AI prompt** tab:
+
+1. Click **Copy prompt for untranslated strings**.
+2. Paste it into any AI chat tool (ChatGPT, Claude, Gemini, or another) and copy the JSON it replies with.
+3. Click **Import**, paste in that JSON, review the rows, then **Save**.
+
+> **Note:** If your AI tool rejects the prompt for being too long, use the JSON file method below instead.
+
+### Option B: Export/import a JSON file
+
+![Bulk-translate with AI — or export/import a JSON file](./img/05-json-file-annotated.png)
+
+If the built-in prompt is too long for your AI tool, switch to the **JSON file** tab instead:
+
+1. Click **Step 1: Export JSON with untranslated strings** to download the untranslated text as a file.
+2. Click **Step 2: Copy instructions** to copy the instructions meant for the AI tool.
+3. In any AI chat tool, attach the downloaded file and paste the instructions, then download the JSON file it returns.
+4. Click **Import**, upload that JSON file, review the rows, then **Save**.
+
+> **Note:** You don't need an AI tool for this method either — you can hand the exported file to a human translator and have them fill in the file's "translation" field directly.

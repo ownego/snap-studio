@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concept diagram</title>
+<link rel="stylesheet" href="../../src/tokens.css">
+<style>
+  /* Neutral "explain the rule" card for a KB step that has no real screen to
+     point at (a sorting rule, a scoring formula, a match condition). Open this
+     file as an ordinary tab (snap_new_tab), edit the text below to fit the
+     rule being explained, snap_capture_tab it exactly like an app screen, then
+     snap_add annotations on top same as any other step — this page IS the
+     "screenshot" for that step. See CONTENT_PLAYBOOK.md PRINCIPLE 1.
+
+     Every colour/spacing/radius/shadow/type value below is a var(--...) from
+     tokens.css so this page re-themes itself with the rest of the kit — do
+     not hardcode a literal here (CLAUDE.md "No hardcoded values in CSS").
+     No .cmp-* classes: those are annotation overlays snap_add draws ON TOP of
+     the captured image, not part of the base "screen" being captured. */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-neutral-0);
+    color: var(--color-neutral-900);
+    font-family: var(--font-sans);
+    padding: var(--space-16) var(--space-10);
+  }
+  .concept { width: 100%; max-width: 1040px; }
+
+  .eyebrow {
+    font-size: var(--text-xs); font-weight: var(--weight-bold);
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--color-primary-500); margin: 0 0 var(--space-2);
+  }
+  h1 {
+    font-size: var(--text-2xl); line-height: var(--leading-2xl);
+    font-weight: var(--weight-semibold); letter-spacing: -.01em;
+    margin: 0 0 var(--space-8); color: var(--color-neutral-900);
+  }
+
+  /* Row of inputs being compared. Duplicate/trim <article class="card"> to
+     change the count — three is the common case (A/B/C). */
+  .cards {
+    display: flex; gap: var(--space-5); margin-bottom: var(--space-8);
+  }
+  .card {
+    flex: 1; position: relative;
+    background: var(--color-neutral-50);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+  }
+  .card.win {
+    background: var(--color-neutral-0);
+    border-color: var(--color-primary-500);
+    box-shadow: var(--shadow-md);
+  }
+  .card .rank {
+    position: absolute; top: -10px; right: var(--space-4);
+    background: var(--color-primary-500); color: var(--color-neutral-0);
+    font-size: var(--text-xs); font-weight: var(--weight-bold);
+    padding: 2px var(--space-2); border-radius: var(--radius-full);
+  }
+  .card .name {
+    font-size: var(--text-md); font-weight: var(--weight-semibold);
+    margin-bottom: var(--space-1);
+  }
+  .card .tag {
+    font-size: var(--text-xs); color: var(--color-neutral-500);
+    margin-bottom: var(--space-4);
+  }
+  .card .stat-label {
+    font-size: var(--text-xs); color: var(--color-neutral-500);
+    margin-bottom: var(--space-1);
+  }
+  .card .stat-value {
+    font-size: var(--text-2xl); font-weight: var(--weight-bold);
+    color: var(--color-neutral-900);
+  }
+  .card .stat-value .unit {
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
+    color: var(--color-neutral-500); margin-left: var(--space-1);
+  }
+
+  /* Collect inputs → apply the rule → outcome */
+  .flow {
+    display: flex; align-items: center; gap: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+  .flow .step {
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
+    color: var(--color-neutral-700);
+    background: var(--color-neutral-50);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+  }
+  .flow .step.out {
+    color: var(--color-neutral-0);
+    background: var(--color-primary-500);
+    border-color: var(--color-primary-500);
+    font-weight: var(--weight-semibold);
+  }
+  .flow .arrow { color: var(--color-neutral-300); font-size: var(--text-lg); }
+
+  .rule {
+    display: flex; gap: var(--space-3); align-items: flex-start;
+    background: var(--color-neutral-50);
+    border-left: 3px solid var(--color-primary-500);
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    padding: var(--space-4) var(--space-5);
+  }
+  .rule .tag {
+    flex: none; font-size: var(--text-xs); font-weight: var(--weight-bold);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--color-primary-500);
+  }
+  .rule .txt {
+    font-size: var(--text-base); line-height: var(--leading-base);
+    color: var(--color-neutral-800);
+  }
+</style>
+</head>
+<body>
+  <div class="concept">
+    <p class="eyebrow">How this is decided</p>
+    <h1>Replace this with the one-line question the rule answers.</h1>
+
+    <div class="cards">
+      <article class="card">
+        <div class="name">Input A</div>
+        <div class="tag">example.metric</div>
+        <div class="stat-label">Value</div>
+        <div class="stat-value">42<span class="unit">pts</span></div>
+      </article>
+      <article class="card">
+        <div class="name">Input B</div>
+        <div class="tag">example.metric</div>
+        <div class="stat-label">Value</div>
+        <div class="stat-value">68<span class="unit">pts</span></div>
+      </article>
+      <article class="card win"><span class="rank">Wins</span>
+        <div class="name">Input C</div>
+        <div class="tag">example.metric</div>
+        <div class="stat-label">Value</div>
+        <div class="stat-value">91<span class="unit">pts</span></div>
+      </article>
+    </div>
+
+    <div class="flow">
+      <div class="step">Collect inputs</div>
+      <div class="arrow">→</div>
+      <div class="step">Apply the rule</div>
+      <div class="arrow">→</div>
+      <div class="step out">Result</div>
+    </div>
+
+    <div class="rule">
+      <span class="tag">Rule</span>
+      <span class="txt">Given the inputs above, the <strong>highest value wins</strong> — replace this
+        sentence with the actual rule the step explains, using real numbers if the app shows any.</span>
+    </div>
+  </div>
+</body>
+</html>

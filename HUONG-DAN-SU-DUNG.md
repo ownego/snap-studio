@@ -192,8 +192,8 @@ mới thêm.
    dùng màu/khoảng cách/bo góc/cỡ chữ viết cứng (hardcode) thay vì token thiết kế.
 
 Component tạo ra xuất hiện trong cột trái ở mục **Yours**, thả lên ảnh như mọi công cụ khác.
-**⧉ Copy CSS** chép CSS của toàn bộ component tự tạo cùng lúc, để dán tay vào `tokens.css` nếu
-muốn đưa nó vào bộ kit thật. Tính năng này dành cho người quen CSS và bộ token thiết kế (vd. kỹ sư
+**⧉ Copy CSS** chép CSS của toàn bộ component tự tạo cùng lúc, để dán tay vào `tokens-extras.css`
+nếu muốn đưa nó vào bộ kit thật. Tính năng này dành cho người quen CSS và bộ token thiết kế (vd. kỹ sư
 hỗ trợ kỹ thuật), không phải để người dùng thông thường viết CSS ngẫu hứng.
 
 ## 14. Tab KB (dựng bài hướng dẫn)
@@ -237,7 +237,7 @@ mô tả yêu cầu, một agent tự lái trình duyệt, chụp, chú thích v
 - Không có tính năng gắn liên kết ticket/Slack.
 - Không sửa chữ trực tiếp trên canvas — phải sửa trong bảng Properties bên phải.
 - Tab Components chưa có quy trình duyệt/PR — component tự tạo chỉ tồn tại trong trình duyệt của
-  bạn cho tới khi ai đó dán CSS thủ công vào `tokens.css`.
+  bạn cho tới khi ai đó dán CSS thủ công vào `tokens-extras.css`.
 - Tab KB cần cài đặt riêng (mục 2.2) và bài viết không đi theo git — mỗi máy dựng bài của riêng nó.
 
 Chi tiết đầy đủ và lý do kỹ thuật của từng giới hạn: xem mục "What this is NOT (yet)" trong

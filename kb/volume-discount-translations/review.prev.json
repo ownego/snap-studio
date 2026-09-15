@@ -1,0 +1,45 @@
+{
+  "slug": "volume-discount-translations",
+  "round": 1,
+  "verdict": "changes-requested",
+  "summary": "Prose tracks the reference doc well (mode-button behavior, \"Unvailable\" default typo, internal-name dialog title, curly-brace warning, delete-by-blanking) and step 1 correctly orients in the nav, but two placement defects break hard rules from the playbook — the account-avatar blur doesn't actually cover the avatar on any of the 5 images, and step 2's own annotations hide the exact field label the prose points to — plus two minor prose/screenshot mismatches. Fix the two blockers and this passes.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": null,
+      "img": "img/01-nav-translations-annotated.png",
+      "what": "globalEls[0] (blur at x=1843,y=11,w=70,h=34) is meant to hide the account avatar chip in the top-right corner, but on every one of the 5 rendered images the chip's initials ('HUV') remain clearly legible — the blur box only clips a sliver of the chip's right edge, not the chip itself. Confirmed by viewing all 5 -annotated.png outputs and with a 20px grid overlay on img/01: the avatar sits roughly x=1808-1855, y=14-46, well to the left of where the blur box starts.",
+      "why": "Playbook hard rule #6: PII (real account identifier) must be fully hidden before export, and this is the exact 'account chip in Shopify admin nav' case called out by two prior LEARNINGs (2026-08-28, 2026-09-01) in the playbook for this precise failure mode. Because this is a globalEls entry it is currently wrong on all 5 images at once, not just one.",
+      "fix": "Widen and shift globalEls[0]'s blur left/up so it fully encloses the avatar circle and any adjacent initials on every image (something like x≈1800, w≈100, y≈8, h≈40 — re-derive from a fresh snap_view({grid:true}) rather than reusing these numbers), re-render, and snap_view every image again to confirm no part of the initials is still readable."
+    },
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 2,
+      "img": "img/02-default-content-tab-annotated.png",
+      "what": "The step's own annotations (the 'Primary language, marked Default' label + its upward arrow, plus the zoom bubble on the 'Unavailable' value) sit directly on top of the real 'Unavailable' field label and its input row, which sat between the 'From text' field and the 'Free' field. The body text says to look at 'the Unavailable field's value... not the correctly spelled label just above it' but that label is not visible anywhere in the exported image — it's fully covered by the black tooltip and the zoom bubble.",
+      "why": "Playbook rule #1 (callout must not sit over its own target) and rule #5's zoom guidance ('choose the zoom center so the covered part is the least important') — here the thing covered is exactly the detail the prose asks the reader to compare against, so the claim is unverifiable from the image as shipped.",
+      "fix": "Move the 'Primary language, marked Default' label/arrow off to a spot that doesn't sit in the field-list column (e.g. anchor it to the 'English / Default' badge itself with `at`, using a side that stays in the empty area to the right of the badge instead of stacking vertically through the field list), and/or shift the zoom's source so the 'Unavailable' field label stays visible just above the magnified value. Re-render and snap_view to confirm the label text is readable before resolving."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": 4,
+      "img": "img/04-offers-tab-annotated.png",
+      "what": "Body text says \"The search field above the list is icon-only, with just a magnifying glass and no visible label,\" but the captured search box shows no magnifying-glass glyph at all — just placeholder text \"Search offers...\" with no icon before it (confirmed with a 20px grid crop).",
+      "why": "Review criterion 'does the text describe what is actually shown?' — the sentence makes a specific visual claim (a magnifying-glass icon) that a reader cannot find in the screenshot right next to it.",
+      "fix": "Reword to match what the image actually shows, e.g. \"The search field above the list has no visible label — just a placeholder that reads 'Search offers…'\" and drop the specific magnifying-glass claim unless a re-capture confirms the icon renders in some other state."
+    },
+    {
+      "owner": "write",
+      "severity": "nit",
+      "step": 3,
+      "img": null,
+      "what": "Step 3 never mentions the arrow icon (→) that appears between 'English Default' and the Japanese dropdown, even though it's clearly visible in the img/03, 04 and 05 screenshots.",
+      "why": "The reference doc calls this out explicitly (section 3: 'Its presence/absence is a second, easy-to-miss mode indicator') and lists it in the section-10 quick list of things a screenshot alone gets wrong — it's a cheap, doc-flagged detail the article currently skips entirely.",
+      "fix": "Add a short clause to step 3's body noting that the arrow itself only appears in Translation mode (and only once a non-primary language exists), as a second visual confirmation alongside the button label change."
+    }
+  ],
+  "updatedAt": 1788429271965
+}

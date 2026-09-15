@@ -1,0 +1,8 @@
+{
+  "slug": "volume-discount-translations",
+  "round": 2,
+  "verdict": "pass",
+  "summary": "All 4 round-1 findings verified fixed: the account-avatar chip is now fully opaque-blurred on all 5 images (checked each one, no initials legible anywhere), the \"Primary language\" callout in step 2 was moved beside the English/Default badge so the real \"Unavailable\" field label is now visible above the (legible, correctly re-sized) zoom on its misspelled \"Unvailable\" value, step 4's prose now matches the screenshot (no magnifying-glass claim), and step 3 now calls out the arrow icon as a second mode indicator, matching the reference doc. No new defects introduced by the fixes — arrows/highlights still connect cleanly to their targets with no overlap or overflow. Ready to ship.",
+  "findings": [],
+  "updatedAt": 1788431604646
+}

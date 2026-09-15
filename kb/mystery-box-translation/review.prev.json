@@ -1,0 +1,45 @@
+{
+  "slug": "mystery-box-translation",
+  "round": 1,
+  "verdict": "changes-requested",
+  "summary": "Structure and coverage match the request well (English-first default text, optional Japanese prefill sub-flow, then translation to other languages), and PII blur holds up across all 5 images — but the zoom used to show the \"Box items title\" field is mis-cropped on both the English and Japanese screenshots, cutting through the field's own label and rendering a garbled fragment instead of a clean magnified detail.",
+  "findings": [
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 2,
+      "img": "img/02-default-text-english-annotated.png",
+      "what": "The zoom (props x:680,y:469,w:300,h:110,zoom:2) samples a source region only 150x55 real px (w/zoom x h/zoom) centered on the input, which lands the crop's top edge right across the 'Box items title' label sitting just above the 'Box items' input. The result shows illegible cut-off glyph fragments above the magnified 'Box items' input instead of a clean detail shot — reads as a rendering glitch, not a zoom.",
+      "why": "Playbook principle #5: crop source below ~72 real px on a side (here h/zoom=55) is flagged as a risk zone, and the same principle requires checking the zoom's full y-range (center ± h/2) against the real top/bottom of the target field, not just the center — this is the exact documented failure (see PLACEMENT_PLAYBOOK.md learning L-2026-09-11-a on this same article, 'clipping the label text mid-character'). A blank/garbled crop fails principle #5's 'at least one clean zoom on a decisive detail'.",
+      "fix": "Re-anchor this zoom with `at` bound to the 'Box items' input element (not hand-typed x/y/w/h) so the crop bounds are derived from the element's real box, OR shift the center down and grow the box so the label is fully excluded — e.g. y ~490, h ~160 (source h/zoom=80, clear of the 72px risk threshold and below the label's real bottom edge) — then re-render and snap_view to confirm the crop shows only the clean input, no label fragment."
+    },
+    {
+      "owner": "capture",
+      "severity": "blocker",
+      "step": 4,
+      "img": "img/04-default-text-japanese-prefill-annotated.png",
+      "what": "Same zoom coordinates reused verbatim (x:680,y:469,w:300,h:110,zoom:2) on the Japanese prefill screenshot produce the identical defect: garbled/truncated kanji fragments above the magnified '景品一覧' input, instead of a clean crop of just the field.",
+      "why": "Same root cause as step 2 — the crop's top edge intersects the field's own label line. Because this coordinate was copy-pasted between steps 2 and 4, the fix must be re-derived (or re-anchored) for each image rather than reused as-is once corrected in step 2, since the Japanese label text has different width/position than the English one.",
+      "fix": "Independently re-anchor this step's zoom with `at` on the Japanese '景品一覧' input element, or apply the same y/h widening used for step 2 (y ~490, h ~160) and verify with snap_view on THIS image specifically — do not assume the step 2 fix carries over unchanged."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 5,
+      "img": "img/05-translation-french-annotated.png",
+      "what": "The 'Step 3' pill (pointing at Save) is centered inside the yellow Warning banner's background (banner spans roughly y:207-306, pill center y:249), so it visually reads as attached to the warning rather than to the Save button above it, even though it doesn't cover any warning text.",
+      "why": "Playbook principle #1 (callouts should sit in clear space relative to unrelated content) — Step 1 and Step 2 in the same image both sit in clean whitespace; Step 3 should match by moving up into the black topbar/whitespace area above the banner rather than floating inside an unrelated warning box.",
+      "fix": "Move the Step 3 pill up to roughly y ~150-180 (still under the Save button, but above/clear of the yellow Warning banner's top edge at y~207) and re-derive the arrow's tail from the pill's new position."
+    },
+    {
+      "owner": "capture",
+      "severity": "nit",
+      "step": 5,
+      "img": "img/05-translation-french-annotated.png",
+      "what": "Body text's first instruction is 'Switch to the Translation tab', but no callout marks the Translation/Default Text toggle itself — only the French language dropdown, the translated field, and Save are annotated.",
+      "why": "The screenshot does show Translation already selected so it isn't misleading, but a reader scanning callouts left-to-right has nothing numbered pointing at the tab switch the body opens with — the callout order should mirror the body's action order.",
+      "fix": "Add a highlight + step marker on the 'Translation' tab toggle (renumbering the existing three step pills to 1-4 in order: Translation tab, French dropdown, translated field, Save) so the callout sequence matches the body's instruction order."
+    }
+  ],
+  "updatedAt": 1789364121248
+}

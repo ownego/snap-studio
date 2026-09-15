@@ -119,12 +119,18 @@ for you; the first two confirm before discarding instead. It's `chrome.storage`'
 not a server: history lives in this one browser profile only, auto-expires (14/7/30 days,
 or never, set in the Library tab), and there is no share link and no sync between machines.
 See `src/library.js` and `ROADMAP.md`'s V2 section.
-- **No connector wiring.** The kit's `__connector` parts — text-box's and
-zoom-magnify's optional relocate-with-a-line-back mode, and the arrow's own
-anchor-dot convention they both cite — exist in `tokens.css` but nothing in
-`editor.js` drags one out or recomputes it as its anchor moves. In place (the
-kit's own default anatomy) works fully; only the relocate exception is missing.
-Revisit if support agents actually need to detach an annotation from its target.
+- **Zoom-magnify relocate: wired, but via `arrow`, not the kit's own `__connector`
+div.** `src/components/zoom.js` gained `sourceX`/`sourceY` (2026-09) so the glass can
+display away from its target while still sampling the real target's pixels — the
+concrete bug this used to hit (`PLACEMENT_PLAYBOOK` `L-2026-09-01-c`). The visual line
+back to the target is composed by adding an ordinary `arrow` (its `origin` dot is the
+same anchor-dot convention the kit's own `.cmp-zoom-magnify__connector` CSS cites), not
+by wiring up that vendored-but-unused div — its wrapper's `translate(-50%,-50%)`
+made drawing a line inside it needlessly fiddly next to an `arrow` that already has
+real geometry (`at.toSelector`, auto length/gap). `.cmp-text-box__connector` is still
+unwired for the same reason it never really needed to be: a text-box has no "which
+pixels" coupling to its position, so pointing a separate `arrow` at it (already the
+documented workflow) already covers the case Snap Studio has actually needed.
 - **No inline text editing on the canvas.** Text-box/label text is edited in the Properties
 panel, not by clicking into the component directly — the original editor's contenteditable
 approach needs care to avoid losing cursor position on re-render, and V1 sidesteps it by
@@ -159,16 +165,19 @@ repo's `editorial-glass` brand pack. `src/kit-catalog.js` mirrors the same repo'
 `use_when` and `gotchas` straight off it, so the panel documents whatever the kit
 actually says today rather than a blurb someone hand-copied once.
 
-Everything Snap Studio owns is below the `EXTRAS` banner at the bottom of `tokens.css`:
-the app-shell aliases (`--surface`, `--ink`, `--accent`… resolving onto the kit's
-`--color-*` tokens), the editor-only affordances (selection outline, resize handle,
-arrow endpoint grips — all stripped by `body.render`), and one real component,
+Everything Snap Studio owns lives in the sibling file `src/tokens-extras.css` (split out
+of `tokens.css` in 2026-09, loaded via its own `<link>` right after it in `editor.html` /
+`popup.html`): the app-shell aliases (`--surface`, `--ink`, `--accent`… resolving onto
+the kit's `--color-*` tokens), the editor-only affordances (selection outline, resize
+handle, arrow endpoint grips — all stripped by `body.render`), and one real component,
 `.cmp-label`, which the kit deliberately does not have. `src/editor.css` is likewise
 this tool's own, and safe to edit directly.
 
-Everything **above** that banner is upstream's. This repo has no sync command, so
-re-vendoring is manual: re-concatenate the three layers and paste the `EXTRAS` block
-back on the end. An edit made above the banner is lost the next time anyone does that.
+`src/tokens.css` itself is upstream's alone now, nothing else. This repo still has no
+sync command, so re-vendoring is manual — but it's now a single step: overwrite that
+file wholesale with a fresh re-concatenation of the three layers. `tokens-extras.css`
+is a separate file, so it survives untouched; nothing to paste back by hand any more
+(the old single-file setup risked exactly that — see `tokens-extras.css`'s own banner).
 
 > **The previous kit is gone.** Until this swap, `tokens.css` carried a completely
 > different design system that was *also* called "editorial-glass" — purple `#7c2cfb`

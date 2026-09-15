@@ -10,11 +10,17 @@ KB Studio. Đọc bằng `snap_comments` (pin đã quy đổi sẵn ra pixel c�
 kèm step và element gần nhất), đóng bằng `snap_comment_resolve` — quy trình đầy
 đủ ở SKILL.md, phần "Vòng review".
 
-File này dạy CÁCH ĐẶT, không dạy CHỌN component nào — việc chọn component đã có
+File này dạy CÁCH ĐẶT trước hết — việc chọn component nào nói chung vẫn là việc của
 `snap_kit`: `use_when` + `gotchas` từ `src/kit-catalog.js`, CỘNG với `anchor`,
 danh sách prop thật và giá trị mặc định đọc thẳng ra từ `src/components/*.js`
 (`snap-bridge/kit-introspect.js`). Gọi `snap_kit` để chọn component VÀ để tra tên
 prop; đọc file này để đặt. Đừng chép lẫn nhau, và đừng đoán tên prop.
+
+**Ngoại lệ đã có chủ ý**: PRINCIPLE #8 và mục "BỘ COMPONENT" ở cuối file này CŨNG dạy chọn
+component — riêng cho đúng một chỗ (đánh số bước: `step` vs `label` vs `textbox`) đã sai lặp lại
+đủ nhiều lần ở mọi bài đã ship để đứng thành luật ở đây, ngoài `snap_kit`. Coi đó là bổ sung cho
+`snap_kit` ở đúng điểm mù đó, không phải file này đổi vai — mọi lựa chọn component khác vẫn tra
+`snap_kit`.
 
 Định dạng:
   - PRINCIPLES: luật ổn định, quan trọng nhất trước.
@@ -224,6 +230,12 @@ Câu hỏi đầu tiên của người đọc là *"bấm đâu để tới màn
 KB phải trỏ vào mục menu/nav mở ra màn hình đó — `highlight` lên mục menu + `step` + `arrow`.
 Giữ cue nav ở **bước 1 thôi**, trừ khi bước sau đổi màn hình.
 
+Ảnh này thường chỉ có **một** target (mục menu) — đó vẫn là ảnh duy nhất được gắn `step` dù chỉ
+một target, ngoại lệ duy nhất với luật "chỉ thêm `step` khi ≥2 callout tuần tự" ở mục `### step`
+dưới đây. Lý do là "Step 1" ở đây không đánh số nhiều điểm *trong ảnh này*, mà trả lời câu hỏi
+định vị của #4 ("đây là bước mở đầu của cả bài") — đúng mẫu `variant-swatches-volume/
+img/01-menu-annotated.png` mà PRINCIPLE #8 dẫn làm ví dụ đúng.
+
 ### 5. Mỗi bài ≥1 `zoom` lên chi tiết quyết định.
 
 Mỗi bài KB nên có ít nhất một `zoom` phóng đúng một chi tiết nhỏ mà bài viết nói về (một
@@ -357,7 +369,13 @@ không có ô tag tự do nào, dùng cho context-stamp và những chú thích 
 | `mega-menu-translations` | 5/5 | 0 | 0 |
 | `qikify-upsell-translations` | 4/4 | 0 | 0 |
 | `volume-discount-translations` | 8/8 | 0 | 0 |
-| `variant-swatches-volume` | 4/5 (1 bước dùng `step` đúng) | 1 | 0 |
+| `variant-swatches-volume` | 0/1 | 1 | 0 |
+
+(`variant-swatches-volume` chỉ có **một** callout đánh số bước trong cả 6 ảnh — bước 1, dùng
+`step` đúng cách. 5 lần dùng `label` còn lại trong bài này (bước 2: "1"/"2"/"3"/"4" đánh số cột
+bảng; bước 3: "Swatch type" tên field) **không phải** callout đánh số bước — đối chiếu trực tiếp
+với `kb/variant-swatches-volume/job.json` xác nhận không label nào mang nội dung "Step N: …". Đây
+đúng là cách dùng `label` **đúng** theo mục `### label` dưới đây, nên không tính vào cột đầu.)
 
 `textbox` — cấu kiện có `title`+`body`+badge, phù hợp nhất cho một callout cần nói nhiều hơn một
 cụm từ — **chưa từng được dùng, ở bất kỳ bài nào.** `spotlight` cũng vậy (xem "BỘ COMPONENT" dưới).
@@ -376,7 +394,10 @@ là *load-bearing* cho step-marker.
    `kit-catalog.js` dành riêng cho trường hợp **ngược lại** — "ảnh phải tự đứng một mình, không
    có bài viết kèm theo" (community post, video frame). Bài `/kb` luôn có bài viết kèm theo, nên
    theo đúng use_when, callout trên ảnh chỉ cần đánh số + tối đa vài chữ định hướng, không phải
-   một câu hoàn chỉnh.
+   một câu hoàn chỉnh. (Đây là luật về CHỮ trong callout, đúng loại việc thuộc về
+   `CONTENT_PLAYBOOK.md` — nhưng nó đứng nguyên ở đây vì tách khỏi lý do CHỌN COMPONENT ngay
+   trên/dưới điểm này sẽ mất phần "vì sao": dùng sai component cũng chính là nguyên nhân gõ dư
+   chữ.)
 2. **Mất tín hiệu thị giác.** `step` luôn tô `--color-primary-500` (accent) — cùng màu với mọi
    `highlight`/`arrow` khác trên ảnh, nên mắt nối được "cụm accent này thuộc về nhau: khung, mũi
    tên, số bước". `label` mặc định tô đen (`--color-neutral-900`, có prop `accent` để đổi nhưng
@@ -481,6 +502,15 @@ gì** — hai trục khác nhau, đọc cả hai trước khi thêm annotation �
 - Luôn tô `--color-primary-500` + viền trắng 2px — **không có** biến thể on-dark vì viền trắng đã
   đủ tương phản trên mọi nền (`kit-catalog.js`: "documented no-op, not a missing case").
 - Đặt bằng `at` để nó tự chọn TÂM đúng ngữ nghĩa (bảng x/y ở đầu file) và tự chọn phía còn trống.
+- **Chỉ thêm `step` khi ảnh có từ 2 callout tuần tự trở lên — ngoại lệ duy nhất: ảnh bước 1 của
+  bài (PRINCIPLE #4).** `step` tồn tại để đánh số thứ tự giữa nhiều điểm trên cùng một ảnh — một
+  ảnh **giữa bài** chỉ có đúng MỘT hành động/target thì không có gì để đánh số trong ảnh đó, và
+  một pill "①" solo chỉ tổ nhìn thừa (số 1 của... cái gì, so với cái gì?). Với ảnh một-target
+  **không phải bước 1**: bỏ hẳn `step`/callout đánh số (để `highlight`/`arrow` tự nói lên target,
+  body text đã mô tả hành động rồi) — hoặc nếu thật sự cần một mẩu chữ ngắn neo tại đúng chỗ đó
+  thì dùng `textbox` (`mode:"step"` hoặc `"note"`) viết ngắn gọn, KHÔNG dùng `step` marker trần.
+  Ảnh bước 1 thì luôn gắn `step` dù chỉ một target — số của nó không đếm điểm trong ảnh, mà định
+  vị "đây là điểm bắt đầu của cả bài" (xem PRINCIPLE #4).
 
 ### `textbox` — thẻ card, dùng khi cần NÓI nhiều hơn một cụm từ
 
@@ -538,10 +568,19 @@ gì** — hai trục khác nhau, đọc cả hai trước khi thêm annotation �
 
 ### `zoom` — phóng to tại chỗ, mặc định 2.2×, nhưng thực tế mọi bài đều phóng thấp hơn
 
-- Prop thật (`src/components/zoom.js`): `x/y` (**tâm**, đồng thời là tâm vùng nguồn — đổi x/y để
-  "dời" bong bóng ra chỗ khác sẽ lấy mẫu từ chỗ trống, xem `L-2026-09-01-c`), `w/h` (khung hiển
-  thị), `zoom` (hệ số phóng, mặc định `2.2`), `shape` (`"rect"` | `"circle"`), `radius`, `border`,
-  `borderWidth`, `dark` (thêm viền trắng khi nền tối).
+- Prop thật (`src/components/zoom.js`): `x/y` (**tâm hiển thị** — nơi bong bóng kính ĐỨNG),
+  `sourceX/sourceY` (**tâm vùng lấy mẫu** — nơi pixel được crop RA; mặc định `null` = dùng luôn
+  `x/y`, tức phóng tại chỗ như trước giờ), `w/h` (khung hiển thị), `zoom` (hệ số phóng, mặc định
+  `2.2`), `shape` (`"rect"` | `"circle"`), `radius`, `border`, `borderWidth`, `dark` (thêm viền
+  trắng khi nền tối).
+  - **Dời bong bóng ra chỗ khác ("relocate") mà không lấy mẫu sai:** đừng chỉ đổi `x/y` — nó vẫn
+    kéo cả điểm lấy mẫu theo (bong bóng trống trơn). Cách đúng: `snap_add({type:"zoom",
+    at:{selector}})` để `sourceX/sourceY` khoá vào target thật, rồi truyền thêm `props:{x, y}` là
+    vị trí trống muốn đặt bong bóng — `props` chỉ ghi đè đúng field bạn truyền, nên `x/y` dời đi
+    còn `sourceX/sourceY` vẫn nguyên ở target. Không có `at`: gõ tay `sourceX/sourceY` bằng toạ độ
+    thật của target (đọc bằng `snap_view({grid:true})`). Luôn ghép với một `arrow` (bật `origin`)
+    trỏ về đúng target — đó là "connector" mà `kit-catalog.js` nhắc tới, không phải một component
+    riêng (xem PRINCIPLE 1b/#5 cho cách ghép arrow ngắn, không phải tự gõ độ dài).
 - **Cả 4 bài đã ship đều phóng dưới mức mặc định khuyến nghị**: `qikify-upsell-translations` bước
   3 dùng `zoom:1.8`; `volume-discount-translations` bước 2 dùng `zoom:1.6`;
   `variant-swatches-volume` bước 4 dùng `zoom:1.7`. Cả ba đều nằm trong vùng chính comment của
@@ -590,6 +629,18 @@ mỗi comment về **cách đặt** mà bạn `snap_comment_resolve` phải đ�
 không ghi thì bài học chết theo cái pin. Ngày và id do `snap_learn` đóng dấu — đừng
 gõ ngày vào nội dung. Chứng minh được một mục cũ sai thì truyền `supersedes` kèm id của nó.)*
 
+- **2026-09-15** `L-2026-09-15-c` — `label`'s x/y is the CENTER of the pill (src/components/label.js style() uses translate(-50%,-50%)), not a right-edge anchor — confirmed against source and matching the x/y semantics table at the top of this file (banner-corrected the same day, 2026-09-01). L-2026-09-01-b's right-edge theory was wrong; it was likely a misreading of an off-canvas long label as an anchor-direction bug rather than a plain overflow (see hard rule #0's label/step margin formula, which already assumes center).
+
+- **2026-09-15** `L-2026-09-15-b` — zoom's "relocate" gap (L-2026-09-01-c: "there's a connector prop for true relocation, schema unexplored") is now closed in code, not just a workaround. zoom.js gained sourceX/sourceY: content() samples from sourceX/sourceY (falls back to x/y when null), while style() still positions the glass at x/y — the two are independent. kit-geometry.js's "zoom" case now returns sourceX/sourceY mirroring the computed target center alongside x/y, so `snap_add({type:"zoom", at:{selector}})` anchors the SOURCE to the real target as before, and adding an explicit `props:{x,y}` on the same call relocates the DISPLAYED glass elsewhere while the source stays anchored — "props overrides what at computes" already only overrides the keys you pass. Verified by rendering a relocated zoom against a two-region synthetic capture: the bubble shown far from its source correctly displayed the source region's real content, not a blank re-sample of the empty space under it. Rule: to relocate a zoom, do NOT hand-move x/y alone (that still breaks sampling, per the original learning) — anchor with `at` for the source, then override only `props.x/y` for the display position; or set sourceX/sourceY directly when there is no live element to anchor to. Pair a relocated zoom with an ordinary `arrow` (origin dot on) back to the real target — the kit's own spec calls this the "anchor-dot convention" and explicitly says not to invent a second connector line style, which is why zoom.js draws no line of its own.
+
+- **2026-09-15** `L-2026-09-15-a` — Qikify Smart Menu editor (embedded.qikify.com iframe in Shopify admin): the per-item hover toolbar's Edit/Column-width icons only open the item editor when clicked while "Step 1: Create Menu" is the active left-sidebar tab, NOT "Step 2: Add & Design" (that tab's panel is global design settings). The toolbar renders visually the same under either tab, but the click behavior differs — a prior article version screenshotted Step 2 selected while describing this click flow, which doesn't work from there. Verify which app tab is active matches what the described click actually needs. Also: `snap_frame_click`'s `element.click()` on this toolbar was flaky (silent no-op); `snap_frame_hover` on the same selector immediately before the click made it reliable.
+
+- **2026-09-14** `L-2026-09-14-a` — mystery-box-translation: a revise job merging Step 3+4's images into Step 2 as an "optional" sub-section (instruction: "gộp vào Step 2, cho thành 1 phần optional") embedded them as plain markdown `![]()` in the body and dropped their `steps[]` entries — the merge was only asked to change document structure, but it silently broke click-to-edit for those two images too, because KB Studio's editor (`stepFor()` in `bridge-kb.js`) only makes an image Live-editable when its rendered path matches some `step.out`; anything else renders read-only PNG, by design, with no warning. Root cause was avoidable: for a revise job, the `.md` is hand-written prose, NOT generated from `job.json` — only the separate "author" job's `assembleMarkdown()` mechanically turns each `steps[]` entry into its own `## N. heading` + image, and that function never runs during a revise. So a `steps[]` entry's `heading`/`n`/`body` are pure internal bookkeeping (visible at most in the editor MODAL's own title bar, kb-surface.js:175 — never in the published article); keeping the entry does NOT add a numbered heading, a visible "Step N", or change the article's format in any way. The image still renders exactly wherever the `.md` text's own `![]()` puts it — inline in another step's body, no separate section, no renumbering. Rule for a revise job that merges/reorders steps into prose: keep every image's `steps[]` entry (src/out/els) even when it no longer gets its own heading — dropping it to flatten the markdown trades away editability nobody asked to lose, for zero benefit to how the article actually reads. Separately, the editor itself was hardened the same day: `hydrateImages()` now auto-adopts any markdown image with no matching step (agent-pasted, or orphaned by exactly this mistake) as a step on the spot — image becomes its own base capture, `els` starts empty — so it is Live-editable immediately and persists to job.json on the article's next save. This does not excuse dropping the `steps[]` entry during a merge (the auto-adopted version starts with zero vector annotations, losing the ability to nudge whatever was already drawn), but it means an orphaned image is no longer a dead end if one slips through.
+
+- **2026-09-14** `L-2026-09-14-b` — Follow-up on `L-2026-09-14-a`, same article: a later revise job DID restore the two images as `steps[]` entries with real `src`/`out`/`els` (good, editability came back correctly) — but it ALSO inserted `## 2.` headings (empty heading text, placeholder alt `"Bước 2"`) into the `.md` right above them, one per image, AND gave both new entries the same `n: 2` as the pre-existing Step 2 — so the article briefly showed three sections numbered "2." with two of them empty. Confirms `L-2026-09-14-a`'s rule is easy to violate even right after reading it: the instinct to give a `steps[]` entry "its own heading in the .md, like every other step has" is strong even though nothing requires it. Concrete checklist for adding a `steps[]` entry that must stay INLINE (not its own section): (1) do NOT add a `## N.` line to the `.md` for it — only add/keep the `![alt](out)` image tag (with a real descriptive alt, not a placeholder) at the exact spot the prose already reads naturally; (2) give it an `n` that is not already used by ANY other step in the array (max existing `n` + 1, not a copy of the step it's nested under — a repeat `n` makes `saveKbJob`'s `rerenderSteps` matching in `server.js` ambiguous, re-rendering the wrong step(s) on a later Save); (3) `heading` can be any non-empty descriptive string — it is bookkeeping only (see L-2026-09-14-a) but should still describe the image, not be left blank or a generic placeholder.
+
+- **2026-09-11** `L-2026-09-11-a` — mystery-box-translation review: a zoom placed with hand-typed x/y/w/h (not anchored via `at`) had its top edge land above the target field's own label, clipping the label text mid-character and grazing the tab row above it — looked like a rendering glitch, not a magnified detail. Confirms principle #5's "garbled crop" warning applies just as much to a crop that clips a NEIGHBORING line of text as it does to a below-threshold magnification factor. Rule: after placing a zoom, check its full y-range (center ± h/2) against the real top/bottom of the field it's meant to frame — not just the center — and prefer `at` anchored to the specific input element so the crop bounds are derived from the element's real box instead of guessed.
+
 - **2026-09-02** `L-2026-09-02-f` — `textbox` (mode:"step", compactBadge) has a real rendering-position quirk, distinct from the general hand-typed-coordinate bug (L-2026-09-02-e): its visible box lands at roughly x_real≈0.78·x_typed, y_real≈y_typed−12, confirmed via calibrated renders through both snap_add and job.json/snap_render_job — it's the component, not a session artifact. Worse: `at.fromId`'s companion-arrow logic uses a DIFFERENT, wrong fallback box ("560x300 at (typed x,y)") to compute the tail, so an arrow built with at+fromId to a far-away textbox lands nowhere near the real card — a near-zero-length stub, not a connector. checkGeometry warnings are equally unreliable, checking that same wrong box. Fix: don't trust fromId for a textbox-anchored arrow at any real distance. Instead calibrate the textbox's true rendered position empirically (render, measure with snap_view+grid, iterate), then hand-write the arrow's x1/y1/x2/y2 from the measured real boxes — arrow coords render at face value. Trust snap_view over the WARNING here.
 
 - **2026-09-02** `L-2026-09-02-e` — Hand-typed props.x/y/w/h to snap_add (no `at`) rendered at a uniform ~0.78x scale-from-origin in one session — confirmed by placing a highlight at a known UI card's real bounds (718,148,367,100) and seeing it land at ~(560,115). Overflow/geometry WARNINGs still matched the RAW typed values and gave false confidence — they check typed props, not rendered pixels. `at`-based placement (selector+tabId+frameId) was unaffected and reproduced byte-identical results to a separate prior session for the same selector. Rule: no WARNING firing does not mean a hand-typed box rendered where you think. Prefer `at` whenever any real DOM element exists to anchor to (even plain text/headings, not just controls) — this is exactly how a PII blur silently missed its target. With no element to anchor to, calibrate a tiny (10x10) marker against a known landmark before trusting hand-typed coordinates for anything PII-sensitive.
@@ -604,9 +655,9 @@ gõ ngày vào nội dung. Chứng minh được một mục cũ sai thì truy�
 
 - **2026-09-01** `L-2026-09-01-d` — In one session, every hand-typed x/y/w/h (no `at`) rendered at a uniform ~0.78× the typed value with ~zero offset, confirmed via two far-apart calibration round-trips (snap_add → export → snap_view grid). Not uiScale (that only scales chrome, not position) and too big for canvas-padding — likely stale shared-editor state from a prior session's image size. Fix: before placing real annotations, calibrate empirically (place a test element, render, measure with grid, derive factor k), then type every coordinate as desired_pixel / k. The overflow WARNING checks raw typed values against frame size and will false-positive on a correctly-compensated element — trust snap_view, not the warning text, in this state. Also: current label/highlight render sizes for a given string are much larger than older reference images in this repo (~450px for a 30-char label on a 2560-wide capture) — when translating/recreating annotations on an existing article, budget much more open space per label than the original layout used.
 
-- **2026-09-01** `L-2026-09-01-c` — `zoom`'s props.x/y is BOTH the source-sample center AND the display position (true in-place magnifier), not two independent things. Overriding x/y to "relocate" the bubble away from its `at`-anchored element instead re-samples FROM the new (often empty) spot, producing a blank white zoom bubble. There's a `connector` prop for true relocation (schema unexplored). Safe default: leave zoom in-place; if that would cover important adjacent text, drop the zoom for that image rather than pass a naive x/y override.
+- **2026-09-01** `L-2026-09-01-c` — ⚠️ **SUPERSEDED bởi `L-2026-09-15-b` (2026-09-15)** — `zoom`'s props.x/y is BOTH the source-sample center AND the display position (true in-place magnifier), not two independent things. Overriding x/y to "relocate" the bubble away from its `at`-anchored element instead re-samples FROM the new (often empty) spot, producing a blank white zoom bubble. There's a `connector` prop for true relocation (schema unexplored). Safe default: leave zoom in-place; if that would cover important adjacent text, drop the zoom for that image rather than pass a naive x/y override.
 
-- **2026-09-01** `L-2026-09-01-b` — `label` component's x/y acts as a RIGHT-edge anchor (text extends LEFTWARD from x), not left-edge/center. A small x for a long label ran it off canvas-left entirely (hard rule #0). Rule: for `label`, set x ≈ desired right edge, budget ~9-10px/char leftward for the string, and keep x large enough that x-minus-textwidth stays ≥0 (and clear of any sidebar).
+- **2026-09-01** `L-2026-09-01-b` — ⚠️ **SUPERSEDED bởi `L-2026-09-15-c` (2026-09-15)** — `label` component's x/y acts as a RIGHT-edge anchor (text extends LEFTWARD from x), not left-edge/center. A small x for a long label ran it off canvas-left entirely (hard rule #0). Rule: for `label`, set x ≈ desired right edge, budget ~9-10px/char leftward for the string, and keep x large enough that x-minus-textwidth stays ≥0 (and clear of any sidebar).
 
 - **2026-09-01** `L-2026-09-01-a` — Nested cross-origin iframe (Shopify admin > embedded app, capture 2560x1249): a snap_frame_find `rect` copied straight into snap_add's manual x/y is WRONG for a NESTED iframe (boxes landed hundreds of px off) — always use `at:{selector,tabId,frameId}` there instead. For a TOP-LEVEL (non-nested) page, e.g. the plain storefront product page, frame rect DOES equal canvas coords 1:1 — the transform only exists once you're inside a nested iframe.
 
